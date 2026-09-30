@@ -12,7 +12,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     
-    <!-- Razorpay Checkout Script Added -->
+    <!-- 🆕 Razorpay Checkout Script Added -->
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
     <!-- Firebase Configuration File -->
@@ -34,7 +34,25 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background-color: var(--bg-light); color: var(--text-dark); padding-bottom: 30px; }
+        
+        /* 🆕 Body changes for PC Centering */
+        body { 
+            background-color: var(--bg-light); 
+            color: var(--text-dark); 
+            padding-bottom: 30px; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 🆕 App Wrapper for Desktop View */
+        .app-wrapper {
+            width: 100%;
+            max-width: 800px; /* PC वर फॉर्म एवढाच राहील */
+            background-color: var(--bg-light);
+            min-height: 100vh;
+            position: relative;
+        }
 
         /* टॉप बार */
         .top-bar {
@@ -156,9 +174,42 @@
         .category-btn { flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 800; border-radius: 8px; cursor: pointer; color: var(--text-muted); transition: 0.3s; }
         .category-btn.active { background: var(--white); color: var(--primary); box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
 
+        /* -------------------------------------------------------------------------
+           🆕 मीडिया क्वेरीज (Responsive Design for Laptops/Tablets)
+        ------------------------------------------------------------------------- */
+        @media (min-width: 768px) {
+            body {
+                background-color: #E2E8F0; /* पीसीवर बाहेरचा रंग राखाडी दिसेल */
+            }
+            .app-wrapper {
+                box-shadow: 0 0 20px rgba(0,0,0,0.1); /* फॉर्मला शॅडो येईल */
+                margin-top: 20px;
+                border-radius: 20px;
+                overflow: hidden;
+            }
+            .plan-selector { 
+                flex-direction: row; /* पीसीवर प्लॅन्स एका रांगेत दिसतील */
+            }
+            .plan-option {
+                flex: 1;
+                flex-direction: column;
+                text-align: center;
+            }
+            .plan-option .plan-radio {
+                margin: 10px 0 0 0;
+            }
+            .grid-2 { 
+                gap: 20px; /* पीसीवर गॅप वाढवला */
+            }
+            .amenities-grid { 
+                grid-template-columns: repeat(3, 1fr); /* पीसीवर एका रांगेत ३ चेकबॉक्स */
+            }
+        }
     </style>
 </head>
 <body>
+
+<div class="app-wrapper"> <!-- 🆕 App Wrapper Started -->
 
     <!-- टॉप बार -->
     <div class="top-bar">
@@ -299,6 +350,7 @@
                     <label class="form-label" data-lang="taluka_label">तालुका</label>
                     <div class="input-box">
                         <i class="fa-solid fa-map-pin"></i>
+                        <!-- 🛠️ BUG FIXED: Value is standard, visual text changes via data-lang -->
                         <select class="form-control" id="prop-taluka" onchange="populateAreas()">
                             <option value="" disabled selected>तालुका निवडा...</option>
                             <option value="satara" data-lang="taluka_satara">सातारा</option>
@@ -368,6 +420,8 @@
 
     </div>
 
+</div> <!-- 🆕 App Wrapper Ended -->
+
     <!-- JavaScript For Firebase and Logic -->
     <script>
         let currentPropertyCategory = 'residential'; 
@@ -377,11 +431,11 @@
             loadAdminPricing(); 
             setCategory('residential'); 
             
-            // 🆕 Ensure user details from local storage are synced to Cloud on page load
+            // Ensure user details from local storage are synced to Cloud on page load
             verifyAndSyncOwnerToCloud();
         };
 
-        // 🆕 Sync Local Storage to Firebase Cloud (Makes ID permanent across devices)
+        // Sync Local Storage to Firebase Cloud (Makes ID permanent across devices)
         function verifyAndSyncOwnerToCloud() {
             let savedId = localStorage.getItem("currentUserId");
             let savedName = localStorage.getItem("currentUserName");
@@ -760,7 +814,7 @@
         // ६. Firestore Database मध्ये डेटा टाकण्याचे फंक्शन
         function saveToDatabase(title, type, targetTenant, furnishStatus, rent, deposit, taluka, area, desc, photoUrlsArray, initialStatus, submitBtn, paymentId) {
             
-            // 🆕 Getting the exact ID that was saved from Local Storage (Synced to Cloud)
+            // Getting the exact ID that was saved from Local Storage (Synced to Cloud)
             let ownerId = localStorage.getItem("currentUserId") || "unknown_owner";
             let ownerName = localStorage.getItem("currentUserName") || "Owner";
             let ownerMobile = localStorage.getItem("currentUserMobile") || ownerId.replace("user_", "");
