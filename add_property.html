@@ -12,7 +12,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     
-    <!-- 🆕 Razorpay Checkout Script Added -->
+    <!-- Razorpay Checkout Script Added -->
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
     <!-- Firebase Configuration File -->
@@ -299,7 +299,6 @@
                     <label class="form-label" data-lang="taluka_label">तालुका</label>
                     <div class="input-box">
                         <i class="fa-solid fa-map-pin"></i>
-                        <!-- 🛠️ BUG FIXED: Value is standard, visual text changes via data-lang -->
                         <select class="form-control" id="prop-taluka" onchange="populateAreas()">
                             <option value="" disabled selected>तालुका निवडा...</option>
                             <option value="satara" data-lang="taluka_satara">सातारा</option>
@@ -377,7 +376,26 @@
             if(typeof applySavedLanguage === 'function') { applySavedLanguage(); }
             loadAdminPricing(); 
             setCategory('residential'); 
+            
+            // 🆕 Ensure user details from local storage are synced to Cloud on page load
+            verifyAndSyncOwnerToCloud();
         };
+
+        // 🆕 Sync Local Storage to Firebase Cloud (Makes ID permanent across devices)
+        function verifyAndSyncOwnerToCloud() {
+            let savedId = localStorage.getItem("currentUserId");
+            let savedName = localStorage.getItem("currentUserName");
+            let savedMobile = localStorage.getItem("currentUserMobile");
+            
+            if(savedId && savedName && savedMobile && typeof db !== 'undefined') {
+                db.collection("users").doc(savedId).set({
+                    name: savedName,
+                    mobile: savedMobile,
+                    role: "owner",
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true }).catch(e => console.log("Cloud Sync Error:", e));
+            }
+        }
 
         // --- Fetch Admin Pricing for Plans ---
         let plan1Days = 15;
@@ -637,7 +655,7 @@
                 return;
             }
 
-            // 🆕 Razorpay Payment Flow Check
+            // Razorpay Payment Flow Check
             if(currentPlanType === 'premium1' || currentPlanType === 'premium2') {
                 let amountToPay = currentPlanType === 'premium1' ? plan1Price : plan2Price;
                 triggerRazorpayForOwner(amountToPay, title, finalPropType, finalTarget, furnishStatus, rent, deposit, taluka, finalArea, desc);
@@ -647,7 +665,7 @@
             }
         }
 
-        // 🆕 Razorpay Logic for Owners (Strict Force UPI)
+        // Razorpay Logic for Owners (Strict Force UPI)
         function triggerRazorpayForOwner(amount, title, type, targetTenant, furnishStatus, rent, deposit, taluka, area, desc) {
             var options = {
                 "key": "rzp_live_TIkGEzUM5ygyd6", // Live Key
@@ -742,9 +760,10 @@
         // ६. Firestore Database मध्ये डेटा टाकण्याचे फंक्शन
         function saveToDatabase(title, type, targetTenant, furnishStatus, rent, deposit, taluka, area, desc, photoUrlsArray, initialStatus, submitBtn, paymentId) {
             
+            // 🆕 Getting the exact ID that was saved from Local Storage (Synced to Cloud)
             let ownerId = localStorage.getItem("currentUserId") || "unknown_owner";
             let ownerName = localStorage.getItem("currentUserName") || "Owner";
-            let ownerMobile = ownerId.replace("user_", "");
+            let ownerMobile = localStorage.getItem("currentUserMobile") || ownerId.replace("user_", "");
 
             let validDays = 0;
             if(currentPlanType === 'premium1') validDays = plan1Days;
@@ -775,7 +794,7 @@
             if(selectedAmenities.mess && document.getElementById('am-mess')) amenitiesLabels.push(document.getElementById('am-mess').value);
 
             let propertyData = {
-                ownerId: ownerId,
+                ownerId: ownerId, // This links directly to the Firebase User ID
                 ownerName: ownerName,
                 ownerMobile: ownerMobile,
                 propertyCategory: currentPropertyCategory, 

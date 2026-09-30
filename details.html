@@ -143,9 +143,76 @@
             z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center;
             font-size: 18px; font-weight: 800; color: var(--primary);
         }
+
+        /* -------------------------------------------------------------------------
+           🆕 User Details Modal (Popup for Tenants before Payment)
+        ------------------------------------------------------------------------- */
+        .user-reg-modal {
+            display: none; 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 99999;
+            align-items: center; justify-content: center; backdrop-filter: blur(5px);
+        }
+        .user-reg-content {
+            background: var(--white); width: 90%; max-width: 400px;
+            border-radius: 20px; padding: 25px 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative; text-align: center;
+        }
+        .close-modal-btn {
+            position: absolute; top: 15px; right: 15px; font-size: 20px; color: #94A3B8;
+            background: none; border: none; cursor: pointer;
+        }
+        .user-reg-icon {
+            font-size: 40px; color: var(--primary); margin-bottom: 10px;
+        }
+        .user-reg-title {
+            font-size: 18px; font-weight: 800; color: var(--text-dark); margin-bottom: 5px;
+        }
+        .user-reg-desc {
+            font-size: 12px; color: var(--text-muted); margin-bottom: 20px;
+        }
+        .input-group {
+            margin-bottom: 15px; text-align: left;
+        }
+        .input-group label {
+            display: block; font-size: 12px; font-weight: 700; color: var(--text-dark); margin-bottom: 5px;
+        }
+        .input-group input {
+            width: 100%; padding: 12px 15px; border: 1.5px solid #EAECEE; border-radius: 10px;
+            font-size: 14px; font-weight: 600; outline: none; background: #F8FAFC;
+        }
+        .input-group input:focus {
+            border-color: var(--primary); background: var(--white);
+        }
+        .user-submit-btn {
+            background: linear-gradient(135deg, var(--primary), #E65C00);
+            color: var(--white); border: none; padding: 14px; width: 100%; border-radius: 10px;
+            font-size: 15px; font-weight: 800; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 15px rgba(244, 90, 10, 0.3);
+        }
     </style>
 </head>
 <body>
+
+    <!-- 🆕 User Registration Modal (Form before Payment) -->
+    <div id="user-registration-modal" class="user-reg-modal">
+        <div class="user-reg-content">
+            <button class="close-modal-btn" onclick="closeUserModal()"><i class="fa-solid fa-xmark"></i></button>
+            <div class="user-reg-icon"><i class="fa-solid fa-user-shield"></i></div>
+            <div class="user-reg-title">युझर माहिती</div>
+            <div class="user-reg-desc">मालकाचा नंबर पाहण्यासाठी कृपया तुमचे नाव आणि मोबाईल नंबर टाका. (ही माहिती फक्त एकदाच विचारली जाईल)</div>
+            
+            <div class="input-group">
+                <label>पूर्ण नाव (Full Name)</label>
+                <input type="text" id="user-name-input" placeholder="उदा. रमेश पाटील">
+            </div>
+            <div class="input-group">
+                <label>मोबाईल नंबर (WhatsApp)</label>
+                <input type="tel" id="user-mobile-input" placeholder="उदा. 9876543210" maxlength="10">
+            </div>
+            
+            <button class="user-submit-btn" id="user-submit-btn" onclick="submitUserDetailsAndPay()">पुढे जा आणि पेमेंट करा <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+    </div>
 
     <!-- Loading State -->
     <div id="loadingScreen" class="loading-fullscreen">
@@ -239,7 +306,7 @@
             <div class="hidden-number" id="phoneNumber">+91 98XXXXXX10</div>
             
             <!-- डायनॅमिक बटन -->
-            <button class="btn-unlock" id="unlockBtn" onclick="processPayment()">
+            <button class="btn-unlock" id="unlockBtn" onclick="checkUserAndPay()">
                 <i class="fa-solid fa-lock-open"></i> <span data-lang="unlock_number_btn">मालकाचा नंबर पहा</span> (<span id="displayFee">₹ 20</span>)
             </button>
             <div class="unlock-note" id="unlockNote" data-lang="unlock_note_desc">UPI, GPay, PhonePe ने पेमेंट करा. नंबर कायमस्वरूपी अनलॉक होईल.</div>
@@ -267,11 +334,29 @@
         window.onload = function() {
             if(typeof applySavedLanguage === 'function') { applySavedLanguage(); }
 
+            // 🆕 Sync Local Storage to Firebase Cloud (Makes ID permanent across devices)
+            verifyAndSyncUserToCloud();
+
             fetchUnlockFeeFromFirebase();
             loadPropertyDetails();
         };
+
+        // 🆕 Sync Logic
+        function verifyAndSyncUserToCloud() {
+            let savedId = localStorage.getItem("currentUserId");
+            let savedName = localStorage.getItem("currentUserName");
+            let savedMobile = localStorage.getItem("currentUserMobile");
+            
+            if(savedId && savedName && savedMobile && typeof db !== 'undefined') {
+                db.collection("users").doc(savedId).set({
+                    name: savedName,
+                    mobile: savedMobile,
+                    role: "tenant", // Can be overwritten by owner if they post ad
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true }).catch(e => console.log("Cloud Sync Error:", e));
+            }
+        }
         
-        // डायनॅमिक बॅक बटण लॉजिक (युझर कुठून आलाय त्यानुसार)
         function goBack() {
             if (document.referrer.includes("saved.html")) {
                 window.location.href = "saved.html";
@@ -321,7 +406,7 @@
                         propertyData = doc.data();
                         propertyData.id = doc.id;
 
-                        // ऑटोमॅटिक प्रीमियम एक्सपायरी चेक (Auto-Expire Logic)
+                        // ऑटोमॅटिक प्रीमियम एक्सपायरी चेक
                         if (propertyData.planType && propertyData.planType !== 'basic' && propertyData.expiryDate && propertyData.expiryDate !== 'Lifetime') {
                             let now = new Date();
                             let expiryTime = new Date(propertyData.expiryDate);
@@ -442,13 +527,95 @@
             }
         }
 
-        // 🆕 ४. Razorpay Live Payment Gateway Integration (With Strict Force UPI Method)
+        // -------------------------------------------------------------------------
+        // 🆕 User Details Check Logic (With Firebase Cloud Verification)
+        // -------------------------------------------------------------------------
+        function checkUserAndPay() {
+            let savedId = localStorage.getItem("currentUserId");
+            
+            if(savedId) {
+                // If Local Storage has ID, verify with Firebase (Cloud sync)
+                if(typeof db !== 'undefined') {
+                    db.collection("users").doc(savedId).get().then((doc) => {
+                        if(doc.exists) {
+                            // User exists in cloud, go straight to Payment
+                            processPayment();
+                        } else {
+                            // Rare case: ID in local storage but not in cloud, show form
+                            document.getElementById('user-registration-modal').style.display = "flex";
+                        }
+                    }).catch(e => {
+                        console.log("Firebase Check Error:", e);
+                        // Fallback to local storage if offline
+                        processPayment();
+                    });
+                } else {
+                    processPayment();
+                }
+            } else {
+                // No Local Storage ID, show form to capture details
+                document.getElementById('user-registration-modal').style.display = "flex";
+            }
+        }
+
+        function closeUserModal() {
+            document.getElementById('user-registration-modal').style.display = "none";
+        }
+
+        function submitUserDetailsAndPay() {
+            let name = document.getElementById('user-name-input').value.trim();
+            let mobile = document.getElementById('user-mobile-input').value.trim();
+
+            if(name === "" || mobile === "" || mobile.length !== 10) {
+                alert("कृपया तुमचे पूर्ण नाव आणि १० अंकी मोबाईल नंबर योग्यरित्या टाका.");
+                return;
+            }
+
+            let userId = "user_" + mobile;
+            const submitBtn = document.getElementById('user-submit-btn');
+            submitBtn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> सेव्ह होत आहे...";
+            submitBtn.disabled = true;
+
+            // 1. Save to Firebase (Cloud)
+            if(typeof db !== 'undefined') {
+                db.collection("users").doc(userId).set({
+                    name: name,
+                    mobile: mobile,
+                    role: "tenant", 
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true }).then(() => {
+                    // 2. Save to Local Storage
+                    localStorage.setItem("currentUserId", userId);
+                    localStorage.setItem("currentUserName", name);
+                    localStorage.setItem("currentUserMobile", mobile);
+                    currentUserId = userId;
+                    
+                    // Close modal and Trigger Razorpay Payment
+                    closeUserModal();
+                    processPayment();
+                    
+                    submitBtn.innerHTML = "पुढे जा आणि पेमेंट करा <i class='fa-solid fa-arrow-right'></i>";
+                    submitBtn.disabled = false;
+                }).catch((error) => {
+                    console.log("Error saving to Firebase:", error);
+                    alert("नोंदणी करताना एरर आला. कृपया पुन्हा प्रयत्न करा.");
+                    submitBtn.innerHTML = "पुढे जा आणि पेमेंट करा <i class='fa-solid fa-arrow-right'></i>";
+                    submitBtn.disabled = false;
+                });
+            } else {
+                alert("Firebase कनेक्टेड नाही. कृपया इंटरनेट कनेक्शन तपासा.");
+                submitBtn.innerHTML = "पुढे जा आणि पेमेंट करा <i class='fa-solid fa-arrow-right'></i>";
+                submitBtn.disabled = false;
+            }
+        }
+
+        // ४. Razorpay Live Payment Gateway Integration
         function processPayment() {
             if(!propertyData) return;
 
-            // Razorpay options configuration with your Live Key
+            // Razorpay options configuration with Live Key
             var options = {
-                "key": "rzp_live_TIkGEzUM5ygyd6", // Your Live API Key
+                "key": "rzp_live_TIkGEzUM5ygyd6", // Live API Key
                 "amount": currentUnlockFee * 100, // Amount in paise
                 "currency": "INR",
                 "name": "Satara Rental Hub",
@@ -463,30 +630,21 @@
                     "email": localStorage.getItem("currentUserEmail") || "user@satararentalhub.com",
                     "contact": localStorage.getItem("currentUserMobile") || "9876543210"
                 },
-                // 🆕 Force display UPI options primarily
                 "config": {
                     "display": {
                         "blocks": {
                             "upi": {
-                                "name": "Pay with UPI",
+                                "name": "Pay with UPI (GPay, PhonePe)",
                                 "instruments": [
-                                    {
-                                        "method": "upi"
-                                    }
+                                    { "method": "upi" }
                                 ]
                             },
                             "other": {
                                 "name": "Other Payment Modes",
                                 "instruments": [
-                                    {
-                                        "method": "card"
-                                    },
-                                    {
-                                        "method": "netbanking"
-                                    },
-                                    {
-                                        "method": "wallet"
-                                    }
+                                    { "method": "card" },
+                                    { "method": "netbanking" },
+                                    { "method": "wallet" }
                                 ]
                             }
                         },

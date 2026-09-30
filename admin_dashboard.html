@@ -115,7 +115,7 @@
         .btn-download-alert { background: #FEF2F2; border-color: #FECACA; color: #991B1B; }
         .btn-download-alert i { color: #DC2626; }
         
-        /* 🆕 Payment Report Button Highlight */
+        /* Payment Report Button Highlight */
         .btn-download-payment { background: #ECFDF5; border-color: #A7F3D0; color: #065F46; }
         .btn-download-payment i { color: #10B981; }
 
@@ -191,6 +191,18 @@
             cursor: pointer; display: flex; justify-content: center; align-items: center;
             font-size: 12px; z-index: 10;
         }
+        
+        /* 🆕 Lead/Enquiry Checkbox Styles */
+        .lead-checkbox {
+            width: 20px; height: 20px; accent-color: #25D366; cursor: pointer;
+        }
+        .whatsapp-share-btn {
+            background: #25D366; color: white; border: none; padding: 12px 15px;
+            border-radius: 10px; font-weight: 800; font-size: 14px; display: flex;
+            align-items: center; justify-content: center; gap: 8px; width: 100%; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3); transition: 0.2s; margin-top: 10px;
+        }
+        .whatsapp-share-btn:active { transform: scale(0.97); }
 
         /* Bottom Navigation */
         .bottom-nav {
@@ -238,6 +250,31 @@
             <i class="fa-solid fa-indian-rupee-sign stat-icon" style="color: #10B981;"></i>
             <div class="stat-val" id="total_revenue_amount">₹ 0</div>
             <div class="stat-title" data-lang="month_revenue">एकूण कमाई</div>
+        </div>
+    </div>
+
+    <!-- 🆕 २.० युझर इन्क्वायरीज (Leads with Multi-Select WhatsApp Share) -->
+    <div class="section-header">
+        <span style="color: #25D366;"><i class="fa-solid fa-clipboard-user"></i> नवीन संपर्कांची यादी (Leads)</span>
+    </div>
+    <div class="list-container">
+        <div class="cms-card" style="background: #F0FDF4; border-color: #BBF7D0;">
+            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px;">ज्या भाडेकरूंनी पैसे भरून मालकाचा नंबर अनलॉक केला आहे, त्यांची रोजची यादी येथे दिसेल. त्यांना सिलेक्ट करून तुम्ही मालकाला WhatsApp वर पाठवू शकता.</p>
+            
+            <!-- Date Filter for Leads -->
+            <div class="date-inputs" style="margin-bottom: 15px;">
+                <input type="date" id="lead-filter-date" style="border-color: #25D366; color: #166534;" onchange="loadUserLeads()">
+            </div>
+
+            <!-- Leads List Container -->
+            <div id="leads-list-container" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;">
+                <div style="text-align: center; color: #94A3B8; padding: 10px;">लोड होत आहे...</div>
+            </div>
+
+            <!-- WhatsApp Share Button -->
+            <button class="whatsapp-share-btn" onclick="shareSelectedLeadsOnWhatsApp()">
+                <i class="fa-brands fa-whatsapp"></i> निवडलेले संपर्क्स WhatsApp वर शेअर करा
+            </button>
         </div>
     </div>
 
@@ -295,7 +332,7 @@
             
             <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px;">वरील तारखांमधील संपूर्ण डेटा CSV (Excel) फॉरमॅटमध्ये डाऊनलोड करा. (तारखा न निवडल्यास सर्व डेटा येईल)</p>
             
-            <!-- 🆕 NEW PAYMENT REPORT BUTTON -->
+            <!-- NEW PAYMENT REPORT BUTTON -->
             <button class="btn-download btn-download-payment" onclick="downloadReport('all_payments')">
                 <span><i class="fa-solid fa-credit-card" style="margin-right:8px;"></i> सर्व पेमेंट्स (Razorpay) रिपोर्ट</span>
                 <i class="fa-solid fa-download"></i>
@@ -556,6 +593,9 @@
     <script>
         let supportTeamMembers = [];
         let heroSliderImagesArr = []; 
+        
+        // 🆕 Global variable to hold loaded leads data
+        let currentLoadedLeads = [];
 
         window.onload = function() {
             if(typeof applySavedLanguage === 'function') { applySavedLanguage(); }
@@ -564,6 +604,9 @@
             let firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
             document.getElementById('report-start-date').value = firstDay.toISOString().split('T')[0];
             document.getElementById('report-end-date').value = now.toISOString().split('T')[0];
+            
+            // Set today's date in Leads filter
+            document.getElementById('lead-filter-date').value = now.toISOString().split('T')[0];
 
             loadAdminDashboardStats();
             loadSettingsFromFirebase();
@@ -572,7 +615,145 @@
             loadAdSettings();
             loadTeamDataCMS(); 
             loadHeroSliderConfig(); 
+            
+            // 🆕 Load Today's Leads initially
+            loadUserLeads();
         };
+
+        // --- 🆕 User Leads / Enquiry Fetching Logic ---
+        async function loadUserLeads() {
+            let selectedDateStr = document.getElementById('lead-filter-date').value;
+            if(!selectedDateStr) return;
+            
+            let container = document.getElementById('leads-list-container');
+            container.innerHTML = '<div style="text-align: center; color: #94A3B8; padding: 10px;">लोड होत आहे... <i class="fa-solid fa-spinner fa-spin"></i></div>';
+            
+            let startDate = new Date(selectedDateStr);
+            startDate.setHours(0, 0, 0, 0);
+            let endDate = new Date(selectedDateStr);
+            endDate.setHours(23, 59, 59, 999);
+            
+            try {
+                // Fetch only Contact Unlock payments for the selected date
+                let snap = await db.collection("payments")
+                    .where("planType", "==", "Contact Unlock")
+                    .where("status", "==", "Success")
+                    .where("createdAt", ">=", startDate.toISOString())
+                    .where("createdAt", "<=", endDate.toISOString())
+                    .get();
+                    
+                if(snap.empty) {
+                    container.innerHTML = `<div style="text-align: center; color: #94A3B8; padding: 10px;">या तारखेला कोणतीही इन्क्वायरी नाही.</div>`;
+                    currentLoadedLeads = [];
+                    return;
+                }
+                
+                let html = '';
+                let index = 0;
+                currentLoadedLeads = [];
+                
+                for(let doc of snap.docs) {
+                    let d = doc.data();
+                    
+                    // Fetch User Details
+                    let userName = "अज्ञात (Unknown)";
+                    let userMobile = d.userId.replace("user_", "");
+                    try {
+                        let userDoc = await db.collection("users").doc(d.userId).get();
+                        if(userDoc.exists) { userName = userDoc.data().name || userName; }
+                    } catch(e){}
+                    
+                    // Fetch Property Details
+                    let propTitle = "Unknown Property";
+                    let ownerMobile = "N/A";
+                    try {
+                        if(d.propertyId) {
+                            let propDoc = await db.collection("properties").doc(d.propertyId).get();
+                            if(propDoc.exists) {
+                                propTitle = propDoc.data().title || propTitle;
+                                ownerMobile = propDoc.data().ownerMobile || ownerMobile;
+                            }
+                        }
+                    } catch(e){}
+                    
+                    // Add to global array for sharing
+                    currentLoadedLeads.push({
+                        userName: userName,
+                        userMobile: userMobile,
+                        propTitle: propTitle,
+                        ownerMobile: ownerMobile
+                    });
+                    
+                    html += `
+                    <div style="background: #FFFFFF; border: 1px solid #BBF7D0; padding: 12px; border-radius: 12px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" class="lead-checkbox" id="lead-check-${index}" value="${index}">
+                        <div style="flex: 1;">
+                            <div style="font-size: 14px; font-weight: 800; color: #166534; margin-bottom: 2px;">
+                                <i class="fa-solid fa-user"></i> ${userName} 
+                                <span style="font-weight:normal; font-size:12px; color:#10B981;">(${userMobile})</span>
+                            </div>
+                            <div style="font-size: 11px; color: #64748B;">
+                                <i class="fa-solid fa-house"></i> ${propTitle}
+                            </div>
+                        </div>
+                    </div>`;
+                    index++;
+                }
+                
+                container.innerHTML = html;
+                
+            } catch(e) {
+                console.log("Error loading leads:", e);
+                container.innerHTML = `<div style="text-align: center; color: red; padding: 10px;">डेटा लोड करताना त्रुटी आली.</div>`;
+            }
+        }
+        
+        // --- 🆕 WhatsApp Multi-Share Logic ---
+        function shareSelectedLeadsOnWhatsApp() {
+            let checkboxes = document.querySelectorAll('.lead-checkbox:checked');
+            if(checkboxes.length === 0) {
+                alert("कृपया शेअर करण्यासाठी किमान एक तरी इन्क्वायरी सिलेक्ट करा.");
+                return;
+            }
+            
+            // Group leads by Owner Mobile Number
+            let leadsByOwner = {};
+            
+            checkboxes.forEach(cb => {
+                let lead = currentLoadedLeads[cb.value];
+                if(lead && lead.ownerMobile) {
+                    if(!leadsByOwner[lead.ownerMobile]) {
+                        leadsByOwner[lead.ownerMobile] = [];
+                    }
+                    leadsByOwner[lead.ownerMobile].push(lead);
+                }
+            });
+            
+            let ownerNumbers = Object.keys(leadsByOwner);
+            if(ownerNumbers.length === 0) {
+                alert("मालकाचा नंबर उपलब्ध नाही."); return;
+            }
+            
+            if(ownerNumbers.length > 1) {
+                alert("लक्षात ठेवा: तुम्ही वेगवेगळ्या मालकांच्या प्रॉपर्टीज सिलेक्ट केल्या आहेत. सध्या सिस्टीम पहिल्या मालकाला मेसेज पाठवेल.");
+            }
+            
+            let targetOwnerMobile = ownerNumbers[0];
+            let ownerLeads = leadsByOwner[targetOwnerMobile];
+            
+            let message = `*सातारा रेंटल हब - इन्क्वायरी अपडेट* 🏠\n\nनमस्कार, आज तुमच्या खालील प्रॉपर्टीजसाठी नवीन भाडेकरूंनी संपर्क साधला आहे:\n\n`;
+            
+            ownerLeads.forEach((l, idx) => {
+                message += `*${idx + 1}. प्रॉपर्टी:* ${l.propTitle}\n`;
+                message += `📞 *नाव:* ${l.userName}\n`;
+                message += `📱 *मोबाईल:* ${l.userMobile}\n\n`;
+            });
+            
+            message += `कृपया वर दिलेल्या नंबरवर कॉल करून भाडेकरूंसोबत बोलणे करा.\nधन्यवाद!\n- *सातारा रेंटल हब टीम*`;
+            
+            let encodedMsg = encodeURIComponent(message);
+            window.open(`https://wa.me/91${targetOwnerMobile}?text=${encodedMsg}`, '_blank');
+        }
 
         // --- Slider Config Logic ---
         function loadHeroSliderConfig() {
@@ -719,7 +900,7 @@
             }
         }
 
-        // --- 🆕 Report Generation & Download Logic (ALL PAYMENTS) ---
+        // --- Report Generation & Download Logic ---
         function getSelectedDateRange() {
             let startVal = document.getElementById('report-start-date').value;
             let endVal = document.getElementById('report-end-date').value;
@@ -742,10 +923,9 @@
             
             let dateRange = getSelectedDateRange();
             let dateTitle = dateRange ? dateRange.titleStr : "All_Time";
-            let csvContent = "\uFEFF"; // BOM for UTF-8 Excel support
+            let csvContent = "\uFEFF"; 
             
             try {
-                // 🆕 NEW: ALL PAYMENTS REPORT LOGIC
                 if(reportType === 'all_payments') {
                     csvContent += "Payment ID,User ID,User Mobile,Amount (Rs),Plan Type,Property ID,Status,Payment Date\r\n";
                     let query = db.collection("payments");
@@ -753,13 +933,11 @@
                     
                     let snap = await query.get();
                     
-                    // We need to fetch User Details (Name/Mobile) for the UserID
                     for (let doc of snap.docs) {
                         let d = doc.data();
                         let date = d.createdAt ? new Date(d.createdAt).toLocaleDateString() : 'N/A';
                         let userMobile = "Not Found";
                         
-                        // Try to get user mobile directly if saved, otherwise fetch from users collection
                         if(d.userId && d.userId.includes("user_")) {
                             userMobile = d.userId.replace("user_", "");
                         } else if(d.userId) {
