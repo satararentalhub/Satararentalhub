@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>लॉगिन आणि नोंदणी | Satara Rental Hub</title>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    
+    <!-- Firebase Configuration File -->
+    <script src="firebase-config.js"></script>
+    
+    <!-- Multi-Language Support File -->
+    <script src="lang.js"></script>
+    
+    <style>
+        :root {
+            --primary: #FF671F;
+            --primary-dark: #E65C00;
+            --bg-light: #F4F6F9;
+            --text-dark: #2C3E50;
+            --text-muted: #7F8C8D;
+            --white: #FFFFFF;
+            --border: #EAECEE;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        .lang-toggle-btn {
+            position: absolute; top: 20px; right: 20px;
+            background: rgba(255,103,31,0.1); color: var(--primary); 
+            border: 1px solid var(--primary); padding: 8px 12px; 
+            border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer;
+            z-index: 100;
+        }
+
+        .auth-card {
+            background: var(--white); width: 100%; max-width: 400px;
+            padding: 35px 25px; border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border-top: 5px solid var(--primary); margin-top: 30px; 
+        }
+
+        .brand-header { text-align: center; margin-bottom: 25px; }
+        .brand-logo {
+            width: 70px; height: 70px; background: var(--bg-light);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 10px auto; overflow: hidden; border: 2px solid var(--primary); padding: 4px;
+        }
+        .brand-logo img { width: 100%; height: 100%; object-fit: contain; }
+        .brand-title { font-size: 22px; font-weight: 800; color: var(--text-dark); }
+        .brand-subtitle { font-size: 13px; color: var(--text-muted); margin-top: 5px; }
+
+        .login-tabs { display: flex; gap: 5px; margin-bottom: 20px; background: var(--bg-light); padding: 5px; border-radius: 12px; }
+        .tab-btn { flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 700; border-radius: 10px; cursor: pointer; color: var(--text-muted); transition: 0.3s; }
+        .tab-btn.active { background: var(--white); color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+
+        .form-group { margin-bottom: 18px; position: relative; }
+        .form-label { font-size: 13px; font-weight: 700; color: var(--text-dark); margin-bottom: 6px; display: block; }
+        
+        .input-box { position: relative; }
+        .input-box i.left-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #94A3B8; font-size: 16px; pointer-events: none; }
+        
+        .form-control {
+            width: 100%; padding: 14px 15px 14px 45px; background: var(--bg-light); border: 1.5px solid var(--border);
+            border-radius: 12px; font-size: 14px; font-weight: 600; color: var(--text-dark); outline: none; transition: 0.3s;
+        }
+        .form-control:focus { border-color: var(--primary); background: var(--white); box-shadow: 0 0 0 4px rgba(255, 103, 31, 0.1); }
+        select.form-control { padding-left: 45px; }
+
+        .toggle-password { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); cursor: pointer; padding: 5px; z-index: 10;}
+        .forgot-pass { display: block; text-align: right; font-size: 12px; color: var(--primary); font-weight: 700; margin-top: 8px; text-decoration: none; cursor: pointer; }
+
+        .role-selector { display: flex; gap: 10px; margin-bottom: 20px; }
+        .role-option { flex: 1; text-align: center; padding: 12px 10px; background: var(--bg-light); border: 2px solid var(--border); border-radius: 12px; cursor: pointer; transition: 0.2s; }
+        .role-option i { font-size: 20px; color: #94A3B8; margin-bottom: 6px; display: block; transition: 0.2s; }
+        .role-option span { font-size: 11px; font-weight: 700; color: var(--text-muted); transition: 0.2s; display: block;}
+        
+        .role-option.active { border-color: var(--primary); background: #FFF5F0; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(255, 103, 31, 0.1); }
+        .role-option.active i { color: var(--primary); }
+        .role-option.active span { color: var(--primary); }
+
+        .btn-submit {
+            width: 100%; background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--white); border: none; padding: 16px; border-radius: 12px;
+            font-size: 15px; font-weight: 800; cursor: pointer; display: flex;
+            justify-content: center; align-items: center; gap: 8px; transition: 0.2s;
+            box-shadow: 0 8px 20px rgba(255, 103, 31, 0.3); margin-top: 10px;
+        }
+        .btn-submit:active { transform: scale(0.97); }
+        .btn-submit:disabled { background: #94A3B8; box-shadow: none; cursor: not-allowed; }
+
+        .btn-outline {
+            width: 100%; background: transparent; color: var(--text-dark); border: 1.5px solid var(--border);
+            padding: 14px; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer;
+            margin-top: 10px; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px;
+        }
+        .btn-outline:active { background: var(--bg-light); transform: scale(0.97); }
+
+        .msg-container { margin-top: 15px; text-align: center; }
+        .error-msg { color: #EF4444; font-size: 12px; font-weight: 700; display: none; padding: 10px; background: #FEF2F2; border-radius: 8px; border: 1px solid #FECACA; }
+        .success-msg { color: #10B981; font-size: 12px; font-weight: 700; display: none; padding: 10px; background: #ECFDF5; border-radius: 8px; border: 1px solid #A7F3D0; }
+
+        .switch-auth { text-align: center; margin-top: 20px; font-size: 13px; color: var(--text-muted); }
+        .switch-auth a { color: var(--primary); font-weight: 800; text-decoration: none; cursor: pointer; }
+
+        #recaptcha-container { display: none; }
+    </style>
+</head>
+<body>
+
+    <button class="lang-toggle-btn" onclick="toggleLanguage()">ENG / मराठी</button>
+
+    <div class="auth-card">
+        <div class="brand-header">
+            <div class="brand-logo">
+                <img src="Logo.png" alt="Logo" onerror="this.style.display='none'">
+            </div>
+            <div class="brand-title" data-lang="brand_name">सातारा रेंटल हब</div>
+            <div class="brand-subtitle" id="auth-subtitle">सुरक्षित प्लॅटफॉर्म</div>
+        </div>
+
+        <!-- ==================== REGISTRATION SECTION ==================== -->
+        <div id="register-section">
+            <h3 style="font-size:18px; margin-bottom:15px; text-align:center;">नवीन अकाउंट तयार करा</h3>
+            
+            <div class="form-group">
+                <label class="form-label">पूर्ण नाव (Full Name)</label>
+                <div class="input-box">
+                    <i class="fa-solid fa-user left-icon"></i>
+                    <input type="text" id="reg-name" class="form-control" placeholder="तुमचे पूर्ण नाव टाका">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">मोबाईल नंबर (Username)</label>
+                <div class="input-box">
+                    <i class="fa-solid fa-phone left-icon"></i>
+                    <input type="tel" id="reg-mobile" class="form-control" placeholder="१० अंकी नंबर" maxlength="10">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">नवीन पासवर्ड सेट करा</label>
+                <div class="input-box">
+                    <i class="fa-solid fa-lock left-icon"></i>
+                    <input type="password" id="reg-pass" class="form-control" style="padding-right: 45px;" placeholder="मजबूत पासवर्ड टाका">
+                    <i class="fa-solid fa-eye toggle-password" onclick="togglePass('reg-pass', this)"></i>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">सिक्युरिटी प्रश्न निवडा</label>
+                <div class="input-box">
+                    <i class="fa-solid fa-circle-question left-icon"></i>
+                    <select id="reg-sec-question" class="form-control">
+                        <option value="" disabled selected>एक प्रश्न निवडा...</option>
+                        <option value="q1">तुमच्या जन्मगावचे नाव काय?</option>
+                        <option value="q2">तुमच्या पहिल्या शाळेचे नाव काय?</option>
+                        <option value="q3">तुमच्या आवडत्या पाळीव प्राण्याचे नाव काय?</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">सिक्युरिटी प्रश्नाचे उत्तर</label>
+                <div class="input-box">
+                    <i class="fa-solid fa-key left-icon"></i>
+                    <input type="text" id="reg-sec-answer" class="form-control" placeholder="उत्तर टाका (पासवर्ड रिकव्हर करण्यासाठी)">
+                </div>
+            </div>
+
+            <label class="form-label" style="margin-top: 15px;">तुम्ही ॲप का वापरत आहात?</label>
+            <div class="role-selector">
+                <div class="role-option active" id="role-tenant-reg" onclick="selectRole('tenant', 'reg')">
+                    <i class="fa-solid fa-house-user"></i>
+                    <span>मला जागा हवी आहे</span>
+                </div>
+                <div class="role-option" id="role-owner-reg" onclick="selectRole('owner', 'reg')">
+                    <i class="fa-solid fa-keys"></i>
+                    <span>जागा द्यायची आहे</span>
+                </div>
+            </div>
+
+            <button class="btn-submit" id="btn-register" onclick="registerUser()">अकाउंट तयार करा</button>
+            
+            <div class="switch-auth">
+                आधीच अकाउंट आहे? <a onclick="showSection('login')">लॉगिन करा</a>
+            </div>
+        </div>
+
+        <!-- ==================== LOGIN SECTION ==================== -->
+        <div id="login-section" style="display: none;">
+            <div class="login-tabs">
+                <div class="tab-btn active" id="tab-pass" onclick="switchLoginTab('password')">पासवर्ड ने लॉगिन</div>
+                <div class="tab-btn" id="tab-otp" onclick="switchLoginTab('otp')">OTP ने लॉगिन</div>
+            </div>
+
+            <!-- Password Login -->
+            <div id="password-login">
+                <div class="form-group">
+                    <label class="form-label">मोबाईल नंबर (Username)</label>
+                    <div class="input-box">
+                        <i class="fa-solid fa-phone left-icon"></i>
+                        <input type="tel" id="login-mobile" class="form-control" placeholder="१० अंकी नंबर" maxlength="10">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">पासवर्ड</label>
+                    <div class="input-box">
+                        <i class="fa-solid fa-lock left-icon"></i>
+                        <input type="password" id="login-pass" class="form-control" style="padding-right: 45px;" placeholder="तुमचा पासवर्ड टाका">
+                        <i class="fa-solid fa-eye toggle-password" onclick="togglePass('login-pass', this)"></i>
+                    </div>
+                    <a class="forgot-pass" onclick="showSection('forgot')">पासवर्ड विसरलात?</a>
+                </div>
+
+                <button class="btn-submit" id="btn-login-pass" onclick="loginWithPassword()">लॉगिन करा <i class="fa-solid fa-arrow-right-to-bracket"></i></button>
+            </div>
+
+            <!-- OTP Login -->
+            <div id="otp-login" style="display: none;">
+                <div id="otp-step-1">
+                    <div class="form-group">
+                        <label class="form-label">मोबाईल नंबर</label>
+                        <div class="input-box">
+                            <i class="fa-solid fa-phone left-icon"></i>
+                            <span style="position: absolute; left: 40px; top: 50%; transform: translateY(-50%); font-size: 14px; font-weight: 600; color: var(--text-dark);">+91</span>
+                            <input type="tel" id="otp-mobile" class="form-control" style="padding-left: 75px;" placeholder="१० अंकी नंबर" maxlength="10">
+                        </div>
+                    </div>
+                    <button class="btn-submit" id="btn-send-otp" onclick="sendOTP()">OTP मिळवा <i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+
+                <div id="otp-step-2" style="display: none;">
+                    <div class="form-group">
+                        <label class="form-label">OTP टाका</label>
+                        <div class="input-box">
+                            <i class="fa-solid fa-message left-icon"></i>
+                            <input type="number" id="otp-input" class="form-control" placeholder="६ अंकी OTP" maxlength="6">
+                        </div>
+                        <a href="#" style="float: right; font-size: 12px; color: var(--primary); margin-top: 8px; font-weight: 600;" onclick="sendOTP()">पुन्हा OTP पाठवा</a>
+                        <div style="clear: both;"></div>
+                    </div>
+                    <button class="btn-submit" id="btn-verify-otp" onclick="verifyOTP()">लॉगिन करा <i class="fa-solid fa-check"></i></button>
+                    <button class="btn-outline" onclick="goBackToOTPStep1()"><i class="fa-solid fa-arrow-left"></i> नंबर बदला</button>
+                </div>
+            </div>
+
+            <div class="switch-auth">
+                नवीन आहात? <a onclick="showSection('register')">अकाउंट तयार करा</a>
+            </div>
+        </div>
+
+        <!-- ==================== FORGOT PASSWORD SECTION ==================== -->
+        <div id="forgot-section" style="display: none;">
+            <h3 style="font-size:18px; margin-bottom:15px; text-align:center;">पासवर्ड रिकव्हर करा</h3>
+            
+            <div class="form-group">
+                <label class="form-label">मोबाईल नंबर</label>
+                <div class="input-box">
+                    <i class="fa-solid fa-phone left-icon"></i>
+                    <input type="tel" id="forgot-mobile" class="form-control" placeholder="१० अंकी नंबर" maxlength="10">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">तुमचे सिक्युरिटी उत्तर टाका</label>
+                <div class="input-box">
+                    <i class="fa-solid fa-key left-icon"></i>
+                    <input type="text" id="forgot-sec-answer" class="form-control" placeholder="उदा. सातारा">
+                </div>
+            </div>
+
+            <button class="btn-submit" id="btn-recover" onclick="recoverPassword()">पासवर्ड मिळवा</button>
+            <button class="btn-outline" onclick="showSection('login')"><i class="fa-solid fa-arrow-left"></i> मागे जा</button>
+        </div>
+
+        <div class="msg-container">
+            <div class="error-msg" id="globalErrorMsg"></div>
+            <div class="success-msg" id="globalSuccessMsg"></div>
+        </div>
+
+        <div id="recaptcha-container"></div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        let selectedRole = 'tenant';
+        let confirmationResult = null;
+
+        window.onload = function() {
+            if(typeof applySavedLanguage === 'function') { applySavedLanguage(); }
+            
+            // Check if user is already logged in
+            if(localStorage.getItem("currentUserId")) {
+                let role = localStorage.getItem("currentUserRole");
+                window.location.href = role === 'owner' ? "owner_dashboard.html" : "index.html";
+                return;
+            }
+            
+            // Toggle login/register based on previous history
+            if(localStorage.getItem("hasRegisteredBefore")) {
+                showSection('login');
+            } else {
+                showSection('register');
+            }
+
+            if(typeof firebase !== 'undefined') {
+                window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {'size': 'invisible'});
+                
+                if(firebase.firestore) {
+                    firebase.firestore().enablePersistence().catch((err) => console.log("Persistence error:", err));
+                }
+            } else {
+                showMessage('error', "Firebase लोड झाले नाहीये. कृपया firebase-config तपासा.");
+            }
+        };
+
+        function showSection(section) {
+            document.getElementById('register-section').style.display = 'none';
+            document.getElementById('login-section').style.display = 'none';
+            document.getElementById('forgot-section').style.display = 'none';
+            hideMessages();
+
+            if(section === 'register') document.getElementById('register-section').style.display = 'block';
+            else if(section === 'login') document.getElementById('login-section').style.display = 'block';
+            else if(section === 'forgot') document.getElementById('forgot-section').style.display = 'block';
+        }
+
+        function switchLoginTab(tab) {
+            document.getElementById('tab-pass').classList.remove('active');
+            document.getElementById('tab-otp').classList.remove('active');
+            document.getElementById('password-login').style.display = 'none';
+            document.getElementById('otp-login').style.display = 'none';
+            hideMessages();
+
+            if(tab === 'password') {
+                document.getElementById('tab-pass').classList.add('active');
+                document.getElementById('password-login').style.display = 'block';
+            } else {
+                document.getElementById('tab-otp').classList.add('active');
+                document.getElementById('otp-login').style.display = 'block';
+            }
+        }
+
+        function selectRole(role, section) {
+            selectedRole = role;
+            document.getElementById('role-tenant-' + section).classList.remove('active');
+            document.getElementById('role-owner-' + section).classList.remove('active');
+            document.getElementById('role-' + role + '-' + section).classList.add('active');
+        }
+
+        function togglePass(inputId, icon) {
+            let input = document.getElementById(inputId);
+            if (input.type === "password") { input.type = "text"; icon.classList.replace("fa-eye", "fa-eye-slash"); } 
+            else { input.type = "password"; icon.classList.replace("fa-eye-slash", "fa-eye"); }
+        }
+
+        function hideMessages() {
+            document.getElementById('globalErrorMsg').style.display = 'none';
+            document.getElementById('globalSuccessMsg').style.display = 'none';
+        }
+
+        function showMessage(type, msg) {
+            hideMessages();
+            let el = document.getElementById(type === 'error' ? 'globalErrorMsg' : 'globalSuccessMsg');
+            el.innerHTML = type === 'error' ? `<i class="fa-solid fa-circle-exclamation"></i> ${msg}` : `<i class="fa-solid fa-check-circle"></i> ${msg}`;
+            el.style.display = 'block';
+        }
+
+        // ==================== REGISTER (FIREBASE ONLY) ====================
+        function registerUser() {
+            let name = document.getElementById('reg-name').value.trim(); 
+            let mobile = document.getElementById('reg-mobile').value.trim();
+            let pass = document.getElementById('reg-pass').value.trim();
+            let q = document.getElementById('reg-sec-question').value;
+            let ans = document.getElementById('reg-sec-answer').value.toLowerCase().trim();
+            let btn = document.getElementById('btn-register');
+
+            if(name === "" || mobile.length !== 10 || pass === "" || q === "" || ans === "") { 
+                showMessage('error', "कृपया नाव आणि इतर सर्व माहिती भरा."); 
+                return; 
+            }
+
+            if(typeof db === 'undefined') { showMessage('error', "डेटाबेस कनेक्टेड नाही."); return; }
+
+            btn.disabled = true; 
+            btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Firebase ला कनेक्ट करत आहे...";
+
+            let userId = "user_" + mobile;
+            
+            db.collection("users").doc(userId).get().then((doc) => {
+                if(doc.exists) {
+                    showMessage('error', "या नंबरवर अकाउंट आधीपासून आहे. कृपया लॉगिन करा.");
+                    btn.disabled = false; btn.innerText = "अकाउंट तयार करा";
+                    setTimeout(() => showSection('login'), 2000);
+                } else {
+                    db.collection("users").doc(userId).set({
+                        name: name,
+                        mobile: mobile, 
+                        password: pass, 
+                        securityQuestion: q, 
+                        securityAnswer: ans, 
+                        role: selectedRole, 
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    }).then(() => {
+                        localStorage.setItem("hasRegisteredBefore", "true");
+                        localStorage.setItem("currentUserName", name); 
+                        showMessage('success', "अकाउंट यशस्वीरित्या तयार झाले!");
+                        setTimeout(() => { saveSessionAndRedirect(userId, selectedRole); }, 1500);
+                    }).catch((error) => { 
+                        showMessage('error', "अकाउंट तयार करताना अडचण: " + error.message);
+                        btn.disabled = false; btn.innerText = "अकाउंट तयार करा"; 
+                    });
+                }
+            }).catch((error) => {
+                showMessage('error', "डेटाबेस कनेक्शन एरर: " + error.message);
+                btn.disabled = false; btn.innerText = "अकाउंट तयार करा";
+            });
+        }
+
+        // ==================== PASSWORD LOGIN (FIREBASE ONLY) ====================
+        function loginWithPassword() {
+            let mobile = document.getElementById('login-mobile').value.trim();
+            let pass = document.getElementById('login-pass').value.trim();
+            let btn = document.getElementById('btn-login-pass');
+
+            if(mobile.length !== 10 || pass === "") { showMessage('error', "मोबाईल नंबर आणि पासवर्ड टाका."); return; }
+
+            if(typeof db === 'undefined') { showMessage('error', "डेटाबेस कनेक्टेड नाही."); return; }
+
+            btn.disabled = true; btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i>";
+
+            let userId = "user_" + mobile;
+            
+            db.collection("users").doc(userId).get().then((doc) => {
+                if (doc.exists) {
+                    if(doc.data().password === pass) {
+                        let role = doc.data().role || 'tenant';
+                        let userName = doc.data().name || 'User'; 
+                        
+                        db.collection("users").doc(userId).update({
+                            lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                        }).then(() => {
+                            localStorage.setItem("currentUserName", userName);
+                            saveSessionAndRedirect(userId, role);
+                        }).catch(() => {
+                            localStorage.setItem("currentUserName", userName);
+                            saveSessionAndRedirect(userId, role);
+                        });
+                    } else {
+                        showMessage('error', "तुम्ही टाकलेला पासवर्ड चुकीचा आहे.");
+                        btn.disabled = false; btn.innerHTML = "लॉगिन करा <i class='fa-solid fa-arrow-right-to-bracket'></i>";
+                    }
+                } else {
+                    showMessage('error', "या नंबरवर अकाउंट नाही. कृपया नवीन अकाउंट तयार करा.");
+                    btn.disabled = false; btn.innerHTML = "लॉगिन करा <i class='fa-solid fa-arrow-right-to-bracket'></i>";
+                }
+            }).catch((error) => {
+                showMessage('error', "डेटाबेस एरर: " + error.message);
+                btn.disabled = false; btn.innerHTML = "लॉगिन करा <i class='fa-solid fa-arrow-right-to-bracket'></i>";
+            });
+        }
+
+        // ==================== FORGOT PASSWORD ====================
+        function recoverPassword() {
+            let mobile = document.getElementById('forgot-mobile').value.trim();
+            let ans = document.getElementById('forgot-sec-answer').value.toLowerCase().trim();
+            let btn = document.getElementById('btn-recover');
+
+            if(mobile.length !== 10 || ans === "") { showMessage('error', "माहिती भरा."); return; }
+
+            if(typeof db === 'undefined') { showMessage('error', "डेटाबेस कनेक्टेड नाही."); return; }
+
+            btn.disabled = true; btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i>";
+
+            db.collection("users").doc("user_" + mobile).get().then((doc) => {
+                if (doc.exists) {
+                    if (doc.data().securityAnswer === ans) {
+                        showMessage('success', "तुमचा पासवर्ड आहे: " + doc.data().password);
+                        btn.disabled = false; btn.innerHTML = "पासवर्ड मिळवा";
+                        setTimeout(() => {
+                            document.getElementById('login-mobile').value = mobile;
+                            document.getElementById('login-pass').value = doc.data().password;
+                            showSection('login');
+                        }, 4000);
+                    } else {
+                        showMessage('error', "सिक्युरिटी उत्तर चुकीचे आहे.");
+                        btn.disabled = false; btn.innerHTML = "पासवर्ड मिळवा";
+                    }
+                } else {
+                    showMessage('error', "या नंबरवर अकाउंट नाही.");
+                    btn.disabled = false; btn.innerHTML = "पासवर्ड मिळवा";
+                }
+            }).catch((error) => {
+                showMessage('error', "डेटाबेस एरर: " + error.message);
+                btn.disabled = false; btn.innerHTML = "पासवर्ड मिळवा";
+            });
+        }
+
+        // ==================== OTP LOGIN (FIREBASE ONLY) ====================
+        function sendOTP() {
+            let mobile = document.getElementById('otp-mobile').value.trim();
+            let btn = document.getElementById('btn-send-otp');
+            if (mobile.length !== 10) { showMessage('error', "१० अंकी नंबर टाका."); return; }
+
+            if(typeof firebase === 'undefined') { showMessage('error', "Firebase कनेक्टेड नाही."); return; }
+
+            btn.disabled = true; btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i>";
+
+            firebase.auth().signInWithPhoneNumber("+91" + mobile, window.recaptchaVerifier)
+                .then((result) => {
+                    confirmationResult = result;
+                    document.getElementById('otp-step-1').style.display = 'none';
+                    document.getElementById('otp-step-2').style.display = 'block';
+                    btn.disabled = false; btn.innerHTML = "OTP मिळवा <i class='fa-solid fa-paper-plane'></i>";
+                }).catch((error) => {
+                    showMessage('error', "OTP पाठवण्यात अडचण. पुन्हा प्रयत्न करा. " + error.message);
+                    if(typeof grecaptcha !== 'undefined') grecaptcha.reset(window.recaptchaWidgetId);
+                    btn.disabled = false; btn.innerHTML = "OTP मिळवा <i class='fa-solid fa-paper-plane'></i>";
+                });
+        }
+
+        function verifyOTP() {
+            let otp = document.getElementById('otp-input').value.trim();
+            let mobile = document.getElementById('otp-mobile').value.trim();
+            let btn = document.getElementById('btn-verify-otp');
+
+            if (otp.length < 6) { showMessage('error', "६ अंकी OTP टाका."); return; }
+            btn.disabled = true; btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i>";
+
+            if(typeof firebase !== 'undefined' && confirmationResult) {
+                confirmationResult.confirm(otp).then((result) => {
+                    let userId = "user_" + mobile;
+                    db.collection("users").doc(userId).get().then((doc) => {
+                        if(doc.exists) {
+                            localStorage.setItem("currentUserName", doc.data().name || 'User');
+                            saveSessionAndRedirect(userId, doc.data().role);
+                        } else {
+                            let defaultName = "User_" + mobile.substring(6);
+                            db.collection("users").doc(userId).set({
+                                name: defaultName,
+                                mobile: mobile,
+                                role: 'tenant', 
+                                password: "No Password (OTP User)",
+                                authUid: result.user.uid,
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                            }).then(() => {
+                                localStorage.setItem("hasRegisteredBefore", "true");
+                                localStorage.setItem("currentUserName", defaultName);
+                                saveSessionAndRedirect(userId, 'tenant');
+                            });
+                        }
+                    });
+                }).catch((error) => { 
+                    showMessage('error', "चुकीचा OTP. " + error.message); 
+                    btn.disabled = false; btn.innerHTML = "लॉगिन करा <i class='fa-solid fa-check'></i>"; 
+                });
+            }
+        }
+
+        function goBackToOTPStep1() {
+            document.getElementById('otp-step-2').style.display = 'none';
+            document.getElementById('otp-step-1').style.display = 'block';
+            hideMessages(); document.getElementById('otp-input').value = "";
+        }
+
+        // ==================== SESSION & REDIRECT ====================
+        function saveSessionAndRedirect(userId, role) {
+            localStorage.setItem("currentUserId", userId); 
+            localStorage.setItem("currentUserRole", role);
+            showMessage('success', "लॉगिन यशस्वी!");
+            
+            // Redirect based on User Role (Admin panel modification reflection)
+            setTimeout(() => { 
+                if (role === 'owner') {
+                    window.location.href = "owner_dashboard.html";
+                } else {
+                    window.location.href = "index.html"; 
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

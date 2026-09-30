@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>सर्व प्रॉपर्टीज | Satara Rental Hub</title>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <!-- Firebase Configuration File -->
+    <script src="firebase-config.js"></script>
+    
+    <!-- Multi-Language Support File -->
+    <script src="lang.js"></script>
+    
+    <style>
+        :root {
+            --primary: #FF671F;
+            --primary-dark: #E65C00;
+            --bg-light: #F4F6F9;
+            --text-dark: #2C3E50;
+            --text-muted: #7F8C8D;
+            --white: #FFFFFF;
+            --premium: #8B5CF6;
+            --border: #EAECEE;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-light); color: var(--text-dark); padding-bottom: 80px; }
+
+        /* टॉप बार (Header) */
+        .top-bar {
+            background: var(--primary); color: var(--white); padding: 15px 20px;
+            position: sticky; top: 0; z-index: 100; display: flex; align-items: center; gap: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .back-btn { color: var(--white); font-size: 20px; text-decoration: none; }
+        .page-title { flex: 1; font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .page-title img { width: 30px; height: 30px; border-radius: 50%; background: var(--white); padding: 2px; }
+
+        /* भाषा बदलणारे बटण (Top Right) */
+        .lang-toggle-btn {
+            background: rgba(255,255,255,0.2); color: var(--white); border: 1px solid var(--white);
+            padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;
+        }
+
+        /* फिल्टर्स (Search & Dropdowns) */
+        .filters-section { background: var(--white); padding: 15px 20px; border-bottom: 1px solid var(--border); position: sticky; top: 60px; z-index: 90; display: flex; flex-direction: column; gap: 10px; }
+        
+        .search-box { position: relative; }
+        .search-box input {
+            width: 100%; padding: 12px 15px 12px 40px; background: var(--bg-light);
+            border: 1px solid var(--border); border-radius: 12px; font-size: 14px; outline: none;
+        }
+        .search-box i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+
+        .filter-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
+        .filter-row::-webkit-scrollbar { display: none; }
+        .filter-select {
+            flex: 0 0 auto; padding: 10px; background: var(--white); border: 1.5px solid var(--border);
+            border-radius: 10px; font-size: 13px; font-weight: 600; color: var(--text-dark); outline: none;
+            min-width: 120px;
+        }
+
+        /* क्विक चिप्स (Categories) */
+        .chips-wrapper { padding: 10px 20px 0 20px; overflow-x: auto; scrollbar-width: none; }
+        .chips-wrapper::-webkit-scrollbar { display: none; }
+        .chips-container { display: flex; gap: 10px; width: max-content; }
+        .chip {
+            padding: 8px 16px; background: var(--white); border: 1.5px solid var(--border);
+            border-radius: 20px; font-size: 13px; font-weight: 700; color: var(--text-dark);
+            text-decoration: none; display: flex; align-items: center; gap: 6px; transition: 0.2s; cursor: pointer;
+        }
+        .chip.active { background: var(--primary); color: var(--white); border-color: var(--primary); }
+
+        /* प्रॉपर्टी लिस्ट (Cards) */
+        .list-container { padding: 15px 20px; }
+        .list-count { font-size: 14px; font-weight: 700; color: var(--text-muted); margin-bottom: 15px; display: flex; justify-content: space-between;}
+
+        .property-card {
+            background: var(--white); border-radius: 16px; overflow: hidden; margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04); text-decoration: none; display: block; color: inherit;
+            border: 1px solid var(--border); position: relative;
+        }
+        .property-img { height: 180px; background: #EAECEE; position: relative; display: flex; align-items: center; justify-content: center; font-size: 40px; color: #BDC3C7; }
+        .property-img img { width: 100%; height: 100%; object-fit: cover; } 
+        
+        /* प्रीमियम टॅग */
+        .badge-premium { position: absolute; top: 12px; left: 12px; background: var(--premium); color: var(--white); font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(139, 92, 246, 0.4); z-index: 2; }
+        
+        .btn-fav { position: absolute; top: 12px; right: 12px; width: 35px; height: 35px; background: rgba(255,255,255,0.9); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 18px; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; z-index: 10;}
+        .btn-fav.active { color: #E74C3C; }
+
+        .property-info { padding: 15px; }
+        .property-title { font-size: 16px; font-weight: 800; margin-bottom: 5px; line-height: 1.3; }
+        .property-price { font-size: 18px; font-weight: 800; color: var(--primary); margin-bottom: 8px; }
+        .property-price small { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+        
+        .property-meta-row { display: flex; gap: 15px; margin-bottom: 10px; font-size: 13px; color: var(--text-muted); font-weight: 600; }
+        .property-meta-row i { color: var(--primary); width: 16px; text-align: center; }
+        
+        .property-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); }
+        .tag { background: #F1F5F9; color: #475569; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; }
+        .tag-furnish { background: #E0F2FE; color: #0284C7; border: 1px solid #BAE6FD; }
+        .tag-cat { background: #FEF3C7; color: #D97706; border: 1px solid #FDE68A; }
+
+        .loading-state { text-align: center; padding: 40px 20px; color: #94A3B8; font-size: 14px; font-weight: 600; }
+        .no-result { text-align: center; padding: 40px 20px; color: #94A3B8; font-size: 15px; font-weight: 600; }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed; bottom: 0; width: 100%; background: var(--white);
+            display: flex; justify-content: space-around; padding: 10px 0;
+            box-shadow: 0 -2px 15px rgba(0,0,0,0.05); border-top-left-radius: 20px; border-top-right-radius: 20px; z-index: 100;
+        }
+        .nav-item { text-align: center; color: #94A3B8; font-size: 11px; font-weight: 700; text-decoration: none; flex: 1; }
+        .nav-item i { font-size: 22px; margin-bottom: 4px; display: block; transition: 0.3s; }
+        .nav-item.active { color: var(--primary); }
+        .nav-item.active i { transform: translateY(-3px); }
+        .nav-item.add-btn i {
+            background: var(--primary); color: var(--white); width: 45px; height: 45px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            margin: -20px auto 4px auto; box-shadow: 0 4px 10px rgba(255, 103, 31, 0.4); font-size: 20px;
+        }
+
+        /* 🆕 Share Button + View Details Flex Box (For Listing Page) */
+        .footer-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 15px;
+            border-top: 1px dashed var(--border);
+            padding-top: 15px;
+        }
+        
+        .share-inline-btn {
+            background-color: transparent;
+            color: #25D366; 
+            border: 1px solid #25D366;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .share-inline-btn:hover {
+            background-color: #25D366;
+            color: var(--white);
+        }
+
+        .view-details-btn {
+            background-color: var(--primary);
+            color: var(--white);
+            font-size: 12px;
+            font-weight: 800;
+            padding: 8px 15px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- टॉप बार -->
+    <div class="top-bar">
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+        <div class="page-title">
+            <img src="Logo.png" alt="Logo" onerror="this.style.display='none'">
+            <span data-lang="search_props_title">प्रॉपर्टीज शोधा</span>
+        </div>
+        <button class="lang-toggle-btn" onclick="toggleLanguage()">ENG / मराठी</button>
+    </div>
+
+    <!-- फिल्टर्स -->
+    <div class="filters-section">
+        <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchInput" placeholder="परिसर, गाव किंवा नाव शोधा..." data-lang-placeholder="search_placeholder" onkeyup="filterProperties()">
+        </div>
+        <div class="filter-row">
+            <select class="filter-select" id="talukaFilter" onchange="filterProperties()">
+                <option value="" data-lang="all_talukas">सर्व तालुके</option>
+                <option value="satara" data-lang="taluka_satara">सातारा</option>
+                <option value="karad" data-lang="taluka_karad">कराड</option>
+                <option value="wai" data-lang="taluka_wai">वाई</option>
+                <option value="phaltan" data-lang="taluka_phaltan">फलटण</option>
+                <option value="koregaon" data-lang="taluka_koregaon">कोरेगाव</option>
+                <option value="mahabaleshwar" data-lang="taluka_mahabaleshwar">महाबळेश्वर</option>
+                <option value="patan" data-lang="taluka_patan">पाटण</option>
+                <option value="man" data-lang="taluka_man">माण (दहिवडी)</option>
+                <option value="khatav" data-lang="taluka_khatav">खटाव (वडूज)</option>
+                <option value="khandala" data-lang="taluka_khandala">खंडाळा</option>
+                <option value="jawali" data-lang="taluka_jawali">जावळी (मेढा)</option>
+            </select>
+            
+            <select class="filter-select" id="typeFilter" onchange="filterProperties()">
+                <option value="" data-lang="all_types">सर्व प्रकार (All Types)</option>
+                <option value="1rk">1 RK</option>
+                <option value="1bhk">1 BHK</option>
+                <option value="2bhk">2 BHK</option>
+                <option value="3bhk">3 BHK</option>
+                <option value="single-room" data-lang="opt_single">सिंगल रूम</option>
+                <option value="cot-basis" data-lang="opt_cot">कॉट बेसिस</option>
+                <option value="hostel-pg" data-lang="opt_pg">हॉस्टेल / PG</option>
+                <option value="flat" data-lang="opt_flat">फ्लॅट</option>
+                <option value="shop" data-lang="opt_shop">गाळा / दुकान</option>
+                <option value="corporate-office" data-lang="opt_office">कॉर्पोरेट ऑफिस</option>
+                <option value="plot" data-lang="opt_plot">प्लॉट / जागा</option>
+                <option value="godown" data-lang="opt_godown">गोडाऊन</option>
+            </select>
+
+            <!-- फर्निचर फिल्टर -->
+            <select class="filter-select" id="furnishFilter" onchange="filterProperties()">
+                <option value="" data-lang="all_furnishing">सर्व फर्निचर (All Furnishing)</option>
+                <option value="Fully-Furnished" data-lang="opt_fully_furnished">Fully Furnished</option>
+                <option value="Semi-Furnished" data-lang="opt_semi_furnished">Semi Furnished</option>
+                <option value="Unfurnished" data-lang="opt_unfurnished">Unfurnished</option>
+            </select>
+
+            <!-- कॅटेगरी फिल्टर (Residential / Commercial) -->
+            <select class="filter-select" id="categoryFilter" onchange="filterProperties()">
+                <option value="" data-lang="all_categories">सर्व श्रेणी (All Categories)</option>
+                <option value="residential" data-lang="opt_residential">रहिवासी (Residential)</option>
+                <option value="commercial" data-lang="opt_commercial">व्यावसायिक (Commercial)</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- क्विक चिप्स (Categories) -->
+    <div class="chips-wrapper">
+        <div class="chips-container" id="categoryChips">
+            <div class="chip active" data-val="" onclick="setChipFilter(this, 'all')"><i class="fa-solid fa-list"></i> <span data-lang="chip_all">सर्व</span></div>
+            <div class="chip" data-val="residential" onclick="setChipFilter(this, 'category')"><i class="fa-solid fa-house-user"></i> <span data-lang="opt_residential">रहिवासी</span></div>
+            <div class="chip" data-val="commercial" onclick="setChipFilter(this, 'category')"><i class="fa-solid fa-briefcase"></i> <span data-lang="opt_commercial">व्यावसायिक</span></div>
+            <div class="chip" data-val="1bhk" onclick="setChipFilter(this, 'type')"><i class="fa-solid fa-bed"></i> <span>1 BHK</span></div>
+            <div class="chip" data-val="hostel-pg" onclick="setChipFilter(this, 'type')"><i class="fa-solid fa-hotel"></i> <span data-lang="opt_pg">हॉस्टेल/PG</span></div>
+            <div class="chip" data-val="shop" onclick="setChipFilter(this, 'type')"><i class="fa-solid fa-store"></i> <span data-lang="opt_shop">गाळा</span></div>
+            <div class="chip" data-val="Fully-Furnished" onclick="setChipFilter(this, 'furnish')"><i class="fa-solid fa-couch"></i> <span data-lang="opt_fully_furnished">फर्निचर</span></div>
+        </div>
+    </div>
+
+    <!-- प्रॉपर्टी लिस्ट -->
+    <div class="list-container">
+        <div class="list-count">
+            <span id="result-count">... प्रॉपर्टीज शोधत आहे</span>
+            <select id="sortFilter" style="border: none; background: transparent; font-weight: bold; color: var(--primary); outline: none; cursor: pointer;" onchange="sortProperties()">
+                <option value="new">नवीन पहिल्यांदा</option>
+                <option value="low">किंमत: कमी ते जास्त</option>
+                <option value="high">किंमत: जास्त ते कमी</option>
+            </select>
+        </div>
+
+        <div id="properties-container">
+            <div class="loading-state"><i class="fa-solid fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 10px;"></i><br>प्रॉपर्टीज लोड होत आहेत...</div>
+        </div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+        <a href="index.html" class="nav-item">
+            <i class="fa-solid fa-house"></i>
+            <span data-lang="nav_home">होम</span>
+        </a>
+        <a href="saved.html" class="nav-item">
+            <i class="fa-regular fa-heart"></i>
+            <span data-lang="nav_saved">सेव्हड</span>
+        </a>
+        <a href="owner_dashboard.html" class="nav-item add-btn">
+            <i class="fa-solid fa-plus"></i>
+            <span data-lang="nav_add">ॲड</span>
+        </a>
+        <a href="profile.html" class="nav-item">
+            <i class="fa-regular fa-user"></i>
+            <span data-lang="nav_profile">प्रोफाईल</span>
+        </a>
+    </div>
+
+    <!-- JavaScript (Firebase Fetching & Filtering) -->
+    <script>
+        let allProperties = []; 
+        let filteredProperties = []; 
+
+        window.onload = function() {
+            if(typeof applySavedLanguage === 'function') {
+                applySavedLanguage();
+            }
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const categoryType = urlParams.get('type');
+            const searchQuery = urlParams.get('search');
+
+            if(categoryType) {
+                if(categoryType === 'residential' || categoryType === 'commercial') {
+                    document.getElementById('categoryFilter').value = categoryType;
+                } else {
+                    document.getElementById('typeFilter').value = categoryType;
+                }
+                
+                let chips = document.querySelectorAll('.chip');
+                chips.forEach(c => c.classList.remove('active'));
+                let targetChip = document.querySelector(`.chip[data-val="${categoryType}"]`);
+                if(targetChip) targetChip.classList.add('active');
+            }
+            
+            if(searchQuery) {
+                document.getElementById('searchInput').value = searchQuery;
+            }
+
+            fetchPropertiesFromFirebase();
+        };
+
+        // 🆕 डायनॅमिक सुविधा (Amenities) जनरेट करण्याचे फंक्शन
+        function getAmenitiesHtml(amenitiesLabels) {
+            let html = '';
+            
+            if (amenitiesLabels && amenitiesLabels.length > 0) {
+                let displayCount = Math.min(amenitiesLabels.length, 3);
+                
+                for(let i=0; i<displayCount; i++) {
+                    let lbl = amenitiesLabels[i];
+                    let icon = 'fa-check'; // Default icon
+                    
+                    if(lbl.includes('पाणी') || lbl.toLowerCase().includes('water')) icon = 'fa-faucet-drip';
+                    else if(lbl.includes('पार्किंग') || lbl.toLowerCase().includes('parking')) icon = 'fa-square-parking';
+                    else if(lbl.includes('लिफ्ट') || lbl.toLowerCase().includes('lift')) icon = 'fa-elevator';
+                    else if(lbl.includes('सुरक्षा') || lbl.toLowerCase().includes('security') || lbl.includes('CCTV')) icon = 'fa-shield-halved';
+                    else if(lbl.includes('वाय-फाय') || lbl.toLowerCase().includes('wifi') || lbl.includes('इंटरनेट')) icon = 'fa-wifi';
+                    else if(lbl.includes('मेस') || lbl.toLowerCase().includes('mess') || lbl.includes('जेवण')) icon = 'fa-utensils';
+                    else if(lbl.includes('पॉवर') || lbl.toLowerCase().includes('power')) icon = 'fa-bolt';
+                    
+                    html += `<span class="tag" style="background: #E2E8F0; color: #475569;"><i class="fa-solid ${icon}"></i> ${lbl}</span>`;
+                }
+                
+                if (amenitiesLabels.length > 3) {
+                    html += `<span class="tag" style="background: #F1F5F9; color: #64748B;">+${amenitiesLabels.length - 3} अधिक</span>`;
+                }
+            } else {
+                html = `<span class="tag" style="background: #F1F5F9; color: #94A3B8;"><i class="fa-solid fa-circle-info"></i> विशेष सुविधा नमूद नाही</span>`;
+            }
+            
+            return html;
+        }
+
+        // 🆕 थेट WhatsApp शेअर (Fixed Clickable Link Logic)
+        function sharePropertyCard(propId, propTitle, propRent, propTaluka) {
+            event.preventDefault(); // कार्डवर क्लिक होऊ नये म्हणून
+            
+            let origin = window.location.origin;
+            let pathname = window.location.pathname;
+            let folderPath = pathname.substring(0, pathname.lastIndexOf('/'));
+            let shareUrl = `${origin}${folderPath}/details.html?id=${propId}`;
+            
+            if (!origin || origin.includes("null")) {
+                shareUrl = `https://satararentalhub.com/details.html?id=${propId}`;
+            }
+
+            let shareText = `*${propTitle}* 🏠\n📍 *ठिकाण:* ${propTaluka}\n💰 *भाडे:* ₹${propRent} /महिना\n\nया प्रॉपर्टीची अधिक माहिती पाहण्यासाठी खालील लिंकवर क्लिक करा:\n\n ${shareUrl} \n\n*सातारा रेंटल हब* - साताऱ्यातील हक्काचे घर!`;
+            
+            let encodedMsg = encodeURIComponent(shareText);
+            
+            window.open(`https://wa.me/?text=${encodedMsg}`, '_blank');
+        }
+
+        // १. Firebase मधून सर्व "Live" प्रॉपर्टीज फेच करणे (आणि प्रीमियम एक्सपायरी तपासणे)
+        function fetchPropertiesFromFirebase() {
+            if(typeof db !== 'undefined') {
+                db.collection("properties").where("status", "==", "live").get().then((querySnapshot) => {
+                    allProperties = [];
+                    let now = new Date();
+
+                    querySnapshot.forEach(doc => { 
+                        let d = doc.data(); 
+                        d.id = doc.id; 
+
+                        if(d.status === 'live') {
+                            if (d.planType && d.planType !== 'basic' && d.expiryDate && d.expiryDate !== 'Lifetime') {
+                                let expiryTime = new Date(d.expiryDate);
+                                if (now > expiryTime) {
+                                    d.planType = 'basic';
+                                }
+                            }
+                            allProperties.push(d); 
+                        }
+                    });
+
+                    allProperties.sort((a,b) => {
+                        let aIsPremium = (a.planType === 'premium1' || a.planType === 'premium2') ? 1 : 0;
+                        let bIsPremium = (b.planType === 'premium1' || b.planType === 'premium2') ? 1 : 0;
+                        
+                        if(bIsPremium !== aIsPremium) {
+                            return bIsPremium - aIsPremium; 
+                        } else {
+                            return new Date(b.createdAt) - new Date(a.createdAt); 
+                        }
+                    });
+                    
+                    filteredProperties = [...allProperties];
+                    
+                    filterProperties(); 
+
+                }).catch((error) => {
+                    console.log("Error fetching properties:", error);
+                    document.getElementById('properties-container').innerHTML = `<div class="loading-state" style="color:red;">डेटा लोड करताना एरर आला.</div>`;
+                });
+            } else {
+                document.getElementById('properties-container').innerHTML = `<div class="no-result">लोकल टेस्टिंग मोड चालू आहे.</div>`;
+            }
+        }
+
+        // २. चिप फिल्टर लॉजिक
+        function setChipFilter(element, filterKind) {
+            let chips = document.querySelectorAll('.chip');
+            chips.forEach(c => c.classList.remove('active'));
+            element.classList.add('active');
+            
+            document.getElementById('typeFilter').value = "";
+            document.getElementById('categoryFilter').value = "";
+            document.getElementById('furnishFilter').value = "";
+
+            let val = element.getAttribute('data-val');
+
+            if(filterKind === 'type') {
+                document.getElementById('typeFilter').value = val;
+            } else if (filterKind === 'category') {
+                document.getElementById('categoryFilter').value = val;
+            } else if (filterKind === 'furnish') {
+                document.getElementById('furnishFilter').value = val;
+            }
+            
+            filterProperties();
+        }
+
+        // ३. प्रॉपर्टी फिल्टर करणे आणि दाखवणे
+        function filterProperties() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const selectedTaluka = document.getElementById('talukaFilter').value.toLowerCase(); 
+            const selectedType = document.getElementById('typeFilter').value.toLowerCase();
+            const selectedFurnish = document.getElementById('furnishFilter').value;
+            const selectedCategory = document.getElementById('categoryFilter').value;
+
+            filteredProperties = allProperties.filter(prop => {
+                let matchSearch = prop.title.toLowerCase().includes(searchTerm) || prop.area.toLowerCase().includes(searchTerm) || prop.taluka.toLowerCase().includes(searchTerm);
+                
+                let matchTaluka = selectedTaluka === "" || (prop.taluka && prop.taluka.toLowerCase() === selectedTaluka);
+                let matchType = selectedType === "" || (prop.type && prop.type.toLowerCase() === selectedType);
+                let matchFurnish = selectedFurnish === "" || (prop.furnishingStatus && prop.furnishingStatus === selectedFurnish);
+                let matchCategory = selectedCategory === "" || (prop.propertyCategory && prop.propertyCategory === selectedCategory);
+
+                return matchSearch && matchTaluka && matchType && matchFurnish && matchCategory;
+            });
+
+            sortProperties(); 
+        }
+
+        // ४. किमतीनुसार सॉर्ट करणे
+        function sortProperties() {
+            let sortValue = document.getElementById('sortFilter').value;
+
+            if(sortValue === 'low') {
+                filteredProperties.sort((a,b) => a.rent - b.rent);
+            } else if(sortValue === 'high') {
+                filteredProperties.sort((a,b) => b.rent - a.rent);
+            } else {
+                filteredProperties.sort((a,b) => {
+                    let aIsPremium = (a.planType === 'premium1' || a.planType === 'premium2') ? 1 : 0;
+                    let bIsPremium = (b.planType === 'premium1' || b.planType === 'premium2') ? 1 : 0;
+                    if(bIsPremium !== aIsPremium) return bIsPremium - aIsPremium;
+                    return new Date(b.createdAt) - new Date(a.createdAt);
+                });
+            }
+
+            renderProperties();
+        }
+
+        // ५. UI वर कार्ड्स दाखवणे
+        function renderProperties() {
+            const container = document.getElementById('properties-container');
+            const countDisplay = document.getElementById('result-count');
+            
+            container.innerHTML = '';
+
+            if(filteredProperties.length === 0) {
+                container.innerHTML = `<div class="no-result">
+                    <i class="fa-solid fa-search" style="font-size: 30px; color: #CBD5E1; margin-bottom: 10px;"></i><br>
+                    तुम्ही शोधत असलेली प्रॉपर्टी सध्या उपलब्ध नाही.
+                </div>`;
+                countDisplay.innerText = `0 प्रॉपर्टीज`;
+                return;
+            }
+
+            filteredProperties.forEach(prop => {
+                let imgHtml = (prop.photoUrls && prop.photoUrls.length > 0) 
+                    ? `<img src="${prop.photoUrls[0]}" alt="${prop.title}">` 
+                    : `<i class="fa-regular fa-image"></i>`;
+
+                let badgeHtml = (prop.planType === 'premium1' || prop.planType === 'premium2')
+                    ? `<div class="badge-premium"><i class="fa-solid fa-crown"></i> Premium</div>` 
+                    : ``;
+
+                let furnishTag = "";
+                if(prop.furnishingStatus === "Fully-Furnished") furnishTag = `<span class="tag tag-furnish"><i class="fa-solid fa-couch"></i> पूर्ण फर्निचर</span>`;
+                else if(prop.furnishingStatus === "Semi-Furnished") furnishTag = `<span class="tag tag-furnish"><i class="fa-solid fa-chair"></i> अंशतः फर्निचर</span>`;
+                else if(prop.furnishingStatus === "Unfurnished") furnishTag = `<span class="tag tag-furnish">फर्निचर नाही</span>`;
+
+                let catTag = "";
+                if(prop.propertyCategory === "commercial") catTag = `<span class="tag tag-cat"><i class="fa-solid fa-briefcase"></i> व्यावसायिक</span>`;
+                else if(prop.propertyCategory === "residential") catTag = `<span class="tag tag-cat"><i class="fa-solid fa-house-user"></i> रहिवासी</span>`;
+
+                // Convert stored taluka value to display language text
+                let talukaText = prop.taluka;
+                let currentLang = localStorage.getItem('appLang') || 'mr';
+                if(translations && translations[currentLang] && translations[currentLang][`taluka_${prop.taluka}`]) {
+                    talukaText = translations[currentLang][`taluka_${prop.taluka}`];
+                }
+
+                // 🆕 Dynamic Amenities Injection
+                let amenitiesHtml = getAmenitiesHtml(prop.amenitiesLabels);
+
+                let propHtml = `
+                <a href="details.html?id=${prop.id}" class="property-card">
+                    <div class="property-img">
+                        ${imgHtml}
+                        ${badgeHtml}
+                        <button class="btn-fav" onclick="event.preventDefault(); this.classList.toggle('active'); saveProperty('${prop.id}')"><i class="fa-solid fa-heart"></i></button>
+                    </div>
+                    <div class="property-info">
+                        <div class="property-title">${prop.title}</div>
+                        <div class="property-price">₹ ${prop.rent} <small>/ महिना</small></div>
+                        <div class="property-meta-row" style="margin-bottom: 5px;">
+                            <span><i class="fa-solid fa-location-dot"></i> ${prop.area}, ${talukaText}</span>
+                        </div>
+                        
+                        <div class="property-tags">
+                            <span class="tag">${prop.type}</span>
+                            ${catTag}
+                            ${furnishTag}
+                            ${amenitiesHtml}
+                        </div>
+
+                        <div class="footer-actions">
+                            <button class="share-inline-btn" onclick="sharePropertyCard('${prop.id}', '${prop.title.replace(/'/g, "\\'")}', '${prop.rent}', '${talukaText}')" title="Share via WhatsApp">
+                                <i class="fa-brands fa-whatsapp"></i>
+                            </button>
+                            <div class="view-details-btn">View Details &rarr;</div>
+                        </div>
+                    </div>
+                </a>`;
+                
+                container.innerHTML += propHtml;
+            });
+
+            countDisplay.innerText = `${filteredProperties.length} प्रॉपर्टीज सापडल्या`;
+        }
+
+        // Save Property Logic (Wishlist)
+        function saveProperty(id) {
+            let savedProps = JSON.parse(localStorage.getItem('userWishlist')) || [];
+            if(savedProps.includes(id)) {
+                savedProps = savedProps.filter(item => item !== id);
+                alert("प्रॉपर्टी आवडीतून काढली!");
+            } else {
+                savedProps.push(id);
+                alert("प्रॉपर्टी सेव्ह केली!");
+            }
+            localStorage.setItem('userWishlist', JSON.stringify(savedProps));
+        }
+    </script>
+</body>
+</html>

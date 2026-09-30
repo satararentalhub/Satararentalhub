@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ॲडमिन लॉगिन | Satara Rental Hub</title>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Multi-Language Support File -->
+    <script src="lang.js"></script>
+
+    <style>
+        :root {
+            --admin-bg: #0F172A; /* गडद निळा रंग (Dark Mode) */
+            --card-bg: #1E293B;
+            --primary-accent: #F59E0B; /* सोनेरी/भगवा रंग */
+            --text-light: #F8FAFC;
+            --text-muted: #94A3B8;
+            --input-bg: #334155;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            background-color: var(--admin-bg);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        /* भाषा बदलणारे बटण (Top Right) */
+        .lang-toggle-btn {
+            position: absolute; top: 20px; right: 20px;
+            background: rgba(255,255,255,0.1); color: var(--text-light); 
+            border: 1px solid var(--text-muted); padding: 8px 12px; 
+            border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer;
+        }
+
+        .login-card {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 400px;
+            padding: 40px 30px;
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            border-top: 4px solid var(--primary-accent);
+            text-align: center;
+        }
+
+        .admin-logo {
+            width: 70px; height: 70px;
+            background: linear-gradient(135deg, #FF671F, #E65C00);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 30px; color: white; margin: 0 auto 15px auto;
+            border: 3px solid rgba(255,255,255,0.1);
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
+        }
+
+        h2 { font-size: 22px; font-weight: 800; margin-bottom: 5px; letter-spacing: 1px; }
+        p { font-size: 13px; color: var(--text-muted); margin-bottom: 30px; }
+
+        .input-group { position: relative; margin-bottom: 20px; text-align: left; }
+        
+        /* डावीकडील आयकॉन्स इनपुटला ब्लॉक करू नयेत म्हणून pointer-events: none */
+        .left-icon {
+            position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
+            color: var(--text-muted); font-size: 16px; z-index: 5; pointer-events: none;
+        }
+        
+        .form-control {
+            width: 100%; padding: 15px 45px 15px 45px;
+            background: var(--input-bg); border: 1.5px solid transparent;
+            border-radius: 12px; font-size: 15px; font-weight: 600;
+            color: var(--text-light); outline: none; transition: 0.3s;
+            position: relative; z-index: 1;
+        }
+        .form-control:focus { border-color: var(--primary-accent); background: #1E293B; box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1); }
+        .form-control::placeholder { color: #64748B; font-weight: 500; }
+
+        /* डोळ्याचा आयकॉन क्लिकेबल ठेवला आहे */
+        .toggle-password {
+            position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+            color: var(--text-muted); cursor: pointer; font-size: 16px; 
+            z-index: 10; padding: 10px;
+        }
+
+        /* 🆕 Forgot Password Link */
+        .forgot-pass {
+            display: block; text-align: right; margin-top: -10px; margin-bottom: 20px;
+            font-size: 13px; color: var(--primary-accent); font-weight: 600; text-decoration: none; cursor: pointer;
+        }
+
+        .btn-login {
+            width: 100%; background: var(--primary-accent); color: #1E293B;
+            border: none; padding: 16px; border-radius: 12px; font-size: 16px;
+            font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+            cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px;
+            transition: 0.2s; box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+        }
+        .btn-login:active { transform: scale(0.96); }
+
+        #error-msg {
+            color: #EF4444; font-size: 13px; font-weight: 600; margin-top: 15px; display: none;
+        }
+
+        /* बॅक बटन (युझर ॲपवर परत जाण्यासाठी) */
+        .back-to-app {
+            display: block; margin-top: 25px; color: var(--text-muted);
+            font-size: 13px; text-decoration: none; font-weight: 600; transition: 0.2s;
+        }
+        .back-to-app:hover { color: var(--text-light); }
+
+        /* 🆕 Security Question Modal (Popup) */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.9); display: none; align-items: center; justify-content: center; z-index: 1000;
+        }
+        .modal-content {
+            background: var(--card-bg); width: 90%; max-width: 350px;
+            padding: 25px; border-radius: 20px; text-align: left;
+            border-top: 4px solid var(--primary-accent); box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .modal-content h3 { font-size: 18px; margin-bottom: 10px; color: var(--text-light); }
+        .modal-content p { font-size: 13px; margin-bottom: 20px; color: var(--text-muted); }
+        .modal-content .form-control { padding-left: 15px; margin-bottom: 15px; }
+        
+        .modal-btns { display: flex; gap: 10px; }
+        .modal-btns button {
+            flex: 1; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 700;
+            border: none; cursor: pointer; transition: 0.2s;
+        }
+        .btn-cancel { background: var(--input-bg); color: var(--text-light); }
+        .btn-verify { background: var(--primary-accent); color: #1E293B; }
+    </style>
+</head>
+<body>
+
+    <!-- Language Toggle Button -->
+    <button class="lang-toggle-btn" onclick="toggleLanguage()">ENG / मराठी</button>
+
+    <div class="login-card">
+        <div class="admin-logo">
+            <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <h2 data-lang="secure_login_title">सुरक्षित लॉगिन</h2>
+        <p data-lang="only_admin_text">फक्त अधिकृत ॲडमिनसाठी</p>
+
+        <!-- Admin ID -->
+        <div class="input-group">
+            <i class="fa-solid fa-user-shield left-icon"></i>
+            <input type="text" id="admin-id" class="form-control" placeholder="Admin ID टाका" autocomplete="off" data-lang-placeholder="admin_id_placeholder">
+        </div>
+
+        <!-- Password -->
+        <div class="input-group" style="margin-bottom: 10px;">
+            <i class="fa-solid fa-lock left-icon"></i>
+            <input type="password" id="admin-pass" class="form-control" placeholder="पासवर्ड टाका" data-lang-placeholder="admin_pass_placeholder">
+            <!-- डोळ्याचा आयकॉन -->
+            <i class="fa-solid fa-eye toggle-password" onclick="togglePass()"></i>
+        </div>
+
+        <!-- 🆕 Forgot Password Link -->
+        <a class="forgot-pass" onclick="openSecurityModal()" data-lang="forgot_pass">पासवर्ड विसरलात?</a>
+
+        <!-- लॉगिन बटन -->
+        <!-- सक्सेस झाल्यावर हे admin_dashboard.html ला लिंक करेल -->
+        <button class="btn-login" onclick="verifyAdmin()">
+            <span data-lang="login_btn_text">लॉगिन करा</span> <i class="fa-solid fa-arrow-right-to-bracket"></i>
+        </button>
+
+        <div id="error-msg"><i class="fa-solid fa-circle-exclamation"></i> <span data-lang="login_error_msg">चुकीचा ID किंवा पासवर्ड!</span></div>
+
+        <!-- परत जाण्यासाठी लिंक -->
+        <a href="index.html" class="back-to-app"><i class="fa-solid fa-arrow-left"></i> <span data-lang="back_to_app">युझर ॲपवर परत जा</span></a>
+    </div>
+
+    <!-- 🆕 Security Question Modal -->
+    <div class="modal-overlay" id="securityModal">
+        <div class="modal-content">
+            <h3 data-lang="sec_q_title">सुरक्षा प्रश्न (Security Question)</h3>
+            <p data-lang="sec_q_desc">पासवर्ड मिळवण्यासाठी खालील प्रश्नाचे अचूक उत्तर द्या:</p>
+            
+            <label style="font-size: 13px; font-weight: 600; color: var(--primary-accent); margin-bottom: 8px; display: block;" data-lang="sec_question">तुमच्या पहिल्या शाळेचे नाव काय?</label>
+            <input type="text" id="sec-answer" class="form-control" placeholder="उत्तर टाका (उदा. zpp)" style="text-transform: lowercase;">
+
+            <div class="modal-btns">
+                <button class="btn-cancel" onclick="closeSecurityModal()" data-lang="btn_cancel">रद्द करा</button>
+                <button class="btn-verify" onclick="verifySecurityAnswer()" data-lang="btn_verify">तपासा</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            // पेज लोड झाल्यावर भाषा सेट करणे (जर lang.js मध्ये लॉजिक असेल)
+            if(typeof applySavedLanguage === 'function') {
+                applySavedLanguage();
+            }
+        };
+
+        // पासवर्ड दाखवण्यासाठी/लपवण्यासाठी
+        function togglePass() {
+            const passInput = document.getElementById('admin-pass');
+            const icon = document.querySelector('.toggle-password');
+            if (passInput.type === "password") {
+                passInput.type = "text";
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passInput.type = "password";
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // लॉगिन व्हेरिफिकेशन
+        function verifyAdmin() {
+            const id = document.getElementById('admin-id').value;
+            const pass = document.getElementById('admin-pass').value;
+            const errorMsg = document.getElementById('error-msg');
+
+            // तुम्ही दिलेला ID आणि Password
+            if (id === "9579535290" && pass === "210890") {
+                errorMsg.style.display = "none";
+                window.location.href = "admin_dashboard.html";
+            } else {
+                errorMsg.style.display = "block";
+            }
+        }
+
+        // 🆕 Security Modal Logic
+        function openSecurityModal() {
+            document.getElementById('securityModal').style.display = 'flex';
+            document.getElementById('sec-answer').value = '';
+        }
+
+        function closeSecurityModal() {
+            document.getElementById('securityModal').style.display = 'none';
+        }
+
+        function verifySecurityAnswer() {
+            let answer = document.getElementById('sec-answer').value.toLowerCase().trim();
+            
+            // इथे तुम्ही तुमचे सिक्युरिटी उत्तर सेट करू शकता (सध्या "zpp" ठेवले आहे)
+            if (answer === "zpp") {
+                alert("तुमचे उत्तर बरोबर आहे!\nतुमचा पासवर्ड आहे: 210890");
+                closeSecurityModal();
+            } else {
+                alert("चुकीचे उत्तर! कृपया पुन्हा प्रयत्न करा.");
+            }
+        }
+    </script>
+</body>
+</html>

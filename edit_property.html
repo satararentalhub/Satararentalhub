@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>प्रॉपर्टी एडिट करा | Satara Rental Hub</title>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    
+    <!-- Firebase Configuration File -->
+    <script src="firebase-config.js"></script>
+    
+    <!-- Multi-Language Support File -->
+    <script src="lang.js"></script>
+    
+    <style>
+        :root {
+            --primary: #FF671F;
+            --primary-dark: #E65C00;
+            --bg-light: #F4F6F9;
+            --text-dark: #2C3E50;
+            --text-muted: #7F8C8D;
+            --white: #FFFFFF;
+            --border: #EAECEE;
+            --premium: #8B5CF6;
+            --danger: #EF4444;
+            --success: #10B981;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-light); color: var(--text-dark); padding-bottom: 30px; }
+
+        /* टॉप बार */
+        .top-bar {
+            background: var(--primary); color: var(--white); padding: 15px 20px;
+            position: sticky; top: 0; z-index: 100; display: flex; align-items: center; gap: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .back-btn { color: var(--white); font-size: 20px; text-decoration: none; }
+        .page-title { flex: 1; font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+
+        /* भाषा बदलणारे बटण */
+        .lang-toggle-btn {
+            background: rgba(255,255,255,0.2); color: var(--white); border: 1px solid var(--white);
+            padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;
+        }
+
+        /* फॉर्म कंटेनर */
+        .form-container { padding: 20px; }
+        
+        .form-group {
+            background: var(--white); padding: 20px; border-radius: 16px; margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid var(--border);
+        }
+        .section-title { font-size: 15px; font-weight: 800; color: var(--text-dark); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; border-bottom: 1px dashed var(--border); padding-bottom: 10px; }
+        .section-title i { color: var(--primary); }
+
+        .form-label { font-size: 13px; font-weight: 700; color: var(--text-dark); margin-bottom: 6px; display: block; }
+        
+        .input-box { position: relative; margin-bottom: 15px; }
+        .input-box i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #94A3B8; font-size: 16px; pointer-events: none; }
+        textarea.form-control + i { top: 20px; transform: none; }
+        
+        .form-control {
+            width: 100%; padding: 14px 15px 14px 45px; background: var(--bg-light);
+            border: 1.5px solid var(--border); border-radius: 12px; font-size: 14px;
+            font-weight: 600; color: var(--text-dark); outline: none; transition: 0.3s;
+        }
+        .form-control:focus { border-color: var(--primary); background: var(--white); box-shadow: 0 0 0 4px rgba(255, 103, 31, 0.1); }
+        textarea.form-control { padding-top: 14px; resize: vertical; min-height: 80px; }
+        select.form-control { appearance: none; padding-right: 30px; text-overflow: ellipsis; }
+
+        /* दोन कॉलम्ससाठी */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        /* फोटो अपलोड बॉक्स */
+        .upload-box {
+            border: 2px dashed #CBD5E1; border-radius: 12px; padding: 25px 20px;
+            text-align: center; background: #F8FAFC; cursor: pointer; transition: 0.3s; position: relative;
+        }
+        .upload-box:hover { border-color: var(--primary); background: #FFF5F0; }
+        .upload-box i { font-size: 30px; color: #94A3B8; margin-bottom: 10px; }
+        .upload-box p { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+        .upload-box input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+        
+        /* Multiple Images Preview Container */
+        #preview-container { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
+        .preview-img-wrapper { position: relative; width: 80px; height: 80px; }
+        .preview-img-wrapper img { width: 100%; height: 100%; border-radius: 8px; object-fit: cover; border: 1px solid var(--border); }
+        .btn-remove-photo { position: absolute; top: -5px; right: -5px; background: var(--danger); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+        /* सबमिट बटन */
+        .btn-submit {
+            width: 100%; background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--white); border: none; padding: 16px; border-radius: 12px;
+            font-size: 16px; font-weight: 800; cursor: pointer; display: flex;
+            justify-content: center; align-items: center; gap: 8px; transition: 0.2s;
+            box-shadow: 0 8px 20px rgba(255, 103, 31, 0.3);
+        }
+        .btn-submit:active { transform: scale(0.97); }
+        .btn-submit:disabled { background: #94A3B8; box-shadow: none; cursor: not-allowed; }
+
+        /* डिलीट आणि रेंटेड बटन्स (नवीन) */
+        .action-btns-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .btn-action { padding: 12px; border-radius: 12px; font-size: 14px; font-weight: 800; text-align: center; cursor: pointer; border: none; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
+        .btn-action:active { transform: scale(0.97); }
+        .btn-rented { background: #FFFBEB; color: #D97706; border: 1px solid #FCD34D; }
+        .btn-rented.active { background: var(--success); color: white; border-color: var(--success); }
+        .btn-delete { background: #FEF2F2; color: var(--danger); border: 1px solid #FECACA; }
+        
+        /* चेकबॉक्सेस (Amenities) */
+        .amenities-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .checkbox-label {
+            display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600;
+            color: var(--text-dark); background: var(--bg-light); padding: 10px; border-radius: 10px; border: 1px solid var(--border);
+        }
+        .checkbox-label input { width: 16px; height: 16px; accent-color: var(--primary); }
+
+        /* इतर प्रकारचा लपवलेला बॉक्स */
+        #other-type-box, #other-area-box, #other-target-box { display: none; margin-top: -5px; }
+        
+        /* टॉगल (Commercial/Residential) */
+        .category-toggle { display: flex; background: #E2E8F0; border-radius: 12px; padding: 5px; margin-bottom: 15px; }
+        .category-btn { flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 800; border-radius: 8px; cursor: pointer; color: var(--text-muted); transition: 0.3s; }
+        .category-btn.active { background: var(--white); color: var(--primary); box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        
+        .loading-fullscreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-light); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: var(--primary); }
+
+    </style>
+</head>
+<body>
+
+    <!-- Loading State -->
+    <div id="loadingScreen" class="loading-fullscreen">
+        <i class="fa-solid fa-spinner fa-spin" style="font-size: 40px; margin-bottom: 15px;"></i>
+        <div>माहिती लोड होत आहे...</div>
+    </div>
+
+    <!-- टॉप बार -->
+    <div class="top-bar">
+        <a href="owner_dashboard.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+        <div class="page-title">
+            प्रॉपर्टी एडिट करा
+        </div>
+        <button class="lang-toggle-btn" onclick="toggleLanguage()">ENG / मराठी</button>
+    </div>
+
+    <div class="form-container">
+        
+        <!-- ०. ॲक्शन बटन्स (Rented & Delete) -->
+        <div class="action-btns-grid">
+            <button class="btn-action btn-rented" id="btn-rented-toggle" onclick="toggleRentedStatus()">
+                <i class="fa-solid fa-check-circle"></i> <span id="rented-text">भाड्याने दिली (Hide Ad)</span>
+            </button>
+            <button class="btn-action btn-delete" onclick="deleteProperty()">
+                <i class="fa-solid fa-trash"></i> ॲड डिलीट करा
+            </button>
+        </div>
+
+        <!-- १. मूलभूत माहिती -->
+        <div class="form-group">
+            <div class="section-title"><i class="fa-solid fa-house"></i> <span data-lang="prop_info_sec">प्रॉपर्टीची माहिती</span></div>
+            
+            <label class="form-label">प्रॉपर्टीची श्रेणी (Category)</label>
+            <div class="category-toggle">
+                <div class="category-btn active" id="cat-residential" onclick="setCategory('residential')">रहिवासी (Residential)</div>
+                <div class="category-btn" id="cat-commercial" onclick="setCategory('commercial')">व्यावसायिक (Commercial)</div>
+            </div>
+
+            <label class="form-label">प्रॉपर्टीचा प्रकार निवडा</label>
+            <div class="input-box">
+                <i class="fa-solid fa-building"></i>
+                <select class="form-control" id="prop-type" onchange="checkOtherType()"></select>
+            </div>
+            <div class="input-box" id="other-type-box">
+                <i class="fa-solid fa-keyboard"></i>
+                <input type="text" class="form-control" id="other-type-input" placeholder="प्रॉपर्टीचा प्रकार टाईप करा...">
+            </div>
+
+            <label class="form-label">फर्निचरची स्थिती (Furnishing)</label>
+            <div class="input-box">
+                <i class="fa-solid fa-couch"></i>
+                <select class="form-control" id="prop-furnish">
+                    <option value="" disabled selected>स्थिती निवडा...</option>
+                    <option value="Unfurnished">फर्निचर नाही (Unfurnished)</option>
+                    <option value="Semi-Furnished">अंशतः फर्निचर (Semi-Furnished)</option>
+                    <option value="Fully-Furnished">पूर्ण फर्निचर (Fully-Furnished)</option>
+                </select>
+            </div>
+
+            <label class="form-label">ही प्रॉपर्टी कोणासाठी आहे?</label>
+            <div class="input-box">
+                <i class="fa-solid fa-users"></i>
+                <select class="form-control" id="prop-target" onchange="checkOtherTarget()"></select>
+            </div>
+            <div class="input-box" id="other-target-box">
+                <i class="fa-solid fa-keyboard"></i>
+                <input type="text" class="form-control" id="other-target-input" placeholder="उदा. फक्त बँक कर्मचाऱ्यांसाठी...">
+            </div>
+
+            <label class="form-label">जाहिरातीचे शीर्षक (Title)</label>
+            <div class="input-box">
+                <i class="fa-solid fa-pen"></i>
+                <input type="text" class="form-control" id="prop-title" placeholder="उदा. 2 BHK फ्लॅट भाड्याने देणे आहे">
+            </div>
+        </div>
+
+        <!-- २. भाडे आणि लोकेशन -->
+        <div class="form-group">
+            <div class="section-title"><i class="fa-solid fa-indian-rupee-sign"></i> <span data-lang="rent_loc_sec">भाडे व पत्ता</span></div>
+            
+            <div class="grid-2">
+                <div>
+                    <label class="form-label">महिन्याचे भाडे (₹)</label>
+                    <div class="input-box">
+                        <i class="fa-solid fa-money-bill"></i>
+                        <input type="number" class="form-control" id="prop-rent">
+                    </div>
+                </div>
+                <div>
+                    <label class="form-label">डिपॉझिट (₹)</label>
+                    <div class="input-box">
+                        <i class="fa-solid fa-piggy-bank"></i>
+                        <input type="number" class="form-control" id="prop-deposit">
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div>
+                    <label class="form-label">तालुका</label>
+                    <div class="input-box">
+                        <i class="fa-solid fa-map-pin"></i>
+                        <select class="form-control" id="prop-taluka" onchange="populateAreas()">
+                            <option value="" disabled selected>तालुका निवडा...</option>
+                            <option value="satara">सातारा</option>
+                            <option value="karad">कराड</option>
+                            <option value="wai">वाई</option>
+                            <option value="phaltan">फलटण</option>
+                            <option value="koregaon">कोरेगाव</option>
+                            <option value="mahabaleshwar">महाबळेश्वर</option>
+                            <option value="patan">पाटण</option>
+                            <option value="man">माण (दहिवडी)</option>
+                            <option value="khatav">खटाव (वडूज)</option>
+                            <option value="khandala">खंडाळा</option>
+                            <option value="jawali">जावळी (मेढा)</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="form-label">परिसर / गाव</label>
+                    <div class="input-box">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <select class="form-control" id="prop-area" onchange="checkOtherArea()">
+                            <option value="" disabled selected>आधी तालुका निवडा</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-box" id="other-area-box">
+                <i class="fa-solid fa-keyboard"></i>
+                <input type="text" class="form-control" id="other-area-input" placeholder="तुमच्या गावाचे/एरियाचे नाव टाईप करा...">
+            </div>
+        </div>
+
+        <!-- ३. सुविधा आणि माहिती -->
+        <div class="form-group">
+            <div class="section-title"><i class="fa-solid fa-star"></i> <span data-lang="amenities_sec">उपलब्ध सुविधा</span></div>
+            <div class="amenities-grid" id="amenities-container"></div>
+
+            <label class="form-label">नियम आणि अधिक माहिती</label>
+            <div class="input-box">
+                <i class="fa-solid fa-align-left"></i>
+                <textarea class="form-control" id="prop-desc"></textarea>
+            </div>
+        </div>
+
+        <!-- ४. फोटो अपलोड (Edit Logic) -->
+        <div class="form-group">
+            <div class="section-title"><i class="fa-solid fa-image"></i> फोटो अपडेट करा</div>
+            
+            <!-- Existing Photos Preview -->
+            <label class="form-label">सध्याचे फोटो (Existing Photos)</label>
+            <div id="existing-photos-container" style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:15px;"></div>
+            
+            <div class="upload-box">
+                <input type="file" id="property-photo-input" accept="image/*" multiple onchange="previewNewImages(event)">
+                <i class="fa-solid fa-images"></i>
+                <p>नवीन फोटो ॲड करा<br><small>(तुम्ही नवीन फोटो निवडले तर ते जुन्या फोटोंसोबत ॲड होतील)</small></p>
+            </div>
+            <div id="preview-container"></div>
+        </div>
+
+        <!-- ५. सबमिट -->
+        <button class="btn-submit" id="submit-btn" onclick="updateProperty()">
+            <i class="fa-solid fa-floppy-disk"></i> बदल सेव्ह करा
+        </button>
+
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        let currentPropertyCategory = 'residential'; 
+        let propertyId = null;
+        let existingPhotoUrls = [];
+        let newSelectedFiles = [];
+        let currentPropertyStatus = 'live';
+
+        const areasData = {
+            "satara": ["शाहूपुरी", "सदरबझार", "गोडोली", "करंजे", "शनिवार पेठ", "विसावा पार्क", "संगम नगर", "मोळाचा ओढा", "अजिंक्य कॉलनी", "इतर"],
+            "karad": ["विद्यानगर", "मलकापूर", "मंगळवार पेठ", "आगाशिवनगर", "वनवासमाची", "कोयना वसाहत", "ओगलेवाडी", "इतर"],
+            "wai": ["सोनगीरवाडी", "सिद्धनाथवाडी", "शेलारवाडी", "रविवार पेठ", "पाचगणी-महाबळेश्वर रोड", "धर्मपुरी", "इतर"],
+            "phaltan": ["पद्मावती नगर", "अक्षत नगर", "जाधववाडी", "लक्ष्मीनगर", "सिडको कॉलनी", "रिंग रोड परिसर", "इतर"],
+            "mahabaleshwar": ["मुख्य बाजारपेठ", "पाचगणी रोड", "वेण्णा लेक परिसर", "मॅप्रो गार्डन जवळ", "इतर"],
+            "koregaon": ["एकतानगर", "मुख्य बाजारपेठ", "रहिमतपूर रोड", "सातारा रोड परिसर", "इतर"],
+            "khatav": ["वडूज शहर", "पुसेगाव", "मायणी", "दहिवडी रोड परिसर", "इतर"],
+            "man": ["दहिवडी", "म्हसवड", "पिंगळी", "गोंदवले", "इतर"],
+            "patan": ["पाटण शहर", "कोयनानगर", "मल्हारपेठ", "तारळे", "इतर"],
+            "khandala": ["लोणंद", "शिरवळ (MIDC)", "खंडाळा शहर", "पारगाव", "इतर"],
+            "jawali": ["मेढा शहर", "कुडाळ", "केळघर", "इतर"]
+        };
+
+        window.onload = function() {
+            if(typeof applySavedLanguage === 'function') { applySavedLanguage(); }
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            propertyId = urlParams.get('id');
+
+            if(!propertyId) {
+                alert("प्रॉपर्टी ID सापडला नाही!");
+                window.location.href = "owner_dashboard.html";
+                return;
+            }
+
+            loadPropertyData(propertyId);
+        };
+
+        // --- लोड डेटा (Pre-fill Form) ---
+        function loadPropertyData(id) {
+            if(typeof db !== 'undefined') {
+                db.collection("properties").doc(id).get().then((doc) => {
+                    if (doc.exists) {
+                        let data = doc.data();
+                        
+                        // Security check
+                        let currentUserId = localStorage.getItem("currentUserId");
+                        if(data.ownerId !== currentUserId) {
+                            alert("तुम्हाला ही प्रॉपर्टी एडिट करण्याचा अधिकार नाही.");
+                            window.location.href = "owner_dashboard.html";
+                            return;
+                        }
+
+                        // Set basic info
+                        document.getElementById('prop-title').value = data.title || "";
+                        document.getElementById('prop-rent').value = data.rent || "";
+                        document.getElementById('prop-deposit').value = data.deposit || "";
+                        document.getElementById('prop-desc').value = data.description || "";
+                        document.getElementById('prop-furnish').value = data.furnishingStatus || "";
+
+                        // Set Status
+                        currentPropertyStatus = data.status || 'live';
+                        updateRentedButtonUI();
+
+                        // Set Category & Dependencies
+                        let cat = data.propertyCategory || 'residential';
+                        setCategory(cat);
+                        
+                        // Set Dropdowns (Delay needed for dynamic population)
+                        setTimeout(() => {
+                            // Type
+                            let typeSelect = document.getElementById('prop-type');
+                            if([...typeSelect.options].some(o => o.value === data.type)) {
+                                typeSelect.value = data.type;
+                            } else {
+                                typeSelect.value = "other";
+                                document.getElementById('other-type-box').style.display = 'block';
+                                document.getElementById('other-type-input').value = data.type;
+                            }
+
+                            // Target
+                            let targetSelect = document.getElementById('prop-target');
+                            if([...targetSelect.options].some(o => o.value === data.targetTenant)) {
+                                targetSelect.value = data.targetTenant;
+                            } else {
+                                targetSelect.value = "other";
+                                document.getElementById('other-target-box').style.display = 'block';
+                                document.getElementById('other-target-input').value = data.targetTenant;
+                            }
+
+                            // Taluka & Area
+                            document.getElementById('prop-taluka').value = data.taluka;
+                            populateAreas();
+                            setTimeout(() => {
+                                let areaSelect = document.getElementById('prop-area');
+                                if([...areaSelect.options].some(o => o.value === data.area)) {
+                                    areaSelect.value = data.area;
+                                } else {
+                                    areaSelect.value = "इतर";
+                                    document.getElementById('other-area-box').style.display = 'block';
+                                    document.getElementById('other-area-input').value = data.area;
+                                }
+                            }, 100);
+                            
+                            // Amenities Checkboxes
+                            if(data.amenities) {
+                                if(data.amenities.water && document.getElementById('am-water')) document.getElementById('am-water').checked = true;
+                                if(data.amenities.parking && document.getElementById('am-parking')) document.getElementById('am-parking').checked = true;
+                                if(data.amenities.lift && document.getElementById('am-lift')) document.getElementById('am-lift').checked = true;
+                                if(data.amenities.security && document.getElementById('am-security')) document.getElementById('am-security').checked = true;
+                                if(data.amenities.wifi && document.getElementById('am-wifi')) document.getElementById('am-wifi').checked = true;
+                                if(data.amenities.mess && document.getElementById('am-mess')) document.getElementById('am-mess').checked = true;
+                            }
+
+                            document.getElementById('loadingScreen').style.display = 'none';
+                        }, 200);
+
+                        // Load Photos
+                        if(data.photoUrls && data.photoUrls.length > 0) {
+                            existingPhotoUrls = data.photoUrls;
+                            renderExistingPhotos();
+                        } else {
+                            document.getElementById('existing-photos-container').innerHTML = "<div style='font-size:12px; color:#94A3B8;'>कोणतेही फोटो उपलब्ध नाहीत.</div>";
+                        }
+
+                    } else {
+                        alert("प्रॉपर्टी सापडली नाही!");
+                        window.location.href = "owner_dashboard.html";
+                    }
+                }).catch(e => {
+                    console.log(e);
+                    alert("माहिती लोड करताना एरर आला.");
+                });
+            }
+        }
+
+        // --- Category Logic ---
+        function setCategory(category) {
+            currentPropertyCategory = category;
+            document.getElementById('cat-residential').classList.remove('active');
+            document.getElementById('cat-commercial').classList.remove('active');
+            document.getElementById('cat-' + category).classList.add('active');
+
+            document.getElementById('other-type-box').style.display = 'none';
+            document.getElementById('other-target-box').style.display = 'none';
+
+            let typeSelect = document.getElementById('prop-type');
+            let targetSelect = document.getElementById('prop-target');
+            typeSelect.innerHTML = '<option value="" disabled selected>प्रकार निवडा...</option>';
+            targetSelect.innerHTML = '<option value="" disabled selected>कोणासाठी आहे ते निवडा...</option>';
+
+            if (category === 'residential') {
+                let types = [{val: '1rk', text: '1 RK'}, {val: '1bhk', text: '1 BHK'}, {val: '2bhk', text: '2 BHK'}, {val: '3bhk', text: '3 BHK'}, {val: 'single-room', text: 'सिंगल रूम'}, {val: 'cot-basis', text: 'कॉट बेसिस'}, {val: 'hostel-pg', text: 'हॉस्टेल / PG'}, {val: 'flat', text: 'फ्लॅट'}, {val: 'other', text: 'इतर (Other)'}];
+                types.forEach(t => typeSelect.innerHTML += `<option value="${t.val}">${t.text}</option>`);
+
+                let targets = [{val: 'फक्त फॅमिलीसाठी', text: 'फक्त फॅमिलीसाठी'}, {val: 'फक्त मुलांसाठी (Bachelor)', text: 'फक्त मुलांसाठी (Boys Only)'}, {val: 'फक्त मुलींसाठी (Bachelor)', text: 'फक्त मुलींसाठी (Girls Only)'}, {val: 'सर्वांसाठी', text: 'सर्वांसाठी'}, {val: 'other', text: 'इतर (Other)'}];
+                targets.forEach(t => targetSelect.innerHTML += `<option value="${t.val}">${t.text}</option>`);
+
+                document.getElementById('amenities-container').innerHTML = `
+                    <label class="checkbox-label"><input type="checkbox" id="am-water" value="२४ तास पाणी"> २४ तास पाणी</label>
+                    <label class="checkbox-label"><input type="checkbox" id="am-parking" value="पार्किंग"> पार्किंग</label>
+                    <label class="checkbox-label"><input type="checkbox" id="am-lift" value="लिफ्ट"> लिफ्ट</label>
+                    <label class="checkbox-label"><input type="checkbox" id="am-security" value="सुरक्षा रक्षक"> सुरक्षा रक्षक</label>
+                    <label class="checkbox-label"><input type="checkbox" id="am-wifi" value="वाय-फाय"> वाय-फाय</label>
+                    <label class="checkbox-label"><input type="checkbox" id="am-mess" value="मेस / जेवण"> मेस / जेवण</label>
+                `;
+            } else {
+                let types = [{val: 'shop', text: 'गाळा / दुकान (Shop)'}, {val: 'corporate-office', text: 'कॉर्पोरेट ऑफिस (Office)'}, {val: 'godown', text: 'गोडाऊन (Warehouse)'}, {val: 'plot', text: 'प्लॉट / जागा (Plot)'}, {val: 'other', text: 'इतर (Other)'}];
+                types.forEach(t => typeSelect.innerHTML += `<option value="${t.val}">${t.text}</option>`);
+
+                let targets = [{val: 'कोणत्याही व्यवसायासाठी', text: 'कोणत्याही व्यवसायासाठी (Any Business)'}, {val: 'फक्त ऑफिससाठी', text: 'फक्त ऑफिससाठी (Office)'}, {val: 'फक्त दुकानासाठी', text: 'फक्त दुकानासाठी (Shop)'}, {val: 'फक्त गोडाऊनसाठी', text: 'फक्त स्टोरेज/गोडाऊन'}, {val: 'other', text: 'इतर (Other)'}];
+                targets.forEach(t => targetSelect.innerHTML += `<option value="${t.val}">${t.text}</option>`);
+
+                document.getElementById('amenities-container').innerHTML = `
+                    <label class="checkbox-label"><input type="checkbox" id="am-water" value="वॉशरूम सुविधा"> वॉशरूम सुविधा</label>
+                    <label class="checkbox-label"><input type="checkbox" id="am-parking" value="कस्टमर पार्किंग"> कस्टमर पार्किंग</label>
+                    <label class="checkbox-label"><input type="checkbox" id="am-lift" value="पॉवर बॅकअप"> पॉवर बॅकअप</label>
+                    <label class="checkbox-label"><input type="checkbox" id="am-security" value="CCTV कॅमेरा"> CCTV कॅमेरा</label>
+                    <label class="checkbox-label"><input type="checkbox" id="am-wifi" value="फायर सेफ्टी"> फायर सेफ्टी</label>
+                    <label class="checkbox-label"><input type="checkbox" id="am-mess" value="हाय-स्पीड इंटरनेट"> हाय-स्पीड इंटरनेट</label>
+                `;
+            }
+        }
+
+        // --- Handlers ---
+        function checkOtherType() { const pt = document.getElementById('prop-type').value; document.getElementById('other-type-box').style.display = (pt === 'other') ? 'block' : 'none'; }
+        function checkOtherTarget() { const tt = document.getElementById('prop-target').value; document.getElementById('other-target-box').style.display = (tt === 'other') ? 'block' : 'none'; }
+        function checkOtherArea() { const pa = document.getElementById('prop-area').value; document.getElementById('other-area-box').style.display = (pa === 'इतर') ? 'block' : 'none'; }
+        function populateAreas() {
+            const taluka = document.getElementById("prop-taluka").value;
+            const areaSelect = document.getElementById("prop-area");
+            areaSelect.innerHTML = '<option value="" disabled selected>परिसर निवडा...</option>';
+            document.getElementById("other-area-box").style.display = 'none';
+            if (taluka && areasData[taluka]) { areasData[taluka].forEach(a => areaSelect.innerHTML += `<option value="${a}">${a}</option>`); }
+        }
+
+        // --- Photos Logic ---
+        function renderExistingPhotos() {
+            const container = document.getElementById('existing-photos-container');
+            container.innerHTML = '';
+            existingPhotoUrls.forEach((url, index) => {
+                container.innerHTML += `
+                    <div class="preview-img-wrapper">
+                        <img src="${url}">
+                        <button class="btn-remove-photo" onclick="removeExistingPhoto(${index})"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                `;
+            });
+            if(existingPhotoUrls.length === 0) container.innerHTML = "<div style='font-size:12px; color:#94A3B8;'>सर्व जुने फोटो काढले आहेत.</div>";
+        }
+
+        function removeExistingPhoto(index) {
+            existingPhotoUrls.splice(index, 1);
+            renderExistingPhotos();
+        }
+
+        function previewNewImages(event) {
+            const files = event.target.files;
+            const previewContainer = document.getElementById('preview-container');
+            previewContainer.innerHTML = ''; 
+            newSelectedFiles = []; 
+
+            if(files.length > 0) {
+                for(let i = 0; i < files.length; i++) {
+                    newSelectedFiles.push(files[i]); 
+                    let reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewContainer.innerHTML += `<div class="preview-img-wrapper"><img src="${e.target.result}"></div>`;
+                    };
+                    reader.readAsDataURL(files[i]);
+                }
+            }
+        }
+
+        // --- Status Action Logic (Rented & Delete) ---
+        function toggleRentedStatus() {
+            const btn = document.getElementById('btn-rented-toggle');
+            const text = document.getElementById('rented-text');
+            
+            if(currentPropertyStatus === 'live' || currentPropertyStatus === 'pending') {
+                // Mark as rented (hide)
+                currentPropertyStatus = 'rented';
+                btn.classList.add('active');
+                text.innerText = "भाड्याने दिली (Ad Hidden)";
+            } else {
+                // Mark as live (unhide)
+                currentPropertyStatus = 'live'; // Assuming default to live, admin approval logic might be needed based on rules
+                btn.classList.remove('active');
+                text.innerText = "भाड्याने दिली (Hide Ad)";
+            }
+        }
+
+        function updateRentedButtonUI() {
+            const btn = document.getElementById('btn-rented-toggle');
+            const text = document.getElementById('rented-text');
+            if(currentPropertyStatus === 'rented' || currentPropertyStatus === 'inactive') {
+                btn.classList.add('active');
+                text.innerText = "भाड्याने दिली (Ad Hidden)";
+            } else {
+                btn.classList.remove('active');
+                text.innerText = "भाड्याने दिली (Hide Ad)";
+            }
+        }
+
+        function deleteProperty() {
+            if(confirm("तुम्हाला खात्री आहे का? ही प्रॉपर्टी कायमची डिलीट होईल.")) {
+                document.getElementById('loadingScreen').style.display = 'flex';
+                document.getElementById('loadingScreen').innerHTML = "<i class='fa-solid fa-spinner fa-spin' style='font-size: 40px; margin-bottom: 15px;'></i><div>प्रॉपर्टी डिलीट होत आहे...</div>";
+                
+                db.collection("properties").doc(propertyId).delete().then(() => {
+                    alert("प्रॉपर्टी डिलीट केली.");
+                    window.location.href = "owner_dashboard.html";
+                }).catch(e => {
+                    console.log(e);
+                    alert("डिलीट करताना एरर आला.");
+                    document.getElementById('loadingScreen').style.display = 'none';
+                });
+            }
+        }
+
+        // --- Save / Update Logic ---
+        async function updateProperty() {
+            // Validation
+            const propTypeRaw = document.getElementById('prop-type').value;
+            let finalPropType = propTypeRaw;
+            if(propTypeRaw === 'other') finalPropType = document.getElementById('other-type-input').value;
+
+            const targetRaw = document.getElementById('prop-target').value;
+            let finalTarget = targetRaw;
+            if(targetRaw === 'other') finalTarget = document.getElementById('other-target-input').value;
+
+            const furnishStatus = document.getElementById('prop-furnish').value;
+            const taluka = document.getElementById('prop-taluka').value; 
+            const areaRaw = document.getElementById('prop-area').value;
+            let finalArea = areaRaw;
+            if(areaRaw === 'इतर') finalArea = document.getElementById('other-area-input').value;
+
+            const title = document.getElementById('prop-title').value.trim();
+            const rent = document.getElementById('prop-rent').value.trim();
+            const deposit = document.getElementById('prop-deposit').value.trim();
+            const desc = document.getElementById('prop-desc').value.trim();
+
+            if(!title || !rent) { alert("कृपया शीर्षक आणि भाडे भरा!"); return; }
+            if(existingPhotoUrls.length === 0 && newSelectedFiles.length === 0) { alert("किमान १ फोटो असणे आवश्यक आहे."); return; }
+
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = "अपडेट होत आहे... <i class='fa-solid fa-spinner fa-spin'></i>";
+
+            let finalPhotoUrlsArray = [...existingPhotoUrls];
+
+            if(typeof storage !== 'undefined' && newSelectedFiles.length > 0) {
+                try {
+                    for(let i = 0; i < newSelectedFiles.length; i++) {
+                        let file = newSelectedFiles[i];
+                        let fileName = Date.now() + '_' + i + '_' + file.name;
+                        let storageRef = storage.ref('room_photos/' + fileName);
+                        submitBtn.innerHTML = `नवीन फोटो ${i+1}/${newSelectedFiles.length} अपलोड होत आहे... <i class='fa-solid fa-spinner fa-spin'></i>`;
+                        let snapshot = await storageRef.put(file);
+                        let downloadURL = await snapshot.ref.getDownloadURL();
+                        finalPhotoUrlsArray.push(downloadURL);
+                    }
+                } catch (error) {
+                    alert("फोटो अपलोड करताना एरर आला: " + error.message);
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = "<i class='fa-solid fa-floppy-disk'></i> बदल सेव्ह करा";
+                    return;
+                }
+            }
+
+            submitBtn.innerHTML = "डेटाबेस अपडेट होत आहे... <i class='fa-solid fa-spinner fa-spin'></i>";
+
+            let selectedAmenities = {
+                water: document.getElementById('am-water') ? document.getElementById('am-water').checked : false,
+                parking: document.getElementById('am-parking') ? document.getElementById('am-parking').checked : false,
+                lift: document.getElementById('am-lift') ? document.getElementById('am-lift').checked : false,
+                security: document.getElementById('am-security') ? document.getElementById('am-security').checked : false,
+                wifi: document.getElementById('am-wifi') ? document.getElementById('am-wifi').checked : false,
+                mess: document.getElementById('am-mess') ? document.getElementById('am-mess').checked : false
+            };
+            
+            let amenitiesLabels = [];
+            if(selectedAmenities.water && document.getElementById('am-water')) amenitiesLabels.push(document.getElementById('am-water').value);
+            if(selectedAmenities.parking && document.getElementById('am-parking')) amenitiesLabels.push(document.getElementById('am-parking').value);
+            if(selectedAmenities.lift && document.getElementById('am-lift')) amenitiesLabels.push(document.getElementById('am-lift').value);
+            if(selectedAmenities.security && document.getElementById('am-security')) amenitiesLabels.push(document.getElementById('am-security').value);
+            if(selectedAmenities.wifi && document.getElementById('am-wifi')) amenitiesLabels.push(document.getElementById('am-wifi').value);
+            if(selectedAmenities.mess && document.getElementById('am-mess')) amenitiesLabels.push(document.getElementById('am-mess').value);
+
+            let updatedData = {
+                propertyCategory: currentPropertyCategory, 
+                title: title,
+                type: finalPropType,
+                targetTenant: finalTarget, 
+                furnishingStatus: furnishStatus, 
+                rent: Number(rent),
+                deposit: deposit ? Number(deposit) : 0,
+                taluka: taluka, 
+                area: finalArea,
+                description: desc,
+                photoUrls: finalPhotoUrlsArray, 
+                status: currentPropertyStatus, // Using updated status (live or rented)
+                amenities: selectedAmenities,
+                amenitiesLabels: amenitiesLabels,
+                updatedAt: typeof firebase !== 'undefined' ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString()
+            };
+
+            if(typeof db !== 'undefined') {
+                db.collection("properties").doc(propertyId).update(updatedData).then(function() {
+                    alert("✅ प्रॉपर्टी यशस्वीरित्या अपडेट झाली!");
+                    window.location.href = "owner_dashboard.html";
+                }).catch(function(error) {
+                    alert("अपडेट करताना एरर आला: " + error.message);
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = "<i class='fa-solid fa-floppy-disk'></i> बदल सेव्ह करा";
+                });
+            } else {
+                alert("डेटाबेस कनेक्टेड नाही.");
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = "<i class='fa-solid fa-floppy-disk'></i> बदल सेव्ह करा";
+            }
+        }
+    </script>
+</body>
+</html>

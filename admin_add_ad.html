@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>नवीन जाहिरात ॲड करा | ॲडमिन</title>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    
+    <!-- Firebase Configuration File -->
+    <script src="firebase-config.js"></script>
+    
+    <!-- Multi-Language Support File -->
+    <script src="lang.js"></script>
+
+    <style>
+        :root {
+            --primary: #FF671F;
+            --primary-dark: #E65C00;
+            --admin-dark: #1E293B; 
+            --bg-light: #F1F5F9;
+            --text-dark: #334155;
+            --text-muted: #64748B;
+            --white: #FFFFFF;
+            --border-color: #E2E8F0;
+            --success: #10B981;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-light); color: var(--text-dark); padding-bottom: 30px; }
+
+        /* टॉप बार (Admin Theme) */
+        .top-bar {
+            background: var(--admin-dark); color: var(--white); display: flex; align-items: center;
+            padding: 20px; position: sticky; top: 0; z-index: 100;
+            border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .back-btn {
+            font-size: 18px; color: var(--white); text-decoration: none; margin-right: 15px;
+            width: 35px; height: 35px; background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        }
+        .page-title { flex: 1; font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+
+        /* भाषा बदलणारे बटण */
+        .lang-toggle-btn {
+            background: rgba(255,255,255,0.2); color: var(--white); border: 1px solid var(--white);
+            padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;
+        }
+
+        /* फॉर्म कंटेनर */
+        .form-container { padding: 20px; }
+        .form-group {
+            background: var(--white); padding: 20px; border-radius: 16px; margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid var(--border-color);
+        }
+        .form-label { font-size: 14px; font-weight: 700; color: var(--text-dark); margin-bottom: 12px; display: block; }
+        
+        .input-box { position: relative; }
+        .input-box i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #94A3B8; font-size: 16px; pointer-events: none; }
+        textarea.form-control + i { top: 25px; transform: none; }
+        
+        .form-control {
+            width: 100%; padding: 14px 15px 14px 45px; background: var(--bg-light);
+            border: 1px solid var(--border-color); border-radius: 12px; font-size: 14px;
+            font-weight: 600; color: var(--text-dark); outline: none; transition: 0.3s;
+        }
+        .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(255, 103, 31, 0.1); background: var(--white); }
+        textarea.form-control { padding-top: 14px; resize: vertical; min-height: 80px; }
+
+        /* 3D कलरफुल कॅटेगरीज */
+        .categories-wrapper {
+            width: 100%; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none;
+        }
+        .categories-wrapper::-webkit-scrollbar { display: none; }
+        .categories { display: flex; gap: 15px; width: max-content; }
+        
+        .category-item {
+            display: flex; flex-direction: column; align-items: center;
+            text-decoration: none; color: var(--text-dark); min-width: 65px; cursor: pointer;
+            opacity: 0.5; transition: 0.3s;
+        }
+        .category-item.active { opacity: 1; transform: scale(1.05); }
+
+        .category-icon {
+            width: 65px; height: 65px; border-radius: 20px; display: flex; justify-content: center;
+            align-items: center; font-size: 28px; margin-bottom: 8px; color: var(--white);
+            position: relative; transition: all 0.1s ease;
+        }
+        .category-icon::after {
+            content: ''; position: absolute; top: 4px; left: 10%; width: 80%; height: 35%;
+            background: linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0));
+            border-radius: 20px 20px 50px 50px; pointer-events: none;
+        }
+        
+        /* 3D Gradients */
+        .cat-hostel { background: linear-gradient(135deg, #9b59b6, #8e44ad); box-shadow: 0 8px 15px rgba(155, 89, 182, 0.4), inset 0 -4px 8px rgba(0,0,0,0.2); }
+        .cat-shop { background: linear-gradient(135deg, #ff7e5f, #feb47b); box-shadow: 0 8px 15px rgba(255, 126, 95, 0.4), inset 0 -4px 8px rgba(0,0,0,0.2); }
+        .cat-room { background: linear-gradient(135deg, #00c6ff, #0072ff); box-shadow: 0 8px 15px rgba(0, 114, 255, 0.4), inset 0 -4px 8px rgba(0,0,0,0.2); }
+        .cat-flat { background: linear-gradient(135deg, #11998e, #38ef7d); box-shadow: 0 8px 15px rgba(56, 239, 125, 0.4), inset 0 -4px 8px rgba(0,0,0,0.2); }
+        .cat-godown { background: linear-gradient(135deg, #606c88, #3f4c6b); box-shadow: 0 8px 15px rgba(96, 108, 136, 0.4), inset 0 -4px 8px rgba(0,0,0,0.2); }
+        .cat-office { background: linear-gradient(135deg, #8E2DE2, #4A00E0); box-shadow: 0 8px 15px rgba(142, 45, 226, 0.4), inset 0 -4px 8px rgba(0,0,0,0.2); }
+        .cat-plot { background: linear-gradient(135deg, #f12711, #f5af19); box-shadow: 0 8px 15px rgba(241, 39, 17, 0.4), inset 0 -4px 8px rgba(0,0,0,0.2); }
+
+        .category-item span { font-size: 11px; font-weight: 700; text-align: center; }
+
+        /* फोटो/इमेज अपलोड बॉक्स */
+        .upload-box {
+            border: 2px dashed #CBD5E1; border-radius: 12px; padding: 25px 20px;
+            text-align: center; background: #F8FAFC; cursor: pointer; transition: 0.3s; margin-bottom: 12px; position: relative;
+        }
+        .upload-box:hover { border-color: var(--primary); background: #FFF5F0; }
+        .upload-box i { font-size: 30px; color: #94A3B8; margin-bottom: 10px; }
+        .upload-box p { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+        .upload-box input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+        
+        #preview-img { width: 100%; max-height: 150px; border-radius: 10px; object-fit: contain; margin-top: 10px; display: none; }
+
+        .whatsapp-link-alert {
+            background: #E8F5E9; border: 1px solid #A5D6A7; padding: 12px; border-radius: 10px;
+            font-size: 12px; color: #2E7D32; display: flex; gap: 10px; align-items: flex-start; line-height: 1.4;
+        }
+        .whatsapp-link-alert i { font-size: 18px; margin-top: 2px; }
+
+        /* रंग निवड */
+        .color-selector { display: flex; gap: 10px; margin-top: 10px; }
+        .color-box { width: 35px; height: 35px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
+        .color-box.active { border-color: var(--admin-dark); transform: scale(1.1); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        
+        /* सबमिट बटन */
+        .btn-submit {
+            width: 100%; background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--white); border: none; padding: 16px; border-radius: 12px;
+            font-size: 16px; font-weight: 800; cursor: pointer; display: flex;
+            justify-content: center; align-items: center; gap: 8px; transition: 0.2s;
+            box-shadow: 0 8px 20px rgba(255, 103, 31, 0.3);
+        }
+        .btn-submit:active { transform: scale(0.97); }
+        .btn-submit:disabled { background: #94A3B8; box-shadow: none; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+    <!-- टॉप बार -->
+    <div class="top-bar">
+        <a href="admin_dashboard.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+        <div class="page-title" data-lang="add_ad_title">
+            <i class="fa-solid fa-bullhorn" style="color: #FCD34D;"></i> नवीन जाहिरात ॲड करा
+        </div>
+        <button class="lang-toggle-btn" onclick="toggleLanguage()">ENG / मराठी</button>
+    </div>
+
+    <div class="form-container">
+        
+        <!-- १. जाहिरातीचा प्रकार (3D Icons) -->
+        <div class="form-group">
+            <label class="form-label" data-lang="ad_category">जाहिरातीचा प्रकार (Category)</label>
+            <div class="categories-wrapper">
+                <div class="categories" id="category-selector">
+                    <div class="category-item active" data-cat="Hostel/PG">
+                        <div class="category-icon cat-hostel"><i class="fa-solid fa-bed-pulse"></i></div>
+                        <span data-lang="cat_pg">हॉस्टेल/PG</span>
+                    </div>
+                    <div class="category-item" data-cat="Shop">
+                        <div class="category-icon cat-shop"><i class="fa-solid fa-store"></i></div>
+                        <span data-lang="cat_shop">गाळा</span>
+                    </div>
+                    <div class="category-item" data-cat="Room">
+                        <div class="category-icon cat-room"><i class="fa-solid fa-door-open"></i></div>
+                        <span data-lang="cat_room">रूम</span>
+                    </div>
+                    <div class="category-item" data-cat="Flat">
+                        <div class="category-icon cat-flat"><i class="fa-solid fa-building"></i></div>
+                        <span data-lang="cat_flat">फ्लॅट</span>
+                    </div>
+                    <div class="category-item" data-cat="Godown">
+                        <div class="category-icon cat-godown"><i class="fa-solid fa-warehouse"></i></div>
+                        <span data-lang="cat_godown">गोडाऊन</span>
+                    </div>
+                    <div class="category-item" data-cat="Office">
+                        <div class="category-icon cat-office"><i class="fa-solid fa-briefcase"></i></div>
+                        <span data-lang="cat_office">ऑफिस</span>
+                    </div>
+                    <div class="category-item" data-cat="Plot">
+                        <div class="category-icon cat-plot"><i class="fa-solid fa-map-location-dot"></i></div>
+                        <span data-lang="cat_plot">प्लॉट</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- २. जाहिरातदाराची माहिती -->
+        <div class="form-group">
+            <label class="form-label" data-lang="business_name">व्यवसायाचे/दुकानदाराचे नाव</label>
+            <div class="input-box">
+                <i class="fa-solid fa-signature"></i>
+                <input type="text" class="form-control" placeholder="उदा. Classic Diaper House" id="ad-title">
+            </div>
+            
+            <label class="form-label" style="margin-top: 15px;" data-lang="tagline">थोडक्यात माहिती (Tagline)</label>
+            <div class="input-box">
+                <i class="fa-solid fa-pen"></i>
+                <textarea class="form-control" id="ad-tagline" placeholder="उदा. लहान मुलांचे कपडे व डायपर्स योग्य दरात मिळतील..."></textarea>
+            </div>
+        </div>
+
+        <!-- ३. प्रमोशनल इमेज / WhatsApp लिंकिंग -->
+        <div class="form-group">
+            <label class="form-label" data-lang="promo_banner">प्रमोशनल इमेज / बॅनर (असल्यास)</label>
+            
+            <!-- इमेज अपलोड बॉक्स -->
+            <div class="upload-box">
+                <input type="file" id="ad-image-input" accept="image/*" onchange="previewAdImage(event)">
+                <i class="fa-solid fa-image"></i>
+                <p data-lang="select_banner">गॅलरीतून जाहिरातीचा फोटो/बॅनर निवडा</p>
+                <img id="preview-img" src="" alt="Preview">
+            </div>
+
+            <!-- संपर्क क्रमांक (WhatsApp Link) -->
+            <label class="form-label" style="margin-top: 15px;" data-lang="wp_number">संपर्क क्रमांक (WhatsApp)</label>
+            <div class="input-box">
+                <i class="fa-brands fa-whatsapp" style="color: #25D366;"></i>
+                <input type="tel" class="form-control" id="whatsapp-num" placeholder="उदा. 9876543210" maxlength="10">
+            </div>
+
+            <!-- सूचना बॉक्स -->
+            <div class="whatsapp-link-alert" style="margin-top: 15px;">
+                <i class="fa-brands fa-whatsapp"></i>
+                <span><b data-lang="smart_link">स्मार्ट लिंक:</b> <span data-lang="smart_link_desc">युझरने ॲपवर या फोटो/बॅनरवर कुठेही क्लिक केल्यास ते थेट वर दिलेल्या WhatsApp नंबरवर रीडायरेक्ट होतील.</span></span>
+            </div>
+        </div>
+
+        <!-- ४. जाहिरातीची मुदत आणि रंग -->
+        <div class="form-group">
+            <label class="form-label" data-lang="ad_expiry">जाहिरात कधीपर्यंत दाखवायची? (Expiry)</label>
+            <div class="input-box" style="margin-bottom: 15px;">
+                <i class="fa-regular fa-calendar"></i>
+                <input type="date" class="form-control" id="ad-expiry">
+            </div>
+
+            <label class="form-label" data-lang="banner_color">ॲपवर बॅनरचा रंग कोणता असावा? (फोटो नसल्यास)</label>
+            <div class="color-selector" id="color-selector">
+                <div class="color-box active" data-color="#bbdefb" style="background: linear-gradient(135deg, #e3f2fd, #bbdefb);"></div>
+                <div class="color-box" data-color="#f8bbd0" style="background: linear-gradient(135deg, #fce4ec, #f8bbd0);"></div>
+                <div class="color-box" data-color="#c8e6c9" style="background: linear-gradient(135deg, #e8f5e9, #c8e6c9);"></div>
+                <div class="color-box" data-color="#ffe0b2" style="background: linear-gradient(135deg, #fff3e0, #ffe0b2);"></div>
+            </div>
+        </div>
+
+        <!-- ५. सबमिट बटन -->
+        <button class="btn-submit" id="submit-ad-btn" onclick="submitAd()">
+            <span data-lang="live_ad_btn">जाहिरात लाईव्ह करा</span> <i class="fa-solid fa-paper-plane"></i>
+        </button>
+
+    </div>
+
+    <!-- JavaScript (Firebase, UI Interactions, Language) -->
+    <script>
+        window.onload = function() {
+            if(typeof applySavedLanguage === 'function') {
+                applySavedLanguage();
+            }
+        };
+
+        // कॅटेगरी निवड (3D Icons)
+        let selectedCategory = "Hostel/PG"; // Default
+        const categories = document.querySelectorAll('#category-selector .category-item');
+        categories.forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                categories.forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                selectedCategory = this.getAttribute('data-cat');
+            });
+        });
+
+        // रंग निवड
+        let selectedColor = "#bbdefb"; // Default
+        const colors = document.querySelectorAll('#color-selector .color-box');
+        colors.forEach(item => {
+            item.addEventListener('click', function() {
+                colors.forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                selectedColor = this.getAttribute('data-color');
+            });
+        });
+
+        // फोटो निवडल्यावर त्याचा प्रिव्ह्यू दाखवणे
+        let selectedAdFile = null;
+        function previewAdImage(event) {
+            selectedAdFile = event.target.files[0];
+            if(selectedAdFile) {
+                let reader = new FileReader();
+                reader.onload = function(){
+                    let output = document.getElementById('preview-img');
+                    output.src = reader.result;
+                    output.style.display = 'inline-block';
+                };
+                reader.readAsDataURL(selectedAdFile);
+            }
+        }
+
+        // Firebase वर जाहिरात सबमिट करण्याचे लॉजिक
+        function submitAd() {
+            const adTitle = document.getElementById('ad-title').value;
+            const adTagline = document.getElementById('ad-tagline').value;
+            const whatsappNum = document.getElementById('whatsapp-num').value;
+            const adExpiry = document.getElementById('ad-expiry').value;
+            
+            if(adTitle.trim() === "") {
+                alert("कृपया व्यवसायाचे नाव टाका!");
+                return;
+            }
+            if(whatsappNum.trim() === "" || whatsappNum.length < 10) {
+                alert("कृपया योग्य 10 अंकी WhatsApp नंबर टाका.");
+                return;
+            }
+            if(adExpiry === "") {
+                alert("कृपया जाहिरातीची एक्सपायरी डेट निवडा.");
+                return;
+            }
+
+            const submitBtn = document.getElementById('submit-ad-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = "जाहिरात अपलोड होत आहे... <i class='fa-solid fa-spinner fa-spin'></i>";
+
+            // जर फोटो निवडला असेल तर आधी तो Firebase Storage वर अपलोड करा
+            if (selectedAdFile && typeof storage !== 'undefined') {
+                const storageRef = storage.ref('ads_images/' + Date.now() + '_' + selectedAdFile.name);
+                storageRef.put(selectedAdFile).then(function(snapshot) {
+                    snapshot.ref.getDownloadURL().then(function(downloadURL) {
+                        saveAdToFirestore(adTitle, adTagline, whatsappNum, adExpiry, downloadURL, submitBtn);
+                    });
+                }).catch(function(error) {
+                    alert("बॅनर अपलोड करताना एरर आला: " + error.message);
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = "<span data-lang='live_ad_btn'>जाहिरात लाईव्ह करा</span> <i class='fa-solid fa-paper-plane'></i>";
+                    applySavedLanguage();
+                });
+            } else {
+                // जर फोटो नसेल तर नुसता डेटा सेव्ह करा
+                saveAdToFirestore(adTitle, adTagline, whatsappNum, adExpiry, "", submitBtn);
+            }
+        }
+
+        // Firestore मध्ये डेटा सेव्ह करणे
+        function saveAdToFirestore(title, tagline, wpNumber, expiry, photoUrl, submitBtn) {
+            let adData = {
+                title: title,
+                tagline: tagline,
+                whatsapp: wpNumber,
+                expiryDate: expiry,
+                category: selectedCategory,
+                backgroundColor: selectedColor,
+                imageUrl: photoUrl,
+                status: "active",
+                createdAt: typeof firebase !== 'undefined' ? firebase.firestore.FieldValue.serverTimestamp() : Date.now()
+            };
+
+            if (typeof db !== 'undefined') {
+                db.collection("local_ads").add(adData).then(function() {
+                    alert('जाहिरात यशस्वीरित्या सेव्ह झाली! बॅनरवर क्लिक केल्यास WhatsApp (' + wpNumber + ') ओपन होईल.');
+                    window.location.href = "admin_dashboard.html";
+                }).catch(function(error) {
+                    alert("डेटा सेव्ह करताना एरर आला: " + error.message);
+                    submitBtn.disabled = false;
+                });
+            } else {
+                console.log("Local testing: Ad saved", adData);
+                alert("जाहिरात ॲड झाली (Local Test).");
+                window.location.href = "admin_dashboard.html";
+            }
+        }
+    </script>
+</body>
+</html>

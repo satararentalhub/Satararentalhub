@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>सातारा रेंटल हब | होम</title>
+    <!-- FontAwesome आयकॉन्ससाठी -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <!-- Firebase Configuration File -->
+    <script src="firebase-config.js"></script>
+    
+    <!-- Multi-Language Support File -->
+    <script src="lang.js"></script>
+    
+    <style>
+        :root {
+            --primary: #f45A0A; 
+            --bg-light: #F8F9FA;
+            --text-dark: #0B3B82; 
+            --white: #FFFFFF;
+            --premium: #f45A0A; 
+            --top-bg: #0B3B82; 
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            padding-bottom: 80px;
+        }
+
+        /* -------------------------------------------------------------------------
+           🆕 Full Screen Welcome Flash Ad (Pop-up)
+        ------------------------------------------------------------------------- */
+        .welcome-flash-ad-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0, 0, 0, 0.95);
+            z-index: 9999; /* Highest Z-index to cover everything */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+        }
+        
+        .welcome-flash-ad-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .welcome-ad-content {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .welcome-ad-img {
+            max-width: 100%;
+            max-height: 100vh;
+            object-fit: contain;
+            cursor: pointer; /* User can click image to go to link */
+        }
+
+        .skip-ad-btn {
+            position: absolute;
+            top: 30px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.5);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .ad-timer-bar {
+            position: absolute;
+            bottom: 0; left: 0;
+            height: 4px;
+            background: var(--primary);
+            width: 100%;
+            animation: shrinkBar 30s linear forwards;
+        }
+
+        @keyframes shrinkBar {
+            from { width: 100%; }
+            to { width: 0%; }
+        }
+
+        /* -------------------------------------------------------------------------
+           डेस्कटॉप नेव्हिगेशन (Desktop Navbar)
+        ------------------------------------------------------------------------- */
+        .desktop-nav {
+            display: none;
+            background-color: var(--white);
+            padding: 15px 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .desktop-nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text-dark);
+        }
+        
+        .desktop-nav-brand img {
+            width: 40px; height: 40px; border-radius: 8px;
+        }
+        
+        .desktop-nav-brand span {
+            font-size: 20px; font-weight: 800;
+        }
+
+        .desktop-nav-links {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+        }
+
+        .desktop-nav-links a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-size: 15px;
+            font-weight: 600;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .desktop-nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .desktop-nav-links .add-btn-desktop {
+            background-color: var(--primary);
+            color: var(--white);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 700;
+        }
+        .desktop-nav-links .add-btn-desktop:hover {
+            background-color: #d94e07;
+            color: var(--white);
+        }
+
+        /* -------------------------------------------------------------------------
+           टॉप बार (Hero Section with Slide Slider)
+        ------------------------------------------------------------------------- */
+        .top-hero {
+            position: relative; 
+            background-color: var(--top-bg); 
+            color: var(--white);
+            padding: 40px 20px 50px 20px; 
+            min-height: 280px; 
+            border-bottom-left-radius: 25px;
+            border-bottom-right-radius: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end; 
+            overflow: hidden; 
+        }
+        
+        .hero-slider-bg {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1; 
+            display: flex; 
+            transition: transform 1s ease-in-out; 
+            will-change: transform; /* For smoother animation */
+        }
+
+        .hero-slide-item {
+            flex: 0 0 100%; 
+            width: 100%; height: 100%;
+            background-size: cover;
+            background-position: center top; 
+            background-repeat: no-repeat;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6); 
+            z-index: 2;
+            opacity: 0; 
+            transition: opacity 1s ease-in-out;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 5; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            transition: opacity 0.5s ease-in-out; 
+        }
+
+        .hero-content.hide-all {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .about-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: var(--white);
+            font-size: 20px;
+            text-decoration: none;
+            background: rgba(0, 0, 0, 0.4); 
+            border: 1px solid rgba(255,255,255,0.4);
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transition: opacity 0.5s ease;
+        }
+        
+        .hide-top-btns {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .lang-toggle-btn {
+            position: absolute; top: 22px; left: 20px;
+            background: rgba(0, 0, 0, 0.4); 
+            color: var(--white); 
+            border: 1px solid rgba(255,255,255,0.4); padding: 6px 12px; 
+            border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer;
+            z-index: 10;
+            transition: opacity 0.5s ease;
+        }
+
+        .brand-logo {
+            width: 60px;
+            height: 60px;
+            background: var(--white);
+            border-radius: 12px;
+            margin-bottom: 15px; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding: 5px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4); 
+        }
+
+        .brand-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .brand-title {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.8), -1px -1px 2px rgba(0,0,0,0.5); 
+        }
+
+        .brand-tag {
+            font-size: 14px;
+            opacity: 1;
+            margin-top: 5px;
+            font-weight: 600;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.8); 
+        }
+
+        /* सर्च बार */
+        .search-container {
+            margin: -25px 20px 20px 20px;
+            position: relative;
+            z-index: 20;
+            max-width: 600px;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 16px 20px 16px 45px;
+            border: none;
+            border-radius: 30px; 
+            font-size: 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15); 
+            outline: none;
+            color: var(--text-dark);
+        }
+        
+        .search-container input::placeholder {
+            color: #94A3B8;
+        }
+
+        .search-container i {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary); 
+            font-size: 16px;
+        }
+
+        /* काय शोधत आहात (कॅटेगरीज - Grid Layout) */
+        .section-title {
+            padding: 0 20px;
+            font-size: 18px; 
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .extra-cats-wrapper {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-in-out;
+        }
+        .extra-cats-wrapper.show {
+            max-height: 200px; 
+        }
+        
+        .categories-wrapper {
+            padding: 0 20px 10px 20px;
+        }
+
+        .categories {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 15px 10px; 
+            width: 100%; 
+        }
+        
+        .category-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-dark);
+            text-align: center;
+        }
+
+        .category-icon {
+            width: 60px; 
+            height: 60px;
+            border-radius: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 8px;
+            background: var(--white); 
+            position: relative;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+            border: 1px solid #EAEAEA;
+            transition: 0.2s;
+        }
+
+        .category-item:active .category-icon {
+            transform: scale(0.95);
+        }
+
+        .category-item span {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-dark);
+            line-height: 1.2;
+        }
+
+        /* Local Ads / Premium Top Banners Slider */
+        .ads-slider-container { padding: 0 20px 10px 20px; overflow-x: auto; scrollbar-width: none; scroll-snap-type: x mandatory; }
+        .ads-slider-container::-webkit-scrollbar { display: none; }
+        .ads-wrapper { display: flex; gap: 15px; width: max-content; }
+        .ad-banner { width: 300px; height: 140px; border-radius: 16px; scroll-snap-align: center; background: #E2E8F0; overflow: hidden; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: block; text-decoration: none; border: 2px solid var(--premium); }
+        .ad-banner img { width: 100%; height: 100%; object-fit: cover; }
+        .ad-placeholder { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; background: linear-gradient(135deg, #E2E8F0, #CBD5E1); color: #475569;}
+        .ad-placeholder h3 { font-size: 18px; font-weight: 800; margin-bottom: 5px; }
+        .ad-tag { position: absolute; top: 10px; left: 10px; background: var(--premium); color: #FFF; font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        
+        .ad-title-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.8)); color: white; padding: 10px 15px; font-size: 14px; font-weight: 700; }
+
+        /* व्ह्यू टॉगल बटन्ससाठी स्टाइल */
+        .view-toggle-btns {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .view-btn {
+            background: transparent;
+            border: none;
+            color: #94A3B8;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .view-btn.active {
+            color: var(--primary);
+        }
+
+        /* ताजे प्रॉपर्टीज (Dynamic Cards) */
+        .property-list {
+            padding: 0 20px;
+        }
+        
+        .property-list.grid-view {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .property-card {
+            background: var(--white);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+            border: 1px solid #EAEAEA;
+            text-decoration: none;
+            display: block;
+            color: inherit;
+            position: relative;
+        }
+
+        .grid-view .property-card {
+            margin-bottom: 0; 
+        }
+
+        .property-img {
+            height: 160px;
+            background: #ddd;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #aaa;
+            font-size: 40px;
+        }
+        
+        .grid-view .property-img {
+            height: 120px; 
+        }
+        
+        .property-img img { width: 100%; height: 100%; object-fit: cover; }
+
+        .property-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: var(--premium);
+            color: var(--white);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(255, 90, 0, 0.4);
+        }
+
+        .property-info {
+            padding: 15px;
+        }
+
+        .grid-view .property-info {
+            padding: 10px;
+        }
+
+        .property-title {
+            font-size: 16px;
+            font-weight: 800;
+            margin-bottom: 5px;
+            color: var(--text-dark); 
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .grid-view .property-title {
+            font-size: 14px;
+        }
+
+        .property-meta {
+            font-size: 13px;
+            color: #7F8C8D;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 12px; 
+        }
+        
+        .property-meta i {
+            color: var(--primary); 
+        }
+
+        .grid-view .property-meta {
+            font-size: 11px;
+            margin-bottom: 8px;
+        }
+
+        .property-facilities {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .facility-item {
+            font-size: 11px;
+            color: var(--primary); 
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 600;
+        }
+
+        .grid-view .property-facilities {
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .grid-view .facility-item {
+            font-size: 9px;
+        }
+
+        .property-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px dashed #EAEAEA;
+            padding-top: 12px;
+        }
+
+        .grid-view .property-footer {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+            padding-top: 8px;
+        }
+
+        .property-price {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-dark); 
+        }
+
+        .grid-view .property-price {
+            font-size: 15px;
+        }
+
+        .property-price small {
+            font-size: 12px;
+            color: #94A3B8;
+            font-weight: 500;
+        }
+
+        .grid-view .property-price small {
+            font-size: 10px;
+        }
+
+        .footer-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .share-inline-btn {
+            background-color: transparent;
+            color: #25D366; 
+            border: 1px solid #25D366;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .share-inline-btn:hover {
+            background-color: #25D366;
+            color: var(--white);
+        }
+
+        .view-details-btn {
+            background-color: var(--primary);
+            color: var(--white);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .grid-view .footer-actions {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .grid-view .view-details-btn {
+            flex: 1;
+            text-align: center;
+            padding: 5px 10px;
+        }
+
+        .loading-state { text-align: center; padding: 30px; color: #94A3B8; font-size: 14px; }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: var(--white);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.03);
+            border-top: 1px solid #EAEAEA;
+            z-index: 100;
+        }
+
+        .nav-item {
+            text-align: center;
+            color: #94A3B8;
+            font-size: 11px;
+            font-weight: 600;
+            text-decoration: none;
+            flex: 1;
+        }
+
+        .nav-item i {
+            font-size: 20px;
+            margin-bottom: 5px;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        .nav-item.active i {
+            transform: translateY(-2px);
+        }
+        
+        .nav-item.add-btn i {
+            background: var(--primary);
+            color: var(--white);
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: -25px auto 4px auto;
+            box-shadow: 0 4px 10px rgba(255, 90, 0, 0.4);
+            font-size: 20px;
+        }
+
+        /* -------------------------------------------------------------------------
+           मीडिया क्वेरीज (Responsive Design for Laptops/Tablets)
+        ------------------------------------------------------------------------- */
+        @media (min-width: 768px) {
+            
+            .desktop-nav {
+                display: flex;
+            }
+
+            .bottom-nav {
+                display: none;
+            }
+
+            body {
+                padding-bottom: 30px;
+            }
+
+            .top-hero {
+                min-height: 350px;
+                padding-top: 60px;
+                border-radius: 0; 
+            }
+
+            .top-hero .about-btn, 
+            .top-hero .lang-toggle-btn {
+                display: none; 
+            }
+
+            .search-container {
+                margin: -30px auto 30px auto;
+            }
+            .search-container input {
+                padding: 20px 20px 20px 50px;
+                font-size: 16px;
+            }
+            .search-container i {
+                font-size: 20px;
+                left: 20px;
+            }
+
+            .section-title, .categories-wrapper, .ads-slider-container, .property-list {
+                max-width: 1200px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .categories {
+                display: flex;
+                justify-content: center;
+                gap: 25px;
+            }
+
+            .see-all-toggle {
+                display: none !important;
+            }
+            .extra-cats-wrapper {
+                max-height: none !important;
+            }
+            .extra-cats-wrapper .categories {
+                margin-top: 0 !important;
+            }
+
+            .property-list {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                gap: 25px;
+                padding: 20px;
+            }
+            
+            .view-toggle-btns button {
+                display: none;
+            }
+
+            .property-card {
+                margin-bottom: 0; 
+            }
+            .property-img {
+                height: 200px; 
+            }
+            
+            .footer-actions {
+                flex-direction: row !important;
+                align-items: center !important;
+            }
+            .view-details-btn {
+                flex: none !important;
+                padding: 6px 15px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 🆕 Full Screen Welcome Flash Ad Modal -->
+    <div id="welcome-flash-ad" class="welcome-flash-ad-overlay">
+        <div class="welcome-ad-content">
+            <button class="skip-ad-btn" onclick="closeFlashAd()">Skip Ad <i class="fa-solid fa-arrow-right"></i></button>
+            <a id="welcome-ad-link" href="#" target="_blank" style="display: block; width: 100%; height: 100%; text-align: center;">
+                <img id="welcome-ad-image" class="welcome-ad-img" src="" alt="Welcome Advertisement">
+            </a>
+            <div class="ad-timer-bar"></div>
+        </div>
+    </div>
+
+    <!-- डेस्कटॉप नेव्हिगेशन -->
+    <div class="desktop-nav">
+        <a href="index.html" class="desktop-nav-brand">
+            <img src="Logo.png" alt="Logo" onerror="this.style.display='none'">
+            <span data-lang="brand_name">Satara Rental Hub</span>
+        </a>
+        <div class="desktop-nav-links">
+            <a href="index.html" style="color: var(--primary);"><i class="fa-solid fa-house"></i> Home</a>
+            <a href="saved.html"><i class="fa-solid fa-heart"></i> Saved</a>
+            <a href="about_us.html"><i class="fa-solid fa-circle-info"></i> About Us</a>
+            <a href="profile.html"><i class="fa-solid fa-user"></i> Profile</a>
+            <button class="lang-toggle-btn" style="position:static; background:var(--bg-light); color:var(--text-dark); border:1px solid var(--border);" onclick="toggleLanguage()">ENG/मराठी</button>
+            <a href="owner_dashboard.html" class="add-btn-desktop"><i class="fa-solid fa-plus"></i> Post Ad Free</a>
+        </div>
+    </div>
+
+    <!-- टॉप बार (Hero Section with Background Slider) -->
+    <div class="top-hero">
+        
+        <!-- Dynamic Background Slider Area -->
+        <div class="hero-slider-bg" id="hero-slider-bg">
+            <!-- Images will be injected here as slid items -->
+        </div>
+        
+        <!-- Dark overlay -->
+        <div class="hero-overlay" id="hero-overlay"></div>
+
+        <button class="lang-toggle-btn" id="lang-btn" onclick="toggleLanguage()">ENG / मराठी</button>
+        <a href="about_us.html" class="about-btn" id="about-btn"><i class="fa-solid fa-info"></i></a>
+        
+        <!-- Content that will hide completely on slide -->
+        <div class="hero-content" id="main-hero-content">
+            <div class="brand-logo" id="main-hero-logo">
+                <img src="Logo.png" alt="Logo" onerror="this.style.display='none'">
+            </div>
+            <div class="brand-title" data-lang="brand_name">Satara Rental Hub</div>
+            <div class="brand-tag" data-lang="brand_tagline">Find your rightful home in the capital of Marathas</div>
+        </div>
+    </div>
+
+    <!-- सर्च बार (Fixed below Hero) -->
+    <div class="search-container">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" placeholder="Search Powai Naka, Flat, Hostel..." data-lang-placeholder="search_placeholder" onkeypress="if(event.keyCode===13) searchListing(this.value)">
+    </div>
+
+    <!-- काय शोधत आहात? (Categories Grid with Slide) -->
+    <div class="section-title">
+        <span data-lang="what_looking">What are you looking for?</span>
+        <span class="see-all-toggle" onclick="toggleCategories()" style="font-size: 13px; color: var(--primary); font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+            <span data-lang="view_all">अजून पहा</span> 
+            <i id="cat-toggle-icon" class="fa-solid fa-chevron-down"></i>
+        </span>
+    </div>
+    
+    <div class="categories-wrapper">
+        <!-- पहिली रांग -->
+        <div class="categories">
+            <a href="listing.html?type=hostel" class="category-item">
+                <div class="category-icon cat-hostel">
+                    <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 3L3 9.5L5 11L12 6L19 11L21 9.5L12 3Z" fill="var(--primary)"/>
+                        <path d="M4 11V20H6V18H18V20H20V14C20 12.8954 19.1046 12 18 12H9V14H18V15H6V11H4ZM8 14C8 14.5523 7.55228 15 7 15C6.44772 15 6 14.5523 6 14C6 13.4477 6.44772 13 7 13C7.55228 13 8 13.4477 8 14Z" fill="var(--text-dark)"/>
+                    </svg>
+                </div>
+                <span data-lang="cat_pg">Hostel/PG</span>
+            </a>
+            
+            <a href="listing.html?type=shop" class="category-item">
+                <div class="category-icon cat-shop">
+                    <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+                        <path d="M4 4H20L21.5 9.5C21.5 10.3 20.8 11 20 11C19.2 11 18.5 10.3 18.5 9.5C18.5 10.3 17.8 11 17 11C16.2 11 15.5 10.3 15.5 9.5C15.5 10.3 14.8 11 14 11C13.2 11 12.5 10.3 12.5 9.5C12.5 10.3 11.8 11 11 11C10.2 11 9.5 10.3 9.5 9.5C9.5 10.3 8.8 11 8 11C7.2 11 6.5 10.3 6.5 9.5C6.5 10.3 5.8 11 5 11C4.2 11 3.5 10.3 3.5 9.5L4 4Z" fill="var(--primary)"/>
+                        <path d="M5 11.5V20H19V11.5C18.7 11.8 18.2 12 17.7 12C17.1 12 16.5 11.8 16.2 11.4C15.9 11.8 15.3 12 14.7 12C14.1 12 13.5 11.8 13.2 11.4C12.9 11.8 12.3 12 11.7 12C11.1 12 10.5 11.8 10.2 11.4C9.9 11.8 9.3 12 8.7 12C8.1 12 7.5 11.8 7.2 11.4C6.9 11.8 6.3 12 5.7 12C5.4 12 5.2 11.9 5 11.5ZM9 14H15V18H9V14Z" fill="var(--text-dark)"/>
+                    </svg>
+                </div>
+                <span data-lang="cat_shop">Shop</span>
+            </a>
+            
+            <a href="listing.html?type=room" class="category-item">
+                <div class="category-icon cat-room">
+                    <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+                        <rect x="6" y="4" width="8" height="16" fill="var(--text-dark)"/>
+                        <rect x="11.5" y="11" width="1.5" height="2" fill="#FFF"/>
+                        <path d="M14 18H20V11H17V15H14V18Z" fill="var(--primary)"/>
+                    </svg>
+                </div>
+                <span data-lang="cat_room">Room</span>
+            </a>
+            
+            <a href="listing.html?type=flat" class="category-item">
+                <div class="category-icon cat-flat">
+                    <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+                        <path d="M4 3H12V21H4V3ZM12 9H20V21H12V9Z" fill="var(--text-dark)"/>
+                        <rect x="6" y="6" width="2" height="2" fill="var(--primary)"/>
+                        <rect x="9" y="6" width="2" height="2" fill="#FFF"/>
+                        <rect x="6" y="10" width="2" height="2" fill="#FFF"/>
+                        <rect x="9" y="10" width="2" height="2" fill="var(--primary)"/>
+                        <rect x="6" y="14" width="2" height="2" fill="#FFF"/>
+                        <rect x="9" y="14" width="2" height="2" fill="#FFF"/>
+                        <rect x="14" y="12" width="2" height="2" fill="#FFF"/>
+                        <rect x="17" y="12" width="2" height="2" fill="var(--primary)"/>
+                        <rect x="14" y="16" width="2" height="2" fill="var(--primary)"/>
+                        <rect x="17" y="16" width="2" height="2" fill="#FFF"/>
+                    </svg>
+                </div>
+                <span data-lang="cat_flat">Flat</span>
+            </a>
+        </div>
+
+        <!-- दुसरी रांग (Slide down animation wrapper) -->
+        <div class="extra-cats-wrapper" id="extra-cats">
+            <div class="categories" style="margin-top: 15px;">
+                <a href="listing.html?type=godown" class="category-item">
+                    <div class="category-icon cat-godown">
+                        <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 4L2 10H22L12 4Z" fill="var(--primary)"/>
+                            <path d="M4 10V20H20V10H16V16H8V10H4Z" fill="var(--text-dark)"/>
+                        </svg>
+                    </div>
+                    <span data-lang="cat_godown">Godown</span>
+                </a>
+                
+                <a href="listing.html?type=office" class="category-item">
+                    <div class="category-icon cat-office">
+                        <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+                            <path d="M9 7V4H15V7" stroke="var(--primary)" stroke-width="3" stroke-linecap="round"/>
+                            <rect x="3" y="7" width="18" height="13" rx="1.5" fill="var(--text-dark)"/>
+                            <path d="M3 12H21" stroke="var(--primary)" stroke-width="1.5"/>
+                        </svg>
+                    </div>
+                    <span data-lang="cat_office">Office</span>
+                </a>
+                
+                <a href="listing.html?type=plot" class="category-item">
+                    <div class="category-icon cat-plot">
+                        <svg width="34" height="34" viewBox="0 0 24 24" fill="none">
+                            <path d="M4 9L10 6L16 8.5L20 5V17L14 20L8 17.5L4 19V9Z" fill="var(--text-dark)"/>
+                            <path d="M12 13C12 13 16 9.5 16 6.5C16 4.01472 14.2091 2 12 2C9.79086 2 8 4.01472 8 6.5C8 9.5 12 13 12 13Z" fill="var(--primary)"/>
+                            <circle cx="12" cy="6.5" r="1.5" fill="#FFF"/>
+                        </svg>
+                    </div>
+                    <span data-lang="cat_plot">Plot</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Banners / Premium Ads Slider (Firebase मधून) -->
+    <div id="local-ads-section" style="display: none;">
+        <div class="section-title"><span style="color: var(--premium);"><i class="fa-solid fa-star"></i> टॉप प्रायॉरिटी लिस्टिंग</span></div>
+        <div class="ads-slider-container">
+            <div class="ads-wrapper" id="ads-wrapper">
+                <!-- Ads will be loaded here dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ताजे प्रीमियम आणि बेसिक प्रॉपर्टीज (Firebase मधून) -->
+    <div class="section-title" style="margin-top: 15px;">
+        <span><i class="fa-solid fa-fire" style="color: var(--primary);"></i> <span data-lang="premium_props">Premium Properties</span></span>
+        
+        <!-- लिस्ट आणि ग्रिड व्ह्यू टॉगल बटन्स -->
+        <div class="view-toggle-btns">
+            <button class="view-btn active" id="list-view-btn" onclick="toggleView('list')"><i class="fa-solid fa-list"></i></button>
+            <button class="view-btn" id="grid-view-btn" onclick="toggleView('grid')"><i class="fa-solid fa-border-all"></i></button>
+            <a href="listing.html" style="font-size:13px; color:var(--primary); font-weight:600; text-decoration:none; margin-left: 10px;" data-lang="view_all">View All <i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i></a>
+        </div>
+    </div>
+    
+    <div class="property-list" id="properties-container">
+        <div class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i> प्रॉपर्टीज लोड होत आहेत...</div>
+    </div>
+
+    <!-- Bottom Nav (फक्त मोबाईलवर दिसेल) -->
+    <div class="bottom-nav">
+        <a href="index.html" class="nav-item active">
+            <i class="fa-solid fa-house"></i>
+            <span data-lang="nav_home">Home</span>
+        </a>
+        <a href="saved.html" class="nav-item">
+            <i class="fa-regular fa-heart"></i>
+            <span data-lang="nav_saved">Saved</span>
+        </a>
+        <a href="owner_dashboard.html" class="nav-item add-btn">
+            <i class="fa-solid fa-plus"></i>
+            <span data-lang="nav_add">Add</span>
+        </a>
+        <a href="profile.html" class="nav-item">
+            <i class="fa-regular fa-user"></i>
+            <span data-lang="nav_profile">Profile</span>
+        </a>
+    </div>
+
+    <!-- JavaScript For Firebase Fetching & View Toggle -->
+    <script>
+        window.onload = function() {
+            if(typeof applySavedLanguage === 'function') {
+                applySavedLanguage();
+            }
+            
+            if(typeof translations !== 'undefined') {
+                if(!translations['en']) translations['en'] = {};
+                translations['en']['view_all'] = "See All";
+            }
+
+            loadWelcomeFlashAd(); // Call the Welcome Ad Logic FIRST
+            loadRecentProperties(); 
+            loadHeroSlider(); 
+            loadPremiumBanners(); 
+            
+            if (window.innerWidth >= 768) {
+                document.getElementById('properties-container').classList.add('grid-view');
+            }
+        };
+
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 768) {
+                document.getElementById('properties-container').classList.add('grid-view');
+            }
+        });
+
+        // -------------------------------------------------------------------------
+        // Welcome Flash Ad Logic (Full Screen Popup)
+        // -------------------------------------------------------------------------
+        let flashAdTimerId;
+
+        function loadWelcomeFlashAd() {
+            // Check if ad was already seen in this session
+            if(sessionStorage.getItem("flashAdSeen") === "true") {
+                return; // Do not show again
+            }
+
+            if(typeof db !== 'undefined') {
+                db.collection("admin_settings").doc("ads_config").get().then((doc) => {
+                    if(doc.exists && doc.data().flashAd && doc.data().flashAd.active) {
+                        let adData = doc.data().flashAd;
+                        let imgUrl = "";
+
+                        // Decide which image to show based on screen size
+                        if(window.innerWidth >= 768 && adData.imageUrlDesktop) {
+                            imgUrl = adData.imageUrlDesktop;
+                        } else if(adData.imageUrlMobile) {
+                            imgUrl = adData.imageUrlMobile;
+                        } else if(adData.imageUrl) {
+                            imgUrl = adData.imageUrl; // Fallback to old format
+                        }
+
+                        if(imgUrl) {
+                            document.getElementById("welcome-ad-image").src = imgUrl;
+                            
+                            // Set link if available
+                            if(adData.link) {
+                                document.getElementById("welcome-ad-link").href = adData.link;
+                            } else {
+                                document.getElementById("welcome-ad-link").href = "javascript:void(0)";
+                            }
+
+                            // Show the Ad
+                            const adOverlay = document.getElementById("welcome-flash-ad");
+                            adOverlay.classList.add("active");
+                            
+                            // Mark as seen for this session
+                            sessionStorage.setItem("flashAdSeen", "true");
+
+                            // Auto close after 30 seconds
+                            flashAdTimerId = setTimeout(() => {
+                                closeFlashAd();
+                            }, 30000);
+                        }
+                    }
+                }).catch(e => console.log("Error loading flash ad:", e));
+            }
+        }
+
+        function closeFlashAd() {
+            clearTimeout(flashAdTimerId); // Stop the auto-close timer if manually skipped
+            const adOverlay = document.getElementById("welcome-flash-ad");
+            adOverlay.classList.remove("active");
+            
+            // Remove from DOM completely after transition to save memory
+            setTimeout(() => {
+                adOverlay.style.display = 'none';
+            }, 400); 
+        }
+
+        // -------------------------------------------------------------------------
+        // 🆕 Hero Background Slider Logic (With Preloading)
+        // -------------------------------------------------------------------------
+        let slideIndex = 0;
+        let slideIntervalTimer;
+
+        function loadHeroSlider() {
+            if (typeof db !== 'undefined') {
+                db.collection("admin_settings").doc("hero_slider").get().then((doc) => {
+                    let images = ['background.png']; 
+                    let intervalTime = 3000; 
+
+                    if (doc.exists) {
+                        let data = doc.data();
+                        if (data.images && data.images.length > 0) {
+                            images = ['background.png'].concat(data.images);
+                        }
+                        if (data.interval) {
+                            intervalTime = parseInt(data.interval);
+                        }
+                    }
+                    
+                    initHeroCarousel(images, intervalTime);
+
+                }).catch(e => {
+                    initHeroCarousel(['background.png'], 3000);
+                });
+            } else {
+                initHeroCarousel(['background.png'], 3000);
+            }
+        }
+
+        function initHeroCarousel(imagesArray, interval) {
+            const sliderBg = document.getElementById("hero-slider-bg");
+            const overlay = document.getElementById("hero-overlay");
+            const mainContent = document.getElementById("main-hero-content");
+            const langBtn = document.getElementById("lang-btn");
+            const aboutBtn = document.getElementById("about-btn");
+            
+            sliderBg.innerHTML = ""; 
+            sliderBg.style.transform = `translateX(0%)`;
+
+            if(imagesArray.length === 0) return;
+
+            let loadedImagesCount = 0; // Track loaded images
+
+            imagesArray.forEach((imgUrl, idx) => {
+                let div = document.createElement("div");
+                div.className = "hero-slide-item";
+                div.style.backgroundImage = `url('${imgUrl}')`;
+                sliderBg.appendChild(div);
+
+                // 🆕 Robust Preloading: Wait for image to fully download
+                let preloadImg = new Image();
+                preloadImg.onload = function() {
+                    loadedImagesCount++;
+                    checkAllLoaded();
+                };
+                preloadImg.onerror = function() {
+                    loadedImagesCount++; // Count even on error to not block slider
+                    checkAllLoaded();
+                };
+                preloadImg.src = imgUrl;
+            });
+
+            function applySlideState(index) {
+                sliderBg.style.transform = `translateX(-${index * 100}%)`;
+                
+                if (index === 0) {
+                    overlay.style.opacity = "0"; 
+                    mainContent.classList.remove("hide-all"); 
+                    langBtn.classList.remove("hide-top-btns");
+                    aboutBtn.classList.remove("hide-top-btns");
+                } else {
+                    overlay.style.opacity = "0"; 
+                    mainContent.classList.add("hide-all"); 
+                    langBtn.classList.add("hide-top-btns");
+                    aboutBtn.classList.add("hide-top-btns");
+                }
+            }
+
+            applySlideState(0);
+
+            // 🆕 Start sliding ONLY after ALL images are 100% downloaded
+            function checkAllLoaded() {
+                if (loadedImagesCount === imagesArray.length && imagesArray.length > 1) {
+                    clearInterval(slideIntervalTimer);
+                    slideIntervalTimer = setInterval(() => {
+                        slideIndex++;
+                        if (slideIndex >= imagesArray.length) {
+                            slideIndex = 0; 
+                        }
+                        applySlideState(slideIndex);
+                    }, interval);
+                }
+            }
+        }
+
+        // -------------------------------------------------------------------------
+        // Categories & View Logic
+        // -------------------------------------------------------------------------
+        function toggleCategories() {
+            var extraCats = document.getElementById("extra-cats");
+            var icon = document.getElementById("cat-toggle-icon");
+            if (extraCats.classList.contains("show")) {
+                extraCats.classList.remove("show");
+                icon.classList.remove("fa-chevron-up");
+                icon.classList.add("fa-chevron-down");
+            } else {
+                extraCats.classList.add("show");
+                icon.classList.remove("fa-chevron-down");
+                icon.classList.add("fa-chevron-up");
+            }
+        }
+
+        function toggleView(viewType) {
+            if (window.innerWidth >= 768) return; 
+            
+            const container = document.getElementById('properties-container');
+            const listBtn = document.getElementById('list-view-btn');
+            const gridBtn = document.getElementById('grid-view-btn');
+
+            if(viewType === 'grid') {
+                container.classList.add('grid-view');
+                gridBtn.classList.add('active');
+                listBtn.classList.remove('active');
+            } else {
+                container.classList.remove('grid-view');
+                listBtn.classList.add('active');
+                gridBtn.classList.remove('active');
+            }
+        }
+
+        function sharePropertyCard(propId, propTitle, propRent, propTaluka) {
+            event.preventDefault(); 
+            
+            let origin = window.location.origin;
+            let pathname = window.location.pathname;
+            let folderPath = pathname.substring(0, pathname.lastIndexOf('/'));
+            let shareUrl = `${origin}${folderPath}/details.html?id=${propId}`;
+            
+            if (!origin || origin.includes("null")) {
+                shareUrl = `https://satararentalhub.com/details.html?id=${propId}`;
+            }
+
+            let shareText = `*${propTitle}* 🏠\n📍 *ठिकाण:* ${propTaluka}\n💰 *भाडे:* ₹${propRent} /महिना\n\nया प्रॉपर्टीची अधिक माहिती पाहण्यासाठी खालील लिंकवर क्लिक करा:\n\n ${shareUrl} \n\n*सातारा रेंटल हब* - साताऱ्यातील हक्काचे घर!`;
+            
+            let encodedMsg = encodeURIComponent(shareText);
+            
+            window.open(`https://wa.me/?text=${encodedMsg}`, '_blank');
+        }
+
+        // -------------------------------------------------------------------------
+        // Properties & Banner Logic
+        // -------------------------------------------------------------------------
+        function loadPremiumBanners() {
+            if(typeof db !== 'undefined') {
+                const adsWrapper = document.getElementById('ads-wrapper');
+                const adsSection = document.getElementById('local-ads-section');
+                let hasBanners = false;
+
+                db.collection("properties")
+                    .where("status", "==", "live")
+                    .where("planType", "in", ["premium1", "premium2"])
+                    .get().then((querySnapshot) => {
+                    
+                    let now = new Date();
+                    
+                    querySnapshot.forEach(doc => {
+                        let prop = doc.data();
+                        prop.id = doc.id;
+                        
+                        let isExpired = false;
+                        if (prop.expiryDate && prop.expiryDate !== 'Lifetime') {
+                            let expiryTime = new Date(prop.expiryDate);
+                            if (now > expiryTime) {
+                                isExpired = true;
+                            }
+                        }
+                        
+                        if (!isExpired) {
+                            hasBanners = true;
+                            let bannerImg = (prop.photoUrls && prop.photoUrls.length > 0) ? prop.photoUrls[0] : 'placeholder.jpg';
+                            let adLink = `details.html?id=${prop.id}`;
+                            
+                            adsWrapper.innerHTML += `
+                            <a href="${adLink}" class="ad-banner">
+                                <span class="ad-tag"><i class="fa-solid fa-crown"></i> Top Ad</span>
+                                <img src="${bannerImg}" alt="${prop.title}">
+                                <div class="ad-title-overlay">${prop.title}</div>
+                            </a>`;
+                        }
+                    });
+                    
+                    if(hasBanners) {
+                        adsSection.style.display = 'block';
+                    }
+                }).catch(e => console.log("Premium banners fetch error:", e));
+            }
+        }
+
+        function getAmenitiesHtml(amenitiesLabels) {
+            let html = '';
+            
+            if (amenitiesLabels && amenitiesLabels.length > 0) {
+                let displayCount = Math.min(amenitiesLabels.length, 3);
+                
+                for(let i=0; i<displayCount; i++) {
+                    let lbl = amenitiesLabels[i];
+                    let icon = 'fa-check'; 
+                    
+                    if(lbl.includes('पाणी') || lbl.toLowerCase().includes('water')) icon = 'fa-faucet-drip';
+                    else if(lbl.includes('पार्किंग') || lbl.toLowerCase().includes('parking')) icon = 'fa-square-parking';
+                    else if(lbl.includes('लिफ्ट') || lbl.toLowerCase().includes('lift')) icon = 'fa-elevator';
+                    else if(lbl.includes('सुरक्षा') || lbl.toLowerCase().includes('security') || lbl.includes('CCTV')) icon = 'fa-shield-halved';
+                    else if(lbl.includes('वाय-फाय') || lbl.toLowerCase().includes('wifi') || lbl.includes('इंटरनेट')) icon = 'fa-wifi';
+                    else if(lbl.includes('मेस') || lbl.toLowerCase().includes('mess') || lbl.includes('जेवण')) icon = 'fa-utensils';
+                    else if(lbl.includes('पॉवर') || lbl.toLowerCase().includes('power')) icon = 'fa-bolt';
+                    
+                    html += `<span class="facility-item"><i class="fa-solid ${icon}"></i> ${lbl}</span>`;
+                }
+                
+                if (amenitiesLabels.length > 3) {
+                    html += `<span class="facility-item" style="color: #64748B;">+${amenitiesLabels.length - 3} अधिक</span>`;
+                }
+            } else {
+                html = `<span class="facility-item" style="color: #94A3B8;"><i class="fa-solid fa-circle-info"></i> विशेष सुविधा नमूद नाही</span>`;
+            }
+            
+            return html;
+        }
+
+        function loadRecentProperties() {
+            if(typeof db !== 'undefined') {
+                db.collection("properties").where("status", "==", "live").limit(10).get().then((querySnapshot) => {
+                    const propsContainer = document.getElementById('properties-container');
+                    
+                    if(querySnapshot.empty) {
+                        propsContainer.innerHTML = `<div class="loading-state">सध्या कोणतीही नवीन प्रॉपर्टी उपलब्ध नाही.</div>`;
+                        return;
+                    }
+
+                    let propsList = [];
+                    let now = new Date();
+
+                    querySnapshot.forEach(doc => { 
+                        let d = doc.data(); 
+                        d.id = doc.id; 
+
+                        if (d.status === 'live') {
+                            if (d.planType && d.planType !== 'basic' && d.expiryDate && d.expiryDate !== 'Lifetime') {
+                                let expiryTime = new Date(d.expiryDate);
+                                if (now > expiryTime) {
+                                    d.planType = 'basic';
+                                }
+                            }
+                            propsList.push(d); 
+                        }
+                    });
+
+                    propsList.sort((a,b) => {
+                        let aIsPremium = (a.planType === 'premium1' || a.planType === 'premium2') ? 1 : 0;
+                        let bIsPremium = (b.planType === 'premium1' || b.planType === 'premium2') ? 1 : 0;
+                        
+                        if(bIsPremium !== aIsPremium) {
+                            return bIsPremium - aIsPremium; 
+                        } else {
+                            return new Date(b.createdAt) - new Date(a.createdAt); 
+                        }
+                    });
+
+                    propsContainer.innerHTML = '';
+                    
+                    propsList.forEach((prop) => {
+                        let imgHtml = (prop.photoUrls && prop.photoUrls.length > 0) 
+                            ? `<img src="${prop.photoUrls[0]}" alt="${prop.title}">` 
+                            : `<i class="fa-regular fa-image"></i>`;
+
+                        let badgeHtml = (prop.planType === 'premium1' || prop.planType === 'premium2')
+                            ? `<div class="property-badge"><i class="fa-solid fa-crown"></i> Premium</div>` 
+                            : ``;
+
+                        let talukaText = prop.taluka;
+                        let currentLang = localStorage.getItem('appLang') || 'mr';
+                        if(translations && translations[currentLang] && translations[currentLang][`taluka_${prop.taluka}`]) {
+                            talukaText = translations[currentLang][`taluka_${prop.taluka}`];
+                        }
+
+                        let amenitiesHtml = getAmenitiesHtml(prop.amenitiesLabels);
+
+                        let propHtml = `
+                        <a href="details.html?id=${prop.id}" class="property-card">
+                            <div class="property-img">
+                                ${imgHtml}
+                                ${badgeHtml}
+                            </div>
+                            <div class="property-info">
+                                <div class="property-title">${prop.title}</div>
+                                <div class="property-meta"><i class="fa-solid fa-location-dot"></i> ${prop.area}, ${talukaText}</div>
+                                
+                                <div class="property-facilities">
+                                    ${amenitiesHtml}
+                                </div>
+                                
+                                <div class="property-footer">
+                                    <div class="property-price">₹ ${prop.rent} <small>/ महिना</small></div>
+                                    
+                                    <div class="footer-actions">
+                                        <button class="share-inline-btn" onclick="sharePropertyCard('${prop.id}', '${prop.title.replace(/'/g, "\\'")}', '${prop.rent}', '${talukaText}')" title="Share via WhatsApp">
+                                            <i class="fa-brands fa-whatsapp"></i>
+                                        </button>
+                                        <div class="view-details-btn">View Details &rarr;</div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </a>`;
+                        
+                        propsContainer.innerHTML += propHtml;
+                    });
+                }).catch((error) => {
+                    console.log("Properties Error:", error);
+                    document.getElementById('properties-container').innerHTML = `<div class="loading-state" style="color:red;">डेटा लोड करताना एरर आला.</div>`;
+                });
+            } else {
+                document.getElementById('properties-container').innerHTML = `
+                    <div class="loading-state">Firebase कनेक्टेड नाही.</div>
+                `;
+            }
+        }
+
+        function searchListing(query) {
+            if(query.trim() !== "") {
+                window.location.href = `listing.html?search=${encodeURIComponent(query)}`;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>सेव्हड प्रॉपर्टीज | Satara Rental Hub</title>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <!-- Firebase Configuration File -->
+    <script src="firebase-config.js"></script>
+
+    <!-- Multi-Language Support File -->
+    <script src="lang.js"></script>
+
+    <style>
+        :root {
+            --primary: #FF671F;
+            --bg-light: #F4F6F9;
+            --text-dark: #2C3E50;
+            --text-muted: #7F8C8D;
+            --white: #FFFFFF;
+            --border: #EAECEE;
+            --danger: #E74C3C;
+            --premium: #8B5CF6;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-light); color: var(--text-dark); padding-bottom: 90px; }
+
+        /* टॉप बार */
+        .top-bar {
+            background: var(--primary); color: var(--white); padding: 15px 20px;
+            position: sticky; top: 0; z-index: 100; display: flex; align-items: center; gap: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .back-btn { color: var(--white); font-size: 20px; text-decoration: none; }
+        .page-title { flex: 1; font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .page-title i { font-size: 20px; }
+
+        /* भाषा बदलणारे बटण (Top Right) */
+        .lang-toggle-btn {
+            background: rgba(255,255,255,0.2); color: var(--white); border: 1px solid var(--white);
+            padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;
+        }
+
+        /* पेज हेडर माहिती */
+        .page-header-info { padding: 20px 20px 10px 20px; }
+        .page-header-info h2 { font-size: 20px; font-weight: 800; color: var(--text-dark); margin-bottom: 5px; }
+        .page-header-info p { font-size: 13px; color: var(--text-muted); }
+
+        /* प्रॉपर्टी लिस्ट (Cards) */
+        .list-container { padding: 10px 20px; }
+
+        .property-card {
+            background: var(--white); border-radius: 16px; overflow: hidden; margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04); text-decoration: none; display: block; color: inherit;
+            border: 1px solid var(--border); position: relative; transition: 0.3s;
+        }
+        .property-card:active { transform: scale(0.98); }
+
+        .property-img { height: 160px; background: #EAECEE; position: relative; display: flex; align-items: center; justify-content: center; font-size: 40px; color: #BDC3C7; }
+        .property-img img { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* सेव्हड असल्यामुळे इथे हार्ट लाल रंगातच दिसेल */
+        .btn-fav { position: absolute; top: 12px; right: 12px; width: 35px; height: 35px; background: rgba(255,255,255,0.9); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--danger); font-size: 18px; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; z-index: 10; }
+        
+        /* प्रीमियम टॅग (नवीन) */
+        .badge-premium { position: absolute; top: 12px; left: 12px; background: var(--premium); color: var(--white); font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(139, 92, 246, 0.4); z-index: 2; }
+
+        .property-info { padding: 15px; }
+        .property-title { font-size: 16px; font-weight: 800; margin-bottom: 5px; line-height: 1.3; }
+        .property-price { font-size: 18px; font-weight: 800; color: var(--primary); margin-bottom: 8px; }
+        .property-price small { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+        
+        .property-meta-row { display: flex; gap: 15px; margin-bottom: 5px; font-size: 13px; color: var(--text-muted); font-weight: 600; }
+        .property-meta-row i { color: var(--primary); width: 16px; text-align: center; }
+
+        /* 🆕 Share Button + View Details Flex Box (For Saved Page) */
+        .footer-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 15px;
+            border-top: 1px dashed var(--border);
+            padding-top: 15px;
+        }
+        
+        .share-inline-btn {
+            background-color: transparent;
+            color: #25D366; 
+            border: 1px solid #25D366;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .share-inline-btn:hover {
+            background-color: #25D366;
+            color: var(--white);
+        }
+
+        .view-details-btn {
+            background-color: var(--primary);
+            color: var(--white);
+            font-size: 12px;
+            font-weight: 800;
+            padding: 8px 15px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        /* लोडिंग आणि एम्प्टी स्टेट (Empty State) */
+        .loading-state { text-align: center; padding: 40px 20px; color: #94A3B8; font-size: 14px; font-weight: 600; }
+        
+        .empty-state { text-align: center; padding: 50px 20px; display: none; } 
+        .empty-icon { font-size: 60px; color: #CBD5E1; margin-bottom: 15px; }
+        .empty-title { font-size: 18px; font-weight: 800; color: var(--text-dark); margin-bottom: 10px; }
+        .empty-desc { font-size: 14px; color: var(--text-muted); margin-bottom: 25px; line-height: 1.5; }
+        .btn-browse { background: var(--primary); color: var(--white); padding: 12px 25px; border-radius: 12px; font-size: 14px; font-weight: 800; text-decoration: none; display: inline-block; box-shadow: 0 4px 15px rgba(255, 103, 31, 0.3); }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed; bottom: 0; width: 100%; background: var(--white);
+            display: flex; justify-content: space-around; padding: 10px 0;
+            box-shadow: 0 -2px 15px rgba(0,0,0,0.05); border-top-left-radius: 20px; border-top-right-radius: 20px; z-index: 100;
+        }
+        .nav-item { text-align: center; color: #94A3B8; font-size: 11px; font-weight: 700; text-decoration: none; flex: 1; }
+        .nav-item i { font-size: 22px; margin-bottom: 4px; display: block; transition: 0.3s; }
+        .nav-item.active { color: var(--primary); }
+        .nav-item.active i { transform: translateY(-3px); }
+        .nav-item.add-btn i {
+            background: var(--primary); color: var(--white); width: 45px; height: 45px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            margin: -20px auto 4px auto; box-shadow: 0 4px 10px rgba(255, 103, 31, 0.4); font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- टॉप बार -->
+    <div class="top-bar">
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+        <div class="page-title">
+            <i class="fa-solid fa-heart" style="color: #FFE4E1;"></i> <span data-lang="saved_props_title">आवडत्या प्रॉपर्टीज</span>
+        </div>
+        <button class="lang-toggle-btn" onclick="toggleLanguage()">ENG / मराठी</button>
+    </div>
+
+    <!-- पेज हेडर -->
+    <div class="page-header-info" id="headerInfo" style="display: none;">
+        <h2 id="shortlist-title"><span data-lang="your_shortlist">तुमची शॉर्टलिस्ट</span> (0)</h2>
+        <p data-lang="shortlist_desc">तुम्ही सेव्ह केलेल्या सर्व प्रॉपर्टीज इथे पाहू शकता.</p>
+    </div>
+
+    <!-- प्रॉपर्टी लिस्ट -->
+    <div class="list-container" id="savedList">
+        <div class="loading-state" id="loadingState">
+            <i class="fa-solid fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 10px;"></i><br>
+            माहिती लोड होत आहे...
+        </div>
+        <!-- Firebase मधून फेच केलेले कार्ड्स इथे डायनॅमिकली येतील -->
+    </div>
+
+    <!-- जर लिस्ट रिकामी असेल तर हा बॉक्स दिसेल -->
+    <div class="empty-state" id="emptyState">
+        <div class="empty-icon"><i class="fa-regular fa-heart"></i></div>
+        <div class="empty-title" data-lang="nothing_saved_title">अजून काहीही सेव्ह केलेले नाही!</div>
+        <div class="empty-desc" data-lang="nothing_saved_desc">ज्या प्रॉपर्टीज तुम्हाला आवडतील, त्यावरील हार्ट आयकॉन (❤️) वर क्लिक करा. त्या इथे सेव्ह होतील.</div>
+        <a href="listing.html" class="btn-browse" data-lang="btn_search_props">प्रॉपर्टीज शोधा</a>
+    </div>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+        <a href="index.html" class="nav-item">
+            <i class="fa-solid fa-house"></i>
+            <span data-lang="nav_home">होम</span>
+        </a>
+        <a href="saved.html" class="nav-item active">
+            <i class="fa-solid fa-heart"></i>
+            <span data-lang="nav_saved">सेव्हड</span>
+        </a>
+        <a href="login.html" class="nav-item add-btn" id="nav-add-btn">
+            <i class="fa-solid fa-plus"></i>
+            <span data-lang="nav_add">ॲड</span>
+        </a>
+        <a href="profile.html" class="nav-item">
+            <i class="fa-regular fa-user"></i>
+            <span data-lang="nav_profile">प्रोफाईल</span>
+        </a>
+    </div>
+
+    <script>
+        let savedPropertyIds = []; // लोकल स्टोरेजमधील सेव्ह केलेले IDs
+
+        window.onload = function() {
+            if(typeof applySavedLanguage === 'function') {
+                applySavedLanguage();
+            }
+            updateAddButtonLink();
+            loadSavedProperties();
+        };
+
+        // 🆕 थेट WhatsApp शेअर (Fixed Clickable Link Logic for Saved Page)
+        function sharePropertyCard(propId, propTitle, propRent, propTaluka) {
+            event.preventDefault(); // कार्डवर क्लिक होऊ नये म्हणून
+            
+            let origin = window.location.origin;
+            let pathname = window.location.pathname;
+            let folderPath = pathname.substring(0, pathname.lastIndexOf('/'));
+            let shareUrl = `${origin}${folderPath}/details.html?id=${propId}`;
+            
+            if (!origin || origin.includes("null")) {
+                shareUrl = `https://satararentalhub.com/details.html?id=${propId}`;
+            }
+
+            let shareText = `*${propTitle}* 🏠\n📍 *ठिकाण:* ${propTaluka}\n💰 *भाडे:* ₹${propRent} /महिना\n\nया प्रॉपर्टीची अधिक माहिती पाहण्यासाठी खालील लिंकवर क्लिक करा:\n\n ${shareUrl} \n\n*सातारा रेंटल हब* - साताऱ्यातील हक्काचे घर!`;
+            
+            let encodedMsg = encodeURIComponent(shareText);
+            
+            window.open(`https://wa.me/?text=${encodedMsg}`, '_blank');
+        }
+
+        // जर युझर घरमालक (Owner) असेल, तर 'ॲड' बटणाची लिंक add_property.html ठेवा
+        function updateAddButtonLink() {
+            let role = localStorage.getItem("currentUserRole");
+            if(role === "owner") {
+                document.getElementById('nav-add-btn').href = "add_property.html";
+            }
+        }
+
+        // लोकल स्टोरेजमधून Wishlist चे IDs घेऊन Firebase मधून डेटा फेच करणे
+        function loadSavedProperties() {
+            let savedData = localStorage.getItem('userWishlist');
+            if(savedData) {
+                savedPropertyIds = JSON.parse(savedData);
+            }
+
+            if(savedPropertyIds.length === 0) {
+                showEmptyState();
+                return;
+            }
+
+            if(typeof db !== 'undefined') {
+                const container = document.getElementById('savedList');
+                container.innerHTML = ''; // Clear loading text
+                
+                let loadedCount = 0;
+
+                savedPropertyIds.forEach(propId => {
+                    db.collection("properties").doc(propId).get().then((doc) => {
+                        if(doc.exists) {
+                            let prop = doc.data();
+                            prop.id = doc.id;
+
+                            // फक्त live प्रॉपर्टीजच दाखवा, जर ओनरने लपवली असेल (rented) तर ती सेव्हड मधून सुद्धा हटेल
+                            if(prop.status === 'live') {
+                                // 🆕 ऑटोमॅटिक प्रीमियम एक्सपायरी चेक (Auto-Expire Logic)
+                                if (prop.planType && prop.planType !== 'basic' && prop.expiryDate && prop.expiryDate !== 'Lifetime') {
+                                    let now = new Date();
+                                    let expiryTime = new Date(prop.expiryDate);
+                                    if (now > expiryTime) {
+                                        prop.planType = 'basic';
+                                    }
+                                }
+
+                                renderPropertyCard(prop);
+                                loadedCount++;
+                                updateHeaderCount(loadedCount);
+                            } else {
+                                // जर स्टेटस लाईव्ह नसेल (म्हणजे rented किंवा inactive असेल), तर लोकल स्टोरेज मधून काढा
+                                removePropertyIdFromLocal(propId);
+                            }
+
+                        } else {
+                            // जर प्रॉपर्टी Firebase मधून डिलीट झाली असेल, तर ती लोकल स्टोरेजमधून पण काढा
+                            removePropertyIdFromLocal(propId);
+                        }
+                    }).catch(error => {
+                        console.log("Error fetching property details:", error);
+                    });
+                });
+                
+                document.getElementById('headerInfo').style.display = 'block';
+
+            } else {
+                // Firebase कनेक्टेड नसेल तर डमी डेटा 
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('headerInfo').style.display = 'block';
+                document.getElementById('shortlist-title').innerHTML = `<span data-lang="your_shortlist">तुमची शॉर्टलिस्ट</span> (लोकल मोड)`;
+                document.getElementById('savedList').innerHTML = `
+                    <div style="text-align:center; padding: 20px; color:#E74C3C;">डेटाबेस कनेक्टेड नाही.</div>
+                `;
+            }
+        }
+
+        // Firebase वरून मिळालेला डेटा UI वर कार्ड स्वरूपात दाखवणे
+        function renderPropertyCard(prop) {
+            const container = document.getElementById('savedList');
+
+            let imgHtml = (prop.photoUrls && prop.photoUrls.length > 0) 
+                ? `<img src="${prop.photoUrls[0]}" alt="${prop.title}">` 
+                : `<i class="fa-regular fa-image"></i>`;
+
+            // Premium Badge Logic (जर ॲडमिनने प्रीमियम प्लॅन दिला असेल आणि तो एक्सपायर झाला नसेल)
+            let badgeHtml = (prop.planType === 'premium1' || prop.planType === 'premium2')
+                ? `<div class="badge-premium"><i class="fa-solid fa-crown"></i> Premium</div>` 
+                : ``;
+
+            // Convert stored taluka value to display language text
+            let talukaText = prop.taluka;
+            let currentLang = localStorage.getItem('appLang') || 'mr';
+            if(translations && translations[currentLang] && translations[currentLang][`taluka_${prop.taluka}`]) {
+                talukaText = translations[currentLang][`taluka_${prop.taluka}`];
+            }
+
+            let propHtml = `
+            <a href="details.html?id=${prop.id}" class="property-card" id="card_${prop.id}">
+                <div class="property-img">
+                    ${imgHtml}
+                    ${badgeHtml}
+                    <button class="btn-fav" onclick="event.preventDefault(); removeProperty('${prop.id}')"><i class="fa-solid fa-heart"></i></button>
+                </div>
+                <div class="property-info">
+                    <div class="property-title">${prop.title}</div>
+                    <div class="property-price">₹ ${prop.rent} <small data-lang="per_month">/ महिना</small></div>
+                    <div class="property-meta-row">
+                        <span><i class="fa-solid fa-location-dot"></i> ${prop.area}, ${talukaText}</span>
+                    </div>
+
+                    <!-- 🆕 Share Button and View Details -->
+                    <div class="footer-actions">
+                        <button class="share-inline-btn" onclick="sharePropertyCard('${prop.id}', '${prop.title.replace(/'/g, "\\'")}', '${prop.rent}', '${talukaText}')" title="Share via WhatsApp">
+                            <i class="fa-brands fa-whatsapp"></i>
+                        </button>
+                        <div class="view-details-btn">View Details &rarr;</div>
+                    </div>
+                </div>
+            </a>`;
+            
+            container.innerHTML += propHtml;
+        }
+
+        // सेव्हड प्रॉपर्टी रिमूव्ह करण्याचे लॉजिक
+        function removeProperty(propId) {
+            let currentLang = localStorage.getItem('appLang') || 'mr';
+            let confirmMsg = currentLang === 'en' 
+                ? "Do you want to remove this property from your favorites?" 
+                : "ही प्रॉपर्टी तुमच्या आवडत्या यादीतून काढून टाकायची आहे का?";
+            
+            let confirmRemove = confirm(confirmMsg);
+            
+            if (confirmRemove) {
+                // १. UI मधून कार्ड लपवा
+                const card = document.getElementById(`card_${propId}`);
+                if(card) {
+                    card.style.display = 'none';
+                }
+                
+                // २. Local Storage मधून ID काढा
+                removePropertyIdFromLocal(propId);
+                
+                // ३. किती कार्ड्स शिल्लक आहेत ते तपासा (Empty State साठी)
+                checkEmptyState();
+            }
+        }
+
+        // लोकल स्टोरेजमधून ID काढण्याचे फंक्शन
+        function removePropertyIdFromLocal(propId) {
+            savedPropertyIds = savedPropertyIds.filter(id => id !== propId);
+            localStorage.setItem('userWishlist', JSON.stringify(savedPropertyIds));
+        }
+
+        // हेडरमध्ये काउंट अपडेट करणे
+        function updateHeaderCount(count) {
+            let currentLang = localStorage.getItem('appLang') || 'mr';
+            let titleText = currentLang === 'en' ? "Your Shortlist" : "तुमची शॉर्टलिस्ट";
+            document.getElementById('shortlist-title').innerHTML = `<span data-lang="your_shortlist">${titleText}</span> (${count})`;
+        }
+
+        // जर लिस्ट रिकामी असेल तर 'Empty State' दाखवा
+        function checkEmptyState() {
+            if (savedPropertyIds.length === 0) {
+                showEmptyState();
+            } else {
+                updateHeaderCount(savedPropertyIds.length);
+            }
+        }
+
+        function showEmptyState() {
+            document.getElementById('savedList').style.display = 'none';
+            document.getElementById('headerInfo').style.display = 'none';
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('emptyState').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

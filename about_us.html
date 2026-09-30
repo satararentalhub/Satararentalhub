@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>आमच्याबद्दल | Satara Rental Hub</title>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    
+    <!-- Firebase Configuration File -->
+    <script src="firebase-config.js"></script>
+    
+    <!-- Multi-Language Support File -->
+    <script src="lang.js"></script>
+    
+    <style>
+        :root {
+            --primary: #FF671F;
+            --primary-dark: #E65C00;
+            --bg-light: #F4F6F9;
+            --text-dark: #2C3E50;
+            --text-muted: #64748B;
+            --white: #FFFFFF;
+            --border: #EAECEE;
+            --success: #10B981;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-light); color: var(--text-dark); padding-bottom: 30px; }
+
+        /* टॉप बार */
+        .top-bar {
+            background: var(--primary); color: var(--white); padding: 15px 20px;
+            position: sticky; top: 0; z-index: 100; display: flex; align-items: center; gap: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .back-btn { color: var(--white); font-size: 20px; text-decoration: none; }
+        .page-title { flex: 1; font-size: 18px; font-weight: 700; }
+
+        /* भाषा बदलणारे बटण */
+        .lang-toggle-btn {
+            background: rgba(255,255,255,0.2); color: var(--white); border: 1px solid var(--white);
+            padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;
+        }
+
+        /* हिरो सेक्शन (Introduction) */
+        .hero-section {
+            background: linear-gradient(135deg, var(--white) 0%, #FFF5F0 100%);
+            padding: 40px 20px 30px 20px; text-align: center; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.02); margin-bottom: 25px; border-bottom: 1px solid #FFE4D6;
+        }
+        .hero-logo {
+            width: 80px; height: 80px; background: var(--white); border-radius: 50%;
+            margin: 0 auto 15px auto; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 8px 20px rgba(255, 103, 31, 0.2); padding: 5px;
+        }
+        /* Logo Image Styling */
+        .hero-logo img {
+            width: 100%; height: 100%; object-fit: contain; border-radius: 50%;
+        }
+
+        .hero-section h1 { font-size: 22px; font-weight: 800; color: var(--text-dark); margin-bottom: 10px; }
+        .hero-section p { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+
+        /* उद्देश आणि फीचर्स (Mission & Features) */
+        .info-container { padding: 0 20px 25px 20px; }
+        .info-card {
+            background: var(--white); border-radius: 16px; padding: 20px; margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid var(--border);
+        }
+        .info-title { font-size: 16px; font-weight: 800; color: var(--text-dark); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .info-title i { color: var(--primary); font-size: 18px; }
+        .info-desc { font-size: 14px; color: var(--text-muted); line-height: 1.7; text-align: justify; margin-bottom: 15px; }
+
+        /* Feature List Styling for Owners & Tenants */
+        .feature-list {
+            list-style: none;
+            padding-left: 0;
+            margin-bottom: 10px;
+        }
+        .feature-list li {
+            position: relative;
+            padding-left: 30px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: var(--text-dark);
+            line-height: 1.5;
+        }
+        .feature-list li::before {
+            content: '\f058'; /* FontAwesome Check Circle */
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            left: 0;
+            top: 2px;
+            color: var(--success);
+            font-size: 18px;
+        }
+
+        /* Founder Vision Box */
+        .vision-box {
+            background: linear-gradient(135deg, #FFF5F0, #FFE4D6);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin-top: 10px;
+            border: 1px solid rgba(255, 103, 31, 0.2);
+        }
+        .vision-icon {
+            font-size: 30px;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        .vision-text {
+            font-size: 14px;
+            font-style: italic;
+            font-weight: 600;
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        /* आमची टीम (Our Team) */
+        .section-header { padding: 0 20px; font-size: 18px; font-weight: 800; margin-bottom: 15px; color: var(--text-dark); text-align: center; }
+        
+        .team-container { padding: 0 20px 25px 20px; display: flex; flex-direction: column; gap: 20px; }
+        
+        .team-card {
+            background: var(--white); border-radius: 12px; padding: 0 0 20px 0; text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); position: relative; overflow: hidden;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        
+        /* केशरी पट्टा (Orange Header inside Card) */
+        .team-card-header {
+            background: var(--primary); width: 100%; height: 60px;
+            position: absolute; top: 0; left: 0; z-index: 0;
+        }
+
+        /* गोल फोटो */
+        .team-img {
+            width: 80px; height: 80px; background: #E2E8F0; border-radius: 50%;
+            margin: 20px auto 10px auto; position: relative; z-index: 1; border: 4px solid var(--white);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; font-size: 35px; color: #94A3B8;
+        }
+        
+        /* माहिती (Center Aligned) */
+        .team-name { font-size: 18px; font-weight: 800; color: var(--text-dark); position: relative; z-index: 1; margin-bottom: 2px; }
+        .team-role { font-size: 13px; font-weight: 700; color: var(--primary); margin-bottom: 12px; position: relative; z-index: 1; }
+        .team-bio { font-size: 13px; color: var(--text-muted); line-height: 1.6; position: relative; z-index: 1; padding: 0 15px; text-align: center; }
+
+        /* छोटीशी कायदेशीर सूचना (Small Disclaimer at Bottom) */
+        .footer-disclaimer {
+            padding: 15px 25px; text-align: center; margin-top: 10px;
+            border-top: 1px solid var(--border);
+        }
+        .footer-disclaimer p {
+            font-size: 11px; color: #94A3B8; line-height: 1.5; margin: 0;
+        }
+        .footer-disclaimer i { margin-right: 4px; }
+
+    </style>
+</head>
+<body>
+
+    <!-- टॉप बार -->
+    <div class="top-bar">
+        <!-- बॅक बटन होम पेजवर घेऊन जाईल -->
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+        <div class="page-title" data-lang="about_title">आमच्याबद्दल (About Us)</div>
+        <button class="lang-toggle-btn" onclick="toggleLanguage()">ENG / मराठी</button>
+    </div>
+
+    <!-- हिरो सेक्शन -->
+    <div class="hero-section">
+        <div class="hero-logo">
+            <!-- 🆕 Logo Image from App -->
+            <img src="Logo.png" alt="Satara Rental Hub Logo" onerror="this.style.display='none'">
+        </div>
+        <h1 data-lang="app_name">सातारा रेंटल हब</h1>
+        <p data-lang="hero_desc">साताऱ्यातील लोकांसाठी हक्काचे, सुरक्षित आणि सर्वात सोपे रेंटल प्लॅटफॉर्म.</p>
+    </div>
+
+    <!-- ॲपचा उद्देश आणि फायदे -->
+    <div class="info-container">
+        
+        <!-- ॲपचा उद्देश -->
+        <div class="info-card">
+            <div class="info-title"><i class="fa-solid fa-bullseye"></i> <span data-lang="about_purpose_title">आमचा उद्देश (Our Purpose)</span></div>
+            <div class="info-desc" data-lang="about_purpose_p1">
+                सातारा जिल्ह्यामध्ये भाड्याने घरे, दुकाने, किंवा कमर्शियल जागा शोधणे आणि ती योग्य ग्राहकांपर्यंत पोहोचवणे हे नेहमीच एक मोठे आव्हान राहिले आहे. 
+                अनेकदा मध्यस्थांशिवाय (Without Brokers) योग्य माहिती मिळत नाही. 
+            </div>
+            <div class="info-desc" data-lang="about_purpose_p2" style="margin-bottom: 0;">
+                याच समस्येवर एक कायमस्वरूपी उपाय म्हणून <strong>'सातारा रेंटल हब' (Satara Rental Hub)</strong> ची निर्मिती करण्यात आली आहे. 
+                आमचा मुख्य उद्देश हा घरमालक आणि भाडेकरू यांना एकाच डिजिटल प्लॅटफॉर्मवर आणून त्यांच्यातील दरी कमी करणे आणि साताऱ्यातील रेंटल मार्केट अधिक पारदर्शक, सोपे आणि जलद करणे हा आहे.
+            </div>
+        </div>
+
+        <!-- घरमालकांसाठी फीचर्स -->
+        <div class="info-card">
+            <div class="info-title"><i class="fa-solid fa-house-user"></i> <span data-lang="about_owner_title">घरमालकांसाठी सुविधा (For Owners)</span></div>
+            <ul class="feature-list">
+                <li data-lang="about_owner_1"><strong>मोफत लिस्टिंग:</strong> तुमची प्रॉपर्टी कोणत्याही छुप्‍या शुल्काविना (Zero Hidden Charges) ॲपवर ॲड करा.</li>
+                <li data-lang="about_owner_2"><strong>शून्य ब्रोकरेज:</strong> थेट भाडेकरूंशी संपर्क करा, कोणतेही ब्रोकरेज कमिशन देण्याची गरज नाही.</li>
+                <li data-lang="about_owner_3"><strong>स्मार्ट डॅशबोर्ड:</strong> तुमच्या जाहिरातीला किती जणांनी पाहिले (Views) आणि किती जणांनी सेव्ह केले (Leads) हे डॅशबोर्डवर ट्रॅक करा.</li>
+                <li data-lang="about_owner_4"><strong>लवचिक व्यवस्थापन:</strong> प्रॉपर्टी भाड्याने गेल्यावर ती लपवा (Hide), आणि रिकामी झाल्यावर एका क्लिकवर पुन्हा लाईव्ह करा.</li>
+                <li data-lang="about_owner_5"><strong>प्रीमियम ॲडव्हान्टेज:</strong> तुमच्या प्रॉपर्टीला जास्त आणि जलद रिस्पॉन्स मिळवण्यासाठी 'टॉप प्रायॉरिटी लिस्टिंग' द्वारे ॲपच्या होमपेजवर प्रमोट करा.</li>
+            </ul>
+        </div>
+
+        <!-- युझर्ससाठी फीचर्स -->
+        <div class="info-card">
+            <div class="info-title"><i class="fa-solid fa-users"></i> <span data-lang="about_tenant_title">भाडेकरूंसाठी सुविधा (For Tenants)</span></div>
+            <ul class="feature-list">
+                <li data-lang="about_tenant_1"><strong>विस्तृत पर्याय:</strong> १ आरके (1 RK), फ्लॅट, हॉस्टेल, पीजी ते कमर्शियल गाळे आणि गोडाऊन - सर्व काही एकाच ठिकाणी.</li>
+                <li data-lang="about_tenant_2"><strong>थेट संपर्क:</strong> प्रॉपर्टी आवडल्यास मध्यस्थाशिवाय थेट घरमालकाशी WhatsApp किंवा कॉलद्वारे संपर्क साधा.</li>
+                <li data-lang="about_tenant_3"><strong>स्मार्ट सर्च आणि फिल्टर:</strong> तुमच्या बजेट, लोकेशन आणि आवश्यक सुविधांनुसार (उदा. Wi-Fi, पार्किंग) अचूक घर शोधा.</li>
+                <li data-lang="about_tenant_4"><strong>फेव्हरेट्स (Wishlist):</strong> आवडलेल्या प्रॉपर्टीज सेव्ह करा आणि नंतर त्यांच्याशी संपर्क साधा.</li>
+                <li data-lang="about_tenant_5"><strong>सोपे शेअरिंग:</strong> एका क्लिकवर प्रॉपर्टीची माहिती तुमच्या मित्र आणि कुटुंबासोबत WhatsApp वर शेअर करा.</li>
+            </ul>
+        </div>
+
+        <!-- फाउंडरचे व्हिजन -->
+        <div class="vision-box">
+            <div class="vision-icon"><i class="fa-solid fa-lightbulb"></i></div>
+            <div class="vision-text" data-lang="about_vision_text">
+                "डिजिटल तंत्रज्ञानाचा वापर करून साताऱ्यातील प्रत्येक व्यक्तीला त्याच्या गरजेनुसार हक्काचे आणि परवडणारे घर सहज मिळावे, आणि प्रॉपर्टी मालकांनाही योग्य भाडेकरू विना-त्रास उपलब्ध व्हावा, याच ध्येयाने 'सातारा रेंटल हब' सुरू केले आहे. आमचा भर पारदर्शकता, विश्वास आणि उत्तम सेवेवर आहे."
+            </div>
+        </div>
+
+    </div>
+
+    <!-- आमची टीम (Our Team) - Dynamic Container -->
+    <div class="section-header" data-lang="our_team">आमची टीम (Our Team)</div>
+    <div class="team-container" id="team-display-container">
+        <!-- ॲडमिन पॅनेल किंवा फायरबेस डेटा इथे लोड होईल -->
+    </div>
+
+    <!-- छोटी आणि व्यावसायिक कायदेशीर सूचना (Disclaimer) -->
+    <div class="footer-disclaimer">
+        <p>
+            <i class="fa-solid fa-circle-info"></i> <b data-lang="disclaimer_title">Disclaimer:</b> <span data-lang="disclaimer_desc">'सातारा रेंटल हब' हे प्लॅटफॉर्म तुम्हाला फक्त चांगल्या प्रॉपर्टीज सुचवण्याचे माध्यम आहे. प्रत्यक्ष घर भाड्याने घेताना किंवा खरेदी करताना कागदपत्रे आणि पैशांचे व्यवहार स्वतः काळजीपूर्वक तपासून घ्यावेत.</span>
+        </p>
+    </div>
+
+    <!-- JavaScript to load dynamic data from Firebase / LocalStorage and Language Support -->
+    <script>
+        // 🆕 डायनॅमिक ट्रान्सलेशन डेटा (भाषेसाठी)
+        document.addEventListener("DOMContentLoaded", function() {
+            if(typeof translations !== 'undefined') {
+                if(!translations['en']) translations['en'] = {};
+                if(!translations['mr']) translations['mr'] = {};
+                
+                // English Translations
+                translations['en']['about_purpose_title'] = "Our Purpose";
+                translations['en']['about_purpose_p1'] = "Finding rental homes, shops, or commercial spaces in Satara district and connecting them to the right customers has always been a major challenge. Often, proper information is unavailable without brokers.";
+                translations['en']['about_purpose_p2'] = "As a permanent solution to this problem, <strong>'Satara Rental Hub'</strong> was created. Our main objective is to bring property owners and tenants onto a single digital platform, bridging the gap between them and making Satara's rental market more transparent, easy, and fast.";
+                
+                translations['en']['about_owner_title'] = "Features for Owners";
+                translations['en']['about_owner_1'] = "<strong>Free Listing:</strong> Add your property on the app without any hidden charges.";
+                translations['en']['about_owner_2'] = "<strong>Zero Brokerage:</strong> Connect directly with tenants, no need to pay any brokerage commission.";
+                translations['en']['about_owner_3'] = "<strong>Smart Dashboard:</strong> Track how many people viewed or saved (Leads) your ad on the dashboard.";
+                translations['en']['about_owner_4'] = "<strong>Flexible Management:</strong> Hide your property once rented, and make it live again with a single click when vacant.";
+                translations['en']['about_owner_5'] = "<strong>Premium Advantage:</strong> Promote your property on the app's homepage via 'Top Priority Listing' to get a faster response.";
+
+                translations['en']['about_tenant_title'] = "Features for Tenants";
+                translations['en']['about_tenant_1'] = "<strong>Wide Options:</strong> 1 RK, Flats, Hostels, PGs to Commercial spaces - everything in one place.";
+                translations['en']['about_tenant_2'] = "<strong>Direct Contact:</strong> Contact the property owner directly via WhatsApp or Call without brokers.";
+                translations['en']['about_tenant_3'] = "<strong>Smart Search & Filters:</strong> Find the perfect home according to your budget, location, and required amenities.";
+                translations['en']['about_tenant_4'] = "<strong>Favorites (Wishlist):</strong> Save properties you like and contact them later.";
+                translations['en']['about_tenant_5'] = "<strong>Easy Sharing:</strong> Share property details with your friends and family on WhatsApp with a single click.";
+
+                translations['en']['about_vision_text'] = "\"With the aim that every person in Satara easily gets a rightful and affordable home using digital technology, and property owners get the right tenants hassle-free, 'Satara Rental Hub' was started. Our focus is on transparency, trust, and excellent service.\"";
+
+                // Marathi Translations (Fallback defaults)
+                translations['mr']['about_purpose_title'] = "आमचा उद्देश (Our Purpose)";
+                translations['mr']['about_purpose_p1'] = "सातारा जिल्ह्यामध्ये भाड्याने घरे, दुकाने, किंवा कमर्शियल जागा शोधणे आणि ती योग्य ग्राहकांपर्यंत पोहोचवणे हे नेहमीच एक मोठे आव्हान राहिले आहे. अनेकदा मध्यस्थांशिवाय (Without Brokers) योग्य माहिती मिळत नाही.";
+                translations['mr']['about_purpose_p2'] = "याच समस्येवर एक कायमस्वरूपी उपाय म्हणून <strong>'सातारा रेंटल हब' (Satara Rental Hub)</strong> ची निर्मिती करण्यात आली आहे. आमचा मुख्य उद्देश हा घरमालक आणि भाडेकरू यांना एकाच डिजिटल प्लॅटफॉर्मवर आणून त्यांच्यातील दरी कमी करणे आणि साताऱ्यातील रेंटल मार्केट अधिक पारदर्शक, सोपे आणि जलद करणे हा आहे.";
+                
+                translations['mr']['about_owner_title'] = "घरमालकांसाठी सुविधा (For Owners)";
+                translations['mr']['about_owner_1'] = "<strong>मोफत लिस्टिंग:</strong> तुमची प्रॉपर्टी कोणत्याही छुप्‍या शुल्काविना (Zero Hidden Charges) ॲपवर ॲड करा.";
+                translations['mr']['about_owner_2'] = "<strong>शून्य ब्रोकरेज:</strong> थेट भाडेकरूंशी संपर्क करा, कोणतेही ब्रोकरेज कमिशन देण्याची गरज नाही.";
+                translations['mr']['about_owner_3'] = "<strong>स्मार्ट डॅशबोर्ड:</strong> तुमच्या जाहिरातीला किती जणांनी पाहिले (Views) आणि किती जणांनी सेव्ह केले (Leads) हे डॅशबोर्डवर ट्रॅक करा.";
+                translations['mr']['about_owner_4'] = "<strong>लवचिक व्यवस्थापन:</strong> प्रॉपर्टी भाड्याने गेल्यावर ती लपवा (Hide), आणि रिकामी झाल्यावर एका क्लिकवर पुन्हा लाईव्ह करा.";
+                translations['mr']['about_owner_5'] = "<strong>प्रीमियम ॲडव्हान्टेज:</strong> तुमच्या प्रॉपर्टीला जास्त आणि जलद रिस्पॉन्स मिळवण्यासाठी 'टॉप प्रायॉरिटी लिस्टिंग' द्वारे ॲपच्या होमपेजवर प्रमोट करा.";
+
+                translations['mr']['about_tenant_title'] = "भाडेकरूंसाठी सुविधा (For Tenants)";
+                translations['mr']['about_tenant_1'] = "<strong>विस्तृत पर्याय:</strong> १ आरके (1 RK), फ्लॅट, हॉस्टेल, पीजी ते कमर्शियल गाळे आणि गोडाऊन - सर्व काही एकाच ठिकाणी.";
+                translations['mr']['about_tenant_2'] = "<strong>थेट संपर्क:</strong> प्रॉपर्टी आवडल्यास मध्यस्थाशिवाय थेट घरमालकाशी WhatsApp किंवा कॉलद्वारे संपर्क साधा.";
+                translations['mr']['about_tenant_3'] = "<strong>स्मार्ट सर्च आणि फिल्टर:</strong> तुमच्या बजेट, लोकेशन आणि आवश्यक सुविधांनुसार (उदा. Wi-Fi, पार्किंग) अचूक घर शोधा.";
+                translations['mr']['about_tenant_4'] = "<strong>फेव्हरेट्स (Wishlist):</strong> आवडलेल्या प्रॉपर्टीज सेव्ह करा आणि नंतर त्यांच्याशी संपर्क साधा.";
+                translations['mr']['about_tenant_5'] = "<strong>सोपे शेअरिंग:</strong> एका क्लिकवर प्रॉपर्टीची माहिती तुमच्या मित्र आणि कुटुंबासोबत WhatsApp वर शेअर करा.";
+
+                translations['mr']['about_vision_text'] = "\"डिजिटल तंत्रज्ञानाचा वापर करून साताऱ्यातील प्रत्येक व्यक्तीला त्याच्या गरजेनुसार हक्काचे आणि परवडणारे घर सहज मिळावे, आणि प्रॉपर्टी मालकांनाही योग्य भाडेकरू विना-त्रास उपलब्ध व्हावा, याच ध्येयाने 'सातारा रेंटल हब' सुरू केले आहे. आमचा भर पारदर्शकता, विश्वास आणि उत्तम सेवेवर आहे.\"";
+            }
+        });
+
+        window.onload = function() {
+            // भाषा सेट करणे
+            if(typeof applySavedLanguage === 'function') {
+                applySavedLanguage();
+            }
+
+            let teamContainer = document.getElementById("team-display-container");
+            teamContainer.innerHTML = ""; 
+
+            // १. Firebase Firestore मधून किंवा LocalStorage मधून संस्थापक (Founder) चा डेटा वाचणे
+            if (typeof db !== 'undefined') {
+                db.collection("settings").doc("founder").get().then(function(doc) {
+                    if (doc.exists) {
+                        let founderData = doc.data();
+                        renderFounder(founderData);
+                    } else {
+                        loadDefaultFounder(teamContainer);
+                    }
+                    loadTeamMembers(teamContainer);
+                }).catch(function(error) {
+                    console.log("Firebase Error, fallback to LocalStorage:", error);
+                    loadFromLocalStorage(teamContainer);
+                });
+            } else {
+                loadFromLocalStorage(teamContainer);
+            }
+        };
+
+        function renderFounder(founderData) {
+            let teamContainer = document.getElementById("team-display-container");
+            let founderCard = `
+            <div class="team-card">
+                <div class="team-card-header"></div>
+                <div class="team-img">
+                    <i class="fa-solid fa-user-tie"></i>
+                </div>
+                <div class="team-name">${founderData.name}</div>
+                <div class="team-role">${founderData.role}</div>
+                <div class="team-bio">${founderData.bio}</div>
+            </div>`;
+            teamContainer.innerHTML += founderCard;
+        }
+
+        // 🆕 नावाचा उल्लेख टाळून बदललेले डिफॉल्ट फाउंडर फंक्शन
+        function loadDefaultFounder(container) {
+            container.innerHTML += `
+            <div class="team-card">
+                <div class="team-card-header"></div>
+                <div class="team-img"><i class="fa-solid fa-user-tie"></i></div>
+                <div class="team-name">संस्थापक व संचालक</div>
+                <div class="team-role">Founder & Director</div>
+                <div class="team-bio">१४ वर्षांहून अधिक काळ मॅनेजमेंट क्षेत्रात काम केल्याचा अनुभव. साताऱ्यातील लोकांसाठी तंत्रज्ञानाचा वापर करून दैनंदिन जीवन सोपे करणाऱ्या नाविन्यपूर्ण सुविधा आणि ॲप्स निर्माण करण्याची आवड.</div>
+            </div>`;
+        }
+
+        function loadTeamMembers(container) {
+            let teamData = localStorage.getItem("teamData");
+            if(teamData) {
+                let teamArray = JSON.parse(teamData);
+                teamArray.forEach(function(member) {
+                    let bio = member.bio ? member.bio : "आमची सपोर्ट टीम तुम्हाला मदत करण्यासाठी नेहमी तत्पर आहे."; 
+                    let memberCard = `
+                    <div class="team-card">
+                        <div class="team-card-header"></div>
+                        <div class="team-img">
+                            <i class="fa-solid fa-headset"></i>
+                        </div>
+                        <div class="team-name">${member.name}</div>
+                        <div class="team-role">${member.role}</div>
+                        <div class="team-bio">${bio}</div>
+                    </div>`;
+                    container.innerHTML += memberCard;
+                });
+            } else {
+                container.innerHTML += `
+                <div class="team-card">
+                    <div class="team-card-header"></div>
+                    <div class="team-img"><i class="fa-solid fa-headset"></i></div>
+                    <div class="team-name">सपोर्ट टीम</div>
+                    <div class="team-role">मदत आणि सहाय्य (Support)</div>
+                    <div class="team-bio">तुमच्या प्रत्येक प्रश्नाचे उत्तर देण्यासाठी आणि ॲप वापरताना येणाऱ्या अडचणी सोडवण्यासाठी आमची सपोर्ट टीम नेहमी तत्पर आहे.</div>
+                </div>`;
+            }
+        }
+
+        function loadFromLocalStorage(container) {
+            let founderData = localStorage.getItem("founderData");
+            if(founderData) {
+                renderFounder(JSON.parse(founderData));
+            } else {
+                loadDefaultFounder(container);
+            }
+            loadTeamMembers(container);
+        }
+    </script>
+</body>
+</html>

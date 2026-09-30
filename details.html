@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>प्रॉपर्टी माहिती | Satara Rental Hub</title>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <!-- Razorpay Checkout Script Added -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <!-- Firebase Configuration File -->
+    <script src="firebase-config.js"></script>
+    
+    <!-- Multi-Language Support File -->
+    <script src="lang.js"></script>
+    
+    <style>
+        :root {
+            --primary: #FF671F;
+            --bg-light: #F8FAFC;
+            --text-dark: #1E293B;
+            --text-muted: #64748B;
+            --white: #FFFFFF;
+            --border: #E2E8F0;
+            --success: #10B981;
+            --premium: #8B5CF6;
+            --pending: #F59E0B;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-light); color: var(--text-dark); padding-bottom: 90px; }
+
+        /* टॉप बार (Transparent Over Image) */
+        .top-bar {
+            position: fixed; top: 0; width: 100%; padding: 15px 20px; z-index: 100;
+            display: flex; justify-content: space-between; align-items: center;
+            background: linear-gradient(rgba(0,0,0,0.6), transparent);
+        }
+        .icon-btn {
+            width: 40px; height: 40px; background: rgba(255,255,255,0.9); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; color: var(--text-dark);
+            text-decoration: none; font-size: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: none; cursor: pointer;
+        }
+
+        /* भाषा बदलणारे बटण (Top Right) */
+        .lang-toggle-btn {
+            background: rgba(255,255,255,0.8); color: var(--text-dark); 
+            border: none; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer;
+        }
+
+        /* फोटो गॅलरी (Scrollable) */
+        .image-gallery {
+            width: 100%; height: 300px; display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
+            scrollbar-width: none; background: #CBD5E1; position: relative;
+        }
+        .image-gallery::-webkit-scrollbar { display: none; }
+        .gallery-item {
+            min-width: 100%; height: 100%; scroll-snap-align: center;
+            display: flex; align-items: center; justify-content: center; font-size: 50px; color: #94A3B8;
+            background: #E2E8F0; border-right: 2px solid var(--white);
+        }
+        .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* टॅग्स आणि अलर्ट्स */
+        .badge-premium { position: absolute; top: 70px; left: 20px; background: var(--premium); color: var(--white); font-size: 12px; font-weight: 800; padding: 6px 12px; border-radius: 8px; box-shadow: 0 4px 10px rgba(139, 92, 246, 0.5); z-index: 10; display: none;}
+        
+        .pending-alert { background: var(--pending); color: var(--white); padding: 10px 20px; text-align: center; font-size: 13px; font-weight: 800; display: none; margin-bottom: -15px; position: relative; z-index: 2;}
+
+        /* प्रॉपर्टी हेडर (Title & Price) */
+        .content-container { padding: 20px; margin-top: -20px; position: relative; background: var(--bg-light); border-top-left-radius: 20px; border-top-right-radius: 20px; z-index: 5;}
+        .prop-type-badge { display: inline-block; background: #FFF5F0; color: var(--primary); padding: 5px 12px; border-radius: 8px; font-size: 12px; font-weight: 800; margin-bottom: 10px; }
+        .prop-title { font-size: 22px; font-weight: 800; margin-bottom: 5px; line-height: 1.3; }
+        .prop-location { font-size: 14px; color: var(--text-muted); margin-bottom: 15px; display: flex; align-items: center; gap: 5px; }
+        
+        .price-box { display: flex; align-items: center; justify-content: space-between; padding: 15px; background: var(--white); border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid var(--border); margin-bottom: 20px; }
+        .price-amt { font-size: 24px; font-weight: 800; color: var(--primary); }
+        .price-amt small { font-size: 12px; color: var(--text-muted); }
+        .deposit-amt { font-size: 13px; font-weight: 700; color: var(--text-dark); text-align: right; }
+        .deposit-amt small { display: block; color: var(--text-muted); font-size: 11px; }
+
+        /* हायलाईट्स (Grid) */
+        .highlights-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 25px; }
+        .highlight-item { background: var(--white); padding: 12px 10px; border-radius: 12px; text-align: center; border: 1px solid var(--border); }
+        .highlight-item i { font-size: 20px; color: var(--text-muted); margin-bottom: 8px; display: block; }
+        .highlight-val { font-size: 13px; font-weight: 800; color: var(--text-dark); }
+        .highlight-lbl { font-size: 11px; color: var(--text-muted); }
+
+        /* विभाग हेडिंग */
+        .section-title { font-size: 16px; font-weight: 800; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        
+        /* सुविधा (Amenities) */
+        .amenities-list { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 25px; }
+        .amenity-chip { background: var(--white); border: 1px solid var(--border); padding: 8px 15px; border-radius: 20px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .amenity-chip i { color: var(--success); }
+
+        /* वर्णन (Description) */
+        .description { font-size: 14px; color: var(--text-muted); line-height: 1.6; background: var(--white); padding: 15px; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 25px; }
+
+        /* 🔒 लॉक केलेला संपर्क बॉक्स (Payment Gateway Trigger) */
+        .contact-lock-box {
+            background: linear-gradient(135deg, #1E293B, #0F172A); color: var(--white);
+            padding: 20px; border-radius: 16px; text-align: center; margin-bottom: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); position: relative; overflow: hidden;
+        }
+        .contact-lock-box::after { content: '\f023'; font-family: "FontAwesome"; position: absolute; right: -10px; bottom: -10px; font-size: 80px; color: rgba(255,255,255,0.03); }
+        
+        .owner-name { font-size: 16px; font-weight: 700; margin-bottom: 5px; }
+        .hidden-number { font-size: 26px; font-weight: 800; letter-spacing: 2px; margin: 10px 0; color: #F8FAFC; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
+        
+        .btn-unlock {
+            background: linear-gradient(135deg, #F59E0B, #D97706); color: var(--white);
+            border: none; padding: 14px 20px; border-radius: 12px; font-size: 15px; font-weight: 800;
+            width: 100%; margin-top: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3); transition: 0.2s;
+        }
+        .btn-unlock:active { transform: scale(0.97); }
+        .unlock-note { font-size: 11px; color: #94A3B8; margin-top: 10px; }
+
+        /* Bottom Sticky Action Bar (Call & WhatsApp) */
+        .bottom-action-bar {
+            position: fixed; bottom: 0; width: 100%; background: var(--white);
+            padding: 15px 20px; display: flex; gap: 15px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.08); border-top-left-radius: 20px; border-top-right-radius: 20px; z-index: 100;
+        }
+        .btn-action {
+            flex: 1; padding: 15px; border-radius: 12px; font-size: 15px; font-weight: 800;
+            display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; border: none; cursor: pointer; opacity: 0.5; pointer-events: none; transition: 0.3s;
+        }
+        .btn-call { background: var(--primary); color: var(--white); }
+        .btn-whatsapp { background: #25D366; color: var(--white); }
+        
+        /* Unlocked State Classes */
+        .btn-action.unlocked { opacity: 1; pointer-events: auto; }
+        .number-revealed { color: #10B981 !important; text-shadow: none !important; }
+
+        .loading-fullscreen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-light);
+            z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-size: 18px; font-weight: 800; color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Loading State -->
+    <div id="loadingScreen" class="loading-fullscreen">
+        <i class="fa-solid fa-spinner fa-spin" style="font-size: 40px; margin-bottom: 15px;"></i>
+        <div>प्रॉपर्टीची माहिती लोड होत आहे...</div>
+    </div>
+
+    <!-- टॉप बार (Back Button & Actions) -->
+    <div class="top-bar">
+        <button class="icon-btn" id="backBtn" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></button>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <button class="lang-toggle-btn" onclick="toggleLanguage()">ENG / मराठी</button>
+            <button class="icon-btn" onclick="shareProperty()"><i class="fa-solid fa-share-nodes"></i></button>
+            <button class="icon-btn" id="favBtn" onclick="toggleFavorite()"><i class="fa-solid fa-heart"></i></button>
+        </div>
+    </div>
+
+    <!-- पेंडिंग ॲप्रूव्हल अलर्ट (फक्त मालकाला दिसेल) -->
+    <div id="pendingAlert" class="pending-alert">
+        <i class="fa-solid fa-clock"></i> ही प्रॉपर्टी ॲडमिन मंजुरीची वाट पाहत आहे.
+    </div>
+
+    <!-- फोटो गॅलरी (Scrollable) -->
+    <div class="image-gallery" id="property-gallery">
+        <div id="premiumBadge" class="badge-premium"><i class="fa-solid fa-crown"></i> Premium</div>
+        <!-- Firebase मधून फोटो इथे डायनॅमिकली लोड होतील -->
+    </div>
+
+    <!-- मुख्य माहिती -->
+    <div class="content-container">
+        
+        <div class="prop-type-badge" id="prop-type-display">...</div>
+        <h1 class="prop-title" id="prop-title-display">...</h1>
+        <div class="prop-location"><i class="fa-solid fa-location-dot" style="color:var(--primary);"></i> <span id="prop-location-display">...</span></div>
+
+        <!-- किंमत आणि डिपॉझिट -->
+        <div class="price-box">
+            <div class="price-amt">₹ <span id="prop-rent-display">...</span> <small data-lang="per_month">/ महिना</small></div>
+            <div class="deposit-amt"><small data-lang="deposit_lbl">डिपॉझिट</small> ₹ <span id="prop-deposit-display">...</span></div>
+        </div>
+
+        <!-- हायलाईट्स -->
+        <div class="highlights-grid">
+            <div class="highlight-item">
+                <i class="fa-solid fa-building"></i>
+                <div class="highlight-val" id="highlight-type">...</div>
+                <div class="highlight-lbl">प्रकार</div>
+            </div>
+            <div class="highlight-item">
+                <i class="fa-solid fa-users"></i>
+                <div class="highlight-val" id="highlight-tenant">...</div>
+                <div class="highlight-lbl">कोणासाठी</div>
+            </div>
+            <div class="highlight-item">
+                <i class="fa-solid fa-couch"></i>
+                <div class="highlight-val" id="highlight-furnish">...</div>
+                <div class="highlight-lbl">फर्निचर</div>
+            </div>
+            <div class="highlight-item">
+                <i class="fa-solid fa-city"></i>
+                <div class="highlight-val" id="highlight-category">...</div>
+                <div class="highlight-lbl">श्रेणी</div>
+            </div>
+            <div class="highlight-item">
+                <i class="fa-solid fa-map-pin"></i>
+                <div class="highlight-val" id="highlight-taluka">...</div>
+                <div class="highlight-lbl">तालुका</div>
+            </div>
+            <div class="highlight-item">
+                <i class="fa-solid fa-location-crosshairs"></i>
+                <div class="highlight-val" id="highlight-area">...</div>
+                <div class="highlight-lbl">परिसर</div>
+            </div>
+        </div>
+
+        <!-- सुविधा -->
+        <div class="section-title"><i class="fa-solid fa-star" style="color:#F59E0B;"></i> <span data-lang="amenities_sec">उपलब्ध सुविधा</span></div>
+        <div class="amenities-list" id="prop-amenities-display">
+            <!-- Firebase मधून सुविधा डायनॅमिकली लोड होतील -->
+        </div>
+
+        <!-- वर्णन -->
+        <div class="section-title"><i class="fa-solid fa-align-left" style="color:#3B82F6;"></i> <span data-lang="more_info">अधिक माहिती</span></div>
+        <div class="description" id="prop-desc-display">...</div>
+
+        <!-- 🔒 लॉक केलेला संपर्क बॉक्स (Payment Gateway Trigger) -->
+        <div class="contact-lock-box" id="contactBox">
+            <div class="owner-name"><i class="fa-solid fa-user-tie"></i> <span id="owner-name-display">...</span> <span data-lang="owner_tag">(घरमालक)</span></div>
+            
+            <!-- लपवलेला नंबर -->
+            <div class="hidden-number" id="phoneNumber">+91 98XXXXXX10</div>
+            
+            <!-- डायनॅमिक बटन -->
+            <button class="btn-unlock" id="unlockBtn" onclick="processPayment()">
+                <i class="fa-solid fa-lock-open"></i> <span data-lang="unlock_number_btn">मालकाचा नंबर पहा</span> (<span id="displayFee">₹ 20</span>)
+            </button>
+            <div class="unlock-note" id="unlockNote" data-lang="unlock_note_desc">UPI, GPay, PhonePe ने पेमेंट करा. नंबर कायमस्वरूपी अनलॉक होईल.</div>
+        </div>
+
+    </div>
+
+    <!-- Bottom Sticky Action Bar -->
+    <div class="bottom-action-bar">
+        <button class="btn-action btn-call" id="callBtn" onclick="makeCall()">
+            <i class="fa-solid fa-phone"></i> <span data-lang="call_btn">कॉल करा</span>
+        </button>
+        <button class="btn-action btn-whatsapp" id="whatsappBtn" onclick="sendWhatsApp()">
+            <i class="fa-brands fa-whatsapp"></i> WhatsApp
+        </button>
+    </div>
+
+    <!-- JavaScript (Firebase Read & Dynamic Razorpay Payment Logic) -->
+    <script>
+        let currentUnlockFee = 20;
+        let propertyData = null; 
+        let isUnlocked = false;  
+        let currentUserId = localStorage.getItem("currentUserId") || "unknown";
+
+        window.onload = function() {
+            if(typeof applySavedLanguage === 'function') { applySavedLanguage(); }
+
+            fetchUnlockFeeFromFirebase();
+            loadPropertyDetails();
+        };
+        
+        // डायनॅमिक बॅक बटण लॉजिक (युझर कुठून आलाय त्यानुसार)
+        function goBack() {
+            if (document.referrer.includes("saved.html")) {
+                window.location.href = "saved.html";
+            } else if (document.referrer.includes("owner_dashboard.html")) {
+                window.location.href = "owner_dashboard.html";
+            } else if (document.referrer.includes("index.html")) {
+                window.location.href = "index.html";
+            } else {
+                window.location.href = "listing.html";
+            }
+        }
+
+        // १. Firebase मधून ॲडमिनने सेट केलेली फी वाचणे
+        function fetchUnlockFeeFromFirebase() {
+            if(typeof db !== 'undefined') {
+                db.collection("admin_settings").doc("master_config").get().then((doc) => {
+                    if (doc.exists && doc.data().tenantUnlockFee) {
+                        currentUnlockFee = doc.data().tenantUnlockFee;
+                        document.getElementById("displayFee").innerText = `₹ ${currentUnlockFee}`;
+                    } else {
+                        fallbackFeeLoad();
+                    }
+                }).catch(() => fallbackFeeLoad());
+            } else {
+                fallbackFeeLoad();
+            }
+        }
+
+        function fallbackFeeLoad() {
+            document.getElementById("displayFee").innerText = `₹ ${currentUnlockFee}`;
+        }
+
+        // २. Firebase मधून प्रॉपर्टीची माहिती लोड करणे आणि ऑटो-एक्सपायर तपासणे
+        function loadPropertyDetails() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const propId = urlParams.get('id');
+
+            if(!propId) {
+                alert("प्रॉपर्टी सापडली नाही. तुम्ही लिस्टिंग पेजवर परत जात आहात.");
+                window.location.href = "listing.html";
+                return;
+            }
+
+            if(typeof db !== 'undefined') {
+                db.collection("properties").doc(propId).get().then((doc) => {
+                    if (doc.exists) {
+                        propertyData = doc.data();
+                        propertyData.id = doc.id;
+
+                        // ऑटोमॅटिक प्रीमियम एक्सपायरी चेक (Auto-Expire Logic)
+                        if (propertyData.planType && propertyData.planType !== 'basic' && propertyData.expiryDate && propertyData.expiryDate !== 'Lifetime') {
+                            let now = new Date();
+                            let expiryTime = new Date(propertyData.expiryDate);
+                            if (now > expiryTime) {
+                                propertyData.planType = 'basic';
+                            }
+                        }
+
+                        if(propertyData.status === "pending" && propertyData.ownerId !== currentUserId) {
+                            alert("ही प्रॉपर्टी सध्या उपलब्ध नाही (ॲडमिनच्या मंजुरीची वाट पाहत आहे).");
+                            window.location.href = "listing.html";
+                            return;
+                        }
+
+                        populateUI(propertyData);
+                        
+                        // Property Views Update Logic
+                        if(propertyData.ownerId !== currentUserId) {
+                            db.collection("properties").doc(propId).update({
+                                views: firebase.firestore.FieldValue.increment(1)
+                            }).catch(e => console.log("Views not updated", e));
+                        }
+
+                    } else {
+                        alert("ही प्रॉपर्टी आता उपलब्ध नाही.");
+                        window.location.href = "listing.html";
+                    }
+                }).catch((error) => {
+                    console.log("Error loading property:", error);
+                    alert("माहिती लोड करताना एरर आला. कृपया पुन्हा प्रयत्न करा.");
+                });
+            } else {
+                document.getElementById('loadingScreen').innerHTML = "<div style='color:red;'>Firebase कनेक्टेड नाही.</div>";
+            }
+        }
+
+        // ३. मिळालेली माहिती UI वर दाखवणे
+        function populateUI(data) {
+            document.getElementById('loadingScreen').style.display = 'none';
+
+            let savedProps = JSON.parse(localStorage.getItem('userWishlist')) || [];
+            if(savedProps.includes(data.id)) {
+                let favBtn = document.getElementById('favBtn');
+                favBtn.classList.add('active');
+                favBtn.style.color = '#E74C3C';
+            }
+
+            if(data.status === "pending" && data.ownerId === currentUserId) {
+                document.getElementById('pendingAlert').style.display = 'block';
+            }
+
+            let catText = data.propertyCategory === 'commercial' ? 'व्यावसायिक' : 'रहिवासी';
+            document.getElementById('prop-type-display').innerText = `${catText} • ${data.type || "मालमत्ता"}`;
+
+            document.getElementById('prop-title-display').innerText = data.title || "-";
+            document.getElementById('prop-rent-display').innerText = data.rent || "0";
+            document.getElementById('prop-deposit-display').innerText = data.deposit || "0";
+            
+            let locationText = (data.area || "") + ", " + (data.taluka || "");
+            document.getElementById('prop-location-display').innerText = locationText;
+
+            document.getElementById('highlight-type').innerText = data.type || "-";
+            document.getElementById('highlight-tenant').innerText = data.targetTenant || "सर्वांसाठी";
+            document.getElementById('highlight-taluka').innerText = data.taluka || "-";
+            document.getElementById('highlight-category').innerText = catText;
+            document.getElementById('highlight-area').innerText = data.area || "-";
+
+            let furnishText = "-";
+            if(data.furnishingStatus === "Fully-Furnished") furnishText = "पूर्ण फर्निचर";
+            else if(data.furnishingStatus === "Semi-Furnished") furnishText = "अंशतः";
+            else if(data.furnishingStatus === "Unfurnished") furnishText = "फर्निचर नाही";
+            else furnishText = data.furnishingStatus || "-";
+            document.getElementById('highlight-furnish').innerText = furnishText;
+
+            document.getElementById('prop-desc-display').innerText = data.description || "माहिती उपलब्ध नाही.";
+            document.getElementById('owner-name-display').innerText = data.ownerName || "घरमालक";
+
+            let isPremium = (data.planType === 'premium1' || data.planType === 'premium2');
+
+            let galleryContainer = document.getElementById('property-gallery');
+            if(data.photoUrls && data.photoUrls.length > 0) {
+                galleryContainer.innerHTML = `<div id="premiumBadge" class="badge-premium" style="display:${isPremium ? 'block' : 'none'};"><i class="fa-solid fa-crown"></i> Premium</div>`;
+                data.photoUrls.forEach(url => {
+                    galleryContainer.innerHTML += `<div class="gallery-item"><img src="${url}"></div>`;
+                });
+            }
+
+            let amenitiesContainer = document.getElementById('prop-amenities-display');
+            amenitiesContainer.innerHTML = '';
+            let hasAnyAmenity = false;
+
+            if(data.amenitiesLabels && data.amenitiesLabels.length > 0) {
+                data.amenitiesLabels.forEach(lbl => {
+                    amenitiesContainer.innerHTML += `<div class="amenity-chip"><i class="fa-solid fa-check"></i> ${lbl}</div>`;
+                    hasAnyAmenity = true;
+                });
+            } else if(data.amenities) {
+                if(data.amenities.water) { amenitiesContainer.innerHTML += `<div class="amenity-chip"><i class="fa-solid fa-check"></i> २४ तास पाणी</div>`; hasAnyAmenity = true; }
+                if(data.amenities.parking) { amenitiesContainer.innerHTML += `<div class="amenity-chip"><i class="fa-solid fa-check"></i> पार्किंग</div>`; hasAnyAmenity = true; }
+                if(data.amenities.lift) { amenitiesContainer.innerHTML += `<div class="amenity-chip"><i class="fa-solid fa-check"></i> लिफ्ट</div>`; hasAnyAmenity = true; }
+                if(data.amenities.security) { amenitiesContainer.innerHTML += `<div class="amenity-chip"><i class="fa-solid fa-check"></i> सुरक्षा रक्षक</div>`; hasAnyAmenity = true; }
+                if(data.amenities.wifi) { amenitiesContainer.innerHTML += `<div class="amenity-chip"><i class="fa-solid fa-check"></i> वाय-फाय</div>`; hasAnyAmenity = true; }
+                if(data.amenities.mess) { amenitiesContainer.innerHTML += `<div class="amenity-chip"><i class="fa-solid fa-check"></i> मेस / जेवण</div>`; hasAnyAmenity = true; }
+            }
+
+            if(!hasAnyAmenity) {
+                amenitiesContainer.innerHTML = `<div style="font-size:13px; color:#94A3B8;">विशेष सुविधा नोंदवलेल्या नाहीत.</div>`;
+            }
+
+            if(data.ownerId === currentUserId) {
+                unlockNumberUI();
+                return;
+            }
+
+            let unlockedProps = JSON.parse(localStorage.getItem('unlockedProperties')) || [];
+            if(unlockedProps.includes(data.id)) {
+                unlockNumberUI(); 
+            }
+        }
+
+        // 🆕 ४. Razorpay Live Payment Gateway Integration (With Strict Force UPI Method)
+        function processPayment() {
+            if(!propertyData) return;
+
+            // Razorpay options configuration with your Live Key
+            var options = {
+                "key": "rzp_live_TIkGEzUM5ygyd6", // Your Live API Key
+                "amount": currentUnlockFee * 100, // Amount in paise
+                "currency": "INR",
+                "name": "Satara Rental Hub",
+                "description": "Unlock Owner Contact Number",
+                "image": "Logo.png", 
+                "handler": function (response){
+                    // Payment Successful Callback
+                    handleSuccessfulPayment(response.razorpay_payment_id);
+                },
+                "prefill": {
+                    "name": localStorage.getItem("currentUserName") || "Valued Customer",
+                    "email": localStorage.getItem("currentUserEmail") || "user@satararentalhub.com",
+                    "contact": localStorage.getItem("currentUserMobile") || "9876543210"
+                },
+                // 🆕 Force display UPI options primarily
+                "config": {
+                    "display": {
+                        "blocks": {
+                            "upi": {
+                                "name": "Pay with UPI",
+                                "instruments": [
+                                    {
+                                        "method": "upi"
+                                    }
+                                ]
+                            },
+                            "other": {
+                                "name": "Other Payment Modes",
+                                "instruments": [
+                                    {
+                                        "method": "card"
+                                    },
+                                    {
+                                        "method": "netbanking"
+                                    },
+                                    {
+                                        "method": "wallet"
+                                    }
+                                ]
+                            }
+                        },
+                        "sequence": ["block.upi", "block.other"],
+                        "preferences": {
+                            "show_default_blocks": false
+                        }
+                    }
+                },
+                "theme": {
+                    "color": "#FF671F" 
+                }
+            };
+            
+            var rzp1 = new Razorpay(options);
+            
+            rzp1.on('payment.failed', function (response){
+                alert("पेमेंट फेल झाले: " + response.error.description);
+            });
+            
+            rzp1.open();
+        }
+
+        // ५. पेमेंट यशस्वी झाल्यानंतरचे लॉजिक (Leads & Database updates)
+        function handleSuccessfulPayment(paymentId) {
+            unlockNumberUI();
+
+            let unlockedProps = JSON.parse(localStorage.getItem('unlockedProperties')) || [];
+            if(!unlockedProps.includes(propertyData.id)) {
+                unlockedProps.push(propertyData.id);
+                localStorage.setItem('unlockedProperties', JSON.stringify(unlockedProps));
+            }
+            
+            if(typeof db !== 'undefined') {
+                // Update Leads Counter
+                db.collection("properties").doc(propertyData.id).update({
+                    leads: firebase.firestore.FieldValue.increment(1)
+                }).catch(e => console.log(e));
+
+                // Save Payment Record to Firestore
+                db.collection("payments").add({
+                    paymentId: paymentId,
+                    userId: currentUserId,
+                    propertyId: propertyData.id,
+                    amount: currentUnlockFee,
+                    planType: "Contact Unlock",
+                    status: "Success",
+                    createdAt: new Date().toISOString()
+                }).catch(e => console.log("Payment record save error", e));
+            }
+
+            alert("पेमेंट यशस्वी! (Payment ID: " + paymentId + ") नंबर अनलॉक झाला आहे.");
+        }
+
+        function unlockNumberUI() {
+            isUnlocked = true;
+            let realNumber = propertyData.ownerMobile || "नंबर उपलब्ध नाही";
+            
+            const phoneText = document.getElementById('phoneNumber');
+            phoneText.innerText = "+91 " + realNumber;
+            phoneText.classList.add('number-revealed');
+            
+            document.getElementById('unlockBtn').style.display = "none";
+            let unlockNote = document.getElementById('unlockNote');
+            
+            if(propertyData.ownerId === currentUserId) {
+                unlockNote.innerText = "ही तुमची स्वतःची प्रॉपर्टी आहे.";
+            } else {
+                unlockNote.innerText = "पेमेंट यशस्वी! आता तुम्ही मालकाला थेट संपर्क करू शकता.";
+            }
+            unlockNote.style.color = "#10B981";
+
+            document.getElementById('callBtn').classList.add('unlocked');
+            document.getElementById('whatsappBtn').classList.add('unlocked');
+        }
+
+        // ६. कॉल आणि WhatsApp अक्शन्स
+        function makeCall() {
+            if(isUnlocked && propertyData && propertyData.ownerMobile) {
+                window.location.href = `tel:+91${propertyData.ownerMobile}`;
+            }
+        }
+
+        function sendWhatsApp() {
+            if(isUnlocked && propertyData && propertyData.ownerMobile) {
+                let msg = encodeURIComponent(`नमस्कार, मी तुमची '${propertyData.title}' ही प्रॉपर्टी 'सातारा रेंटल हब' ॲपवर पाहिली. मला याबद्दल अधिक माहिती हवी आहे.`);
+                window.open(`https://wa.me/91${propertyData.ownerMobile}?text=${msg}`, '_blank');
+            }
+        }
+
+        // ७. शेअर आणि फेव्हरेट (Wishlist)
+        function shareProperty() {
+            if(propertyData) {
+                let shareUrl = window.location.href;
+                let shareText = `हे पहा: ${propertyData.title} फक्त ₹${propertyData.rent}/महिना भाड्याने उपलब्ध आहे. अधिक माहितीसाठी लिंकवर क्लिक करा: \n${shareUrl}`;
+                
+                if (navigator.share) {
+                    navigator.share({ title: propertyData.title, text: shareText, url: shareUrl });
+                } else {
+                    prompt("ही लिंक कॉपी करा आणि तुमच्या मित्रांसोबत शेअर करा:", shareUrl);
+                }
+            }
+        }
+
+        function toggleFavorite() {
+            const btn = document.getElementById('favBtn');
+            btn.classList.toggle('active');
+            if(btn.classList.contains('active')) {
+                btn.style.color = '#E74C3C';
+                if(propertyData) {
+                    let savedProps = JSON.parse(localStorage.getItem('userWishlist')) || [];
+                    if(!savedProps.includes(propertyData.id)) {
+                        savedProps.push(propertyData.id);
+                        localStorage.setItem('userWishlist', JSON.stringify(savedProps));
+                    }
+                }
+                alert("प्रॉपर्टी सेव्ह केली!");
+            } else {
+                btn.style.color = 'var(--text-dark)';
+                if(propertyData) {
+                    let savedProps = JSON.parse(localStorage.getItem('userWishlist')) || [];
+                    savedProps = savedProps.filter(id => id !== propertyData.id);
+                    localStorage.setItem('userWishlist', JSON.stringify(savedProps));
+                }
+                alert("प्रॉपर्टी आवडीतून काढली!");
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>माझे प्रोफाईल | Satara Rental Hub</title>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <!-- Firebase Configuration File -->
+    <script src="firebase-config.js"></script>
+    
+    <!-- Multi-Language Support File -->
+    <script src="lang.js"></script>
+    
+    <style>
+        :root {
+            --primary: #FF671F;
+            --bg-light: #F4F6F9;
+            --text-dark: #2C3E50;
+            --text-muted: #7F8C8D;
+            --white: #FFFFFF;
+            --border: #EAECEE;
+            --danger: #E74C3C;
+            --premium: #8B5CF6;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-light); color: var(--text-dark); padding-bottom: 90px; }
+
+        /* टॉप बार */
+        .top-bar {
+            background: var(--primary); color: var(--white); padding: 15px 20px 60px 20px;
+            border-bottom-left-radius: 25px; border-bottom-right-radius: 25px;
+            text-align: center; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .page-title { font-size: 18px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .page-title img { width: 30px; height: 30px; border-radius: 50%; background: var(--white); padding: 2px; }
+
+        /* भाषा बदलणारे बटण (Top Left) */
+        .lang-toggle-btn {
+            position: absolute; top: 15px; left: 20px;
+            background: rgba(255,255,255,0.2); color: var(--white); border: 1px solid var(--white);
+            padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;
+        }
+
+        /* प्रोफाईल कार्ड (Overlapping Header) */
+        .profile-card {
+            background: var(--white); width: 90%; max-width: 400px; margin: -40px auto 20px auto;
+            border-radius: 16px; padding: 20px; text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); position: relative; border: 1px solid var(--border);
+        }
+        .profile-img {
+            width: 80px; height: 80px; background: #E2E8F0; border-radius: 50%;
+            margin: 0 auto 15px auto; display: flex; align-items: center; justify-content: center;
+            font-size: 35px; color: #94A3B8; border: 4px solid var(--white); box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .profile-name { font-size: 20px; font-weight: 800; color: var(--text-dark); margin-bottom: 5px; }
+        .profile-phone { font-size: 14px; font-weight: 600; color: var(--text-muted); margin-bottom: 10px; }
+        .profile-role { display: inline-block; background: #FFF5F0; color: var(--primary); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; }
+        
+        /* प्रीमियम प्लॅन अलर्ट (मालकांसाठी) */
+        .active-plan-badge { display: none; margin-top: 15px; background: #F5F3FF; color: var(--premium); padding: 8px 15px; border-radius: 12px; font-size: 12px; font-weight: 800; border: 1px solid #DDD6FE; align-items: center; justify-content: center; gap: 5px;}
+
+        /* मेनू लिस्ट */
+        .menu-container { width: 90%; max-width: 400px; margin: 0 auto; }
+        .menu-group {
+            background: var(--white); border-radius: 16px; margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02); overflow: hidden; border: 1px solid var(--border);
+        }
+        .menu-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 20px; border-bottom: 1px solid var(--border); text-decoration: none; color: var(--text-dark); transition: 0.2s; cursor: pointer;
+        }
+        .menu-item:active { background: #F8FAFC; }
+        .menu-item:last-child { border-bottom: none; }
+        
+        .menu-left { display: flex; align-items: center; gap: 15px; }
+        .menu-left i { font-size: 18px; width: 24px; text-align: center; color: #94A3B8; }
+        .menu-text { font-size: 14px; font-weight: 700; }
+        .menu-right { color: #CBD5E1; }
+
+        /* लॉग आऊट बटन */
+        .btn-logout {
+            width: 100%; background: #FEF2F2; color: var(--danger); border: 1px solid #FECACA;
+            padding: 16px; border-radius: 12px; font-size: 15px; font-weight: 800;
+            cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px;
+        }
+
+        /* लपवलेली ॲडमिन लिंक (Secret Link) */
+        .secret-admin-link {
+            display: block; text-align: center; margin-top: 30px; font-size: 12px;
+            color: #CBD5E1; text-decoration: none; font-weight: 600; padding: 10px;
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed; bottom: 0; width: 100%; background: var(--white);
+            display: flex; justify-content: space-around; padding: 10px 0;
+            box-shadow: 0 -2px 15px rgba(0,0,0,0.05); border-top-left-radius: 20px; border-top-right-radius: 20px; z-index: 100;
+        }
+        .nav-item { text-align: center; color: #94A3B8; font-size: 11px; font-weight: 700; text-decoration: none; flex: 1; }
+        .nav-item i { font-size: 22px; margin-bottom: 4px; display: block; transition: 0.3s; }
+        .nav-item.active { color: var(--primary); }
+        .nav-item.active i { transform: translateY(-3px); }
+        .nav-item.add-btn i {
+            background: var(--primary); color: var(--white); width: 45px; height: 45px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            margin: -20px auto 4px auto; box-shadow: 0 4px 10px rgba(255, 103, 31, 0.4); font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- टॉप बार -->
+    <div class="top-bar">
+        <button class="lang-toggle-btn" onclick="toggleLanguage()">ENG / मराठी</button>
+        <div class="page-title">
+            <img src="Logo.png" alt="Logo" onerror="this.style.display='none'">
+            <span data-lang="my_profile_title">माझे प्रोफाईल</span>
+        </div>
+    </div>
+
+    <!-- प्रोफाईल कार्ड -->
+    <div class="profile-card">
+        <div class="profile-img" id="display-profile-pic">
+            <i class="fa-solid fa-user-tie"></i>
+        </div>
+        <div class="profile-name" id="display-name">डेटा लोड होत आहे...</div>
+        <div class="profile-phone" id="display-phone">...</div>
+        <div class="profile-role" id="display-role">...</div>
+        
+        <!-- प्रीमियम प्लॅनची माहिती (फक्त मालकांसाठी दिसेल) -->
+        <div class="active-plan-badge" id="premium-plan-badge">
+            <i class="fa-solid fa-crown"></i> प्रीमियम टॉप ॲड ॲक्टिव्ह
+        </div>
+    </div>
+
+    <!-- मेनू ऑप्शन्स -->
+    <div class="menu-container">
+        
+        <!-- ग्रुप १: अकाउंट -->
+        <div class="menu-group">
+            <a href="edit_profile.html" class="menu-item">
+                <div class="menu-left">
+                    <i class="fa-regular fa-id-badge"></i>
+                    <span class="menu-text" data-lang="menu_personal_info">वैयक्तिक माहिती</span>
+                </div>
+                <i class="fa-solid fa-chevron-right menu-right"></i>
+            </a>
+            <a href="saved.html" class="menu-item">
+                <div class="menu-left">
+                    <i class="fa-regular fa-heart"></i>
+                    <span class="menu-text" data-lang="menu_saved_props">सेव्ह केलेल्या प्रॉपर्टीज</span>
+                </div>
+                <i class="fa-solid fa-chevron-right menu-right"></i>
+            </a>
+            <a href="#" class="menu-item" onclick="alert('तुमच्या सर्व पेमेंट्सची रिसिप्ट इथे दिसेल.')">
+                <div class="menu-left">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span class="menu-text" data-lang="menu_payment_history">पेमेंट इतिहास (History)</span>
+                </div>
+                <i class="fa-solid fa-chevron-right menu-right"></i>
+            </a>
+        </div>
+
+        <!-- ग्रुप २: सपोर्ट आणि माहिती -->
+        <div class="menu-group">
+            <!-- डायनॅमिक कस्टमर सपोर्ट -->
+            <a href="#" class="menu-item" onclick="contactSupport()">
+                <div class="menu-left">
+                    <i class="fa-solid fa-headset"></i>
+                    <span class="menu-text" data-lang="menu_support">मदत आणि संपर्क (Support)</span>
+                </div>
+                <i class="fa-solid fa-chevron-right menu-right"></i>
+            </a>
+            <a href="terms_conditions.html" class="menu-item">
+                <div class="menu-left">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span class="menu-text" data-lang="menu_terms">नियम आणि अटी (Terms)</span>
+                </div>
+                <i class="fa-solid fa-chevron-right menu-right"></i>
+            </a>
+        </div>
+
+        <!-- लॉग आऊट -->
+        <button class="btn-logout" onclick="logoutApp()">
+            <i class="fa-solid fa-power-off"></i> <span data-lang="btn_logout">लॉग आऊट करा</span>
+        </button>
+
+        <!-- 🔒 सिक्रेट ॲडमिन लिंक -->
+        <a href="admin_login.html" class="secret-admin-link">
+            <i class="fa-solid fa-lock"></i> <span data-lang="admin_panel_link">ॲडमिन पॅनेल</span>
+        </a>
+
+    </div>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+        <a href="index.html" class="nav-item">
+            <i class="fa-solid fa-house"></i>
+            <span data-lang="nav_home">होम</span>
+        </a>
+        <a href="saved.html" class="nav-item">
+            <i class="fa-regular fa-heart"></i>
+            <span data-lang="nav_saved">सेव्हड</span>
+        </a>
+        <a href="#" class="nav-item add-btn" id="nav-add-btn">
+            <i class="fa-solid fa-plus"></i>
+            <span data-lang="nav_add">ॲड</span>
+        </a>
+        <a href="profile.html" class="nav-item active">
+            <i class="fa-regular fa-user"></i>
+            <span data-lang="nav_profile">प्रोफाईल</span>
+        </a>
+    </div>
+
+    <!-- JavaScript For Firebase Fetching -->
+    <script>
+        let currentUserId = "unknown"; 
+
+        window.onload = function() {
+            if(typeof applySavedLanguage === 'function') {
+                applySavedLanguage();
+            }
+            
+            // Check Session
+            if(localStorage.getItem("currentUserId")) {
+                currentUserId = localStorage.getItem("currentUserId");
+                loadUserProfile();
+            } else {
+                // युझर लॉगिन नसेल तर 'login.html' वर पाठवा
+                window.location.href = "login.html";
+            }
+        };
+
+        // Firebase Firestore मधून युझरची माहिती वाचणे
+        function loadUserProfile() {
+            if(typeof db !== 'undefined') {
+                db.collection("users").doc(currentUserId).get().then((doc) => {
+                    if (doc.exists) {
+                        let data = doc.data();
+                        
+                        document.getElementById('display-name').innerText = data.name || "नाव दिलेले नाही";
+                        document.getElementById('display-phone').innerText = "+91 " + (data.mobile || "0000000000");
+                        
+                        // रोल दाखवणे आणि नॅव्हिगेशन सेट करणे
+                        let roleText = "भाडेकरू";
+                        let currentLang = localStorage.getItem('appLang') || 'mr';
+                        
+                        if(data.role === "owner") {
+                            roleText = currentLang === 'en' ? "Property Owner" : "घरमालक";
+                            // मालकाला मालकाच्या डॅशबोर्डची लिंक द्या
+                            document.getElementById('nav-add-btn').href = "owner_dashboard.html"; 
+                            
+                            // मालक असल्यास त्याची एखादी प्रीमियम प्रॉपर्टी आहे का ते तपासा
+                            checkIfOwnerHasPremiumPlan();
+                        } else {
+                            roleText = currentLang === 'en' ? "Tenant" : "भाडेकरू";
+                            // भाडेकरूला ॲड करण्यासाठी लॉगिन/रजिस्टर पेजवर पाठवा
+                            document.getElementById('nav-add-btn').href = "login.html"; 
+                        }
+                        
+                        document.getElementById('display-role').innerText = roleText;
+
+                        // फोटो दाखवणे
+                        if(data.photoUrl) {
+                            document.getElementById('display-profile-pic').innerHTML = `<img src="${data.photoUrl}" style="width:100%; height:100%; object-fit:cover;">`;
+                        }
+
+                    } else {
+                        fallbackProfileLoad();
+                    }
+                }).catch((error) => {
+                    console.log("Error loading profile:", error);
+                    fallbackProfileLoad();
+                });
+            } else {
+                fallbackProfileLoad();
+            }
+        }
+
+        // मालकाची एखादी प्रीमियम प्रॉपर्टी ॲक्टिव्ह आहे का ते तपासणे
+        function checkIfOwnerHasPremiumPlan() {
+            db.collection("properties").where("ownerId", "==", currentUserId).get().then((querySnapshot) => {
+                let hasPremium = false;
+                querySnapshot.forEach(doc => {
+                    let prop = doc.data();
+                    if(prop.status === "live" && (prop.planType === 'premium1' || prop.planType === 'premium2')) {
+                        hasPremium = true;
+                    }
+                });
+                
+                if(hasPremium) {
+                    document.getElementById('premium-plan-badge').style.display = 'flex';
+                }
+            }).catch(e => console.log(e));
+        }
+
+        function fallbackProfileLoad() {
+            document.getElementById('display-name').innerText = "टेस्ट युझर";
+            document.getElementById('display-phone').innerText = "+91 98765 43210";
+            let roleText = localStorage.getItem('appLang') === 'en' ? "Property Owner" : "घरमालक";
+            document.getElementById('display-role').innerText = roleText;
+            document.getElementById('nav-add-btn').href = "add_property.html";
+        }
+
+        function logoutApp() {
+            let currentLang = localStorage.getItem('appLang') || 'mr';
+            let msg = currentLang === 'en' ? "Are you sure you want to log out?" : "तुम्हाला नक्की लॉग आऊट करायचे आहे का?";
+            
+            let confirmLogout = confirm(msg);
+            if (confirmLogout) {
+                // LocalStorage मधील युझर डेटा पुसून टाका (लॉगआउट)
+                localStorage.removeItem("currentUserId");
+                localStorage.removeItem("currentUserName");
+                localStorage.removeItem("currentUserRole");
+                window.location.href = "login.html";
+            }
+        }
+
+        // डायनॅमिक कस्टमर सपोर्ट (Firebase किंवा LocalStorage मधून वाचणे)
+        function contactSupport() {
+            if(typeof db !== 'undefined') {
+                db.collection("admin_settings").doc("master_config").get().then((doc) => {
+                    let adminNumber = "9579535290";
+                    if(doc.exists && doc.data().support && doc.data().support.phone) {
+                        adminNumber = doc.data().support.phone;
+                    }
+                    window.open(`https://wa.me/91${adminNumber}?text=${encodeURIComponent('नमस्कार, मला सातारा रेंटल हब ॲपबद्दल मदत हवी आहे.')}`, '_blank');
+                }).catch(() => {
+                    openDefaultWhatsApp();
+                });
+            } else {
+                openDefaultWhatsApp();
+            }
+        }
+
+        function openDefaultWhatsApp() {
+            let adminNumber = localStorage.getItem("supportNumber") || "9579535290"; 
+            window.open(`https://wa.me/91${adminNumber}?text=${encodeURIComponent('नमस्कार, मला सातारा रेंटल हब ॲपबद्दल मदत हवी आहे.')}`, '_blank');
+        }
+    </script>
+</body>
+</html>

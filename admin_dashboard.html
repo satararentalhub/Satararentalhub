@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ॲडमिन डॅशबोर्ड | Satara Rental Hub</title>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <!-- Firebase Storage SDK Added for File Uploads -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    
+    <!-- Firebase Configuration File -->
+    <script src="firebase-config.js"></script>
+    
+    <!-- Multi-Language Support File -->
+    <script src="lang.js"></script>
+    
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #FF671F, #E65C00);
+            --admin-dark: #1E293B; 
+            --bg-light: #F1F5F9;
+            --text-dark: #334155;
+            --text-muted: #64748B;
+            --white: #FFFFFF;
+            --success: #10B981;
+            --danger: #EF4444;
+            --border-color: #E2E8F0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-light); color: var(--text-dark); padding-bottom: 80px; }
+
+        /* १. ॲडमिन हेडर */
+        .admin-header {
+            background: var(--admin-dark); color: var(--white); padding: 25px 20px 40px 20px;
+            border-bottom-left-radius: 25px; border-bottom-right-radius: 25px; display: flex;
+            justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .header-title h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+        .header-title p { font-size: 12px; color: #94A3B8; }
+        .admin-profile {
+            width: 45px; height: 45px; background: var(--primary-gradient);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 20px; font-weight: bold; border: 2px solid var(--white);
+        }
+
+        /* भाषा बदलणारे बटण */
+        .lang-toggle-btn {
+            background: rgba(255,255,255,0.2); color: var(--white); border: 1px solid var(--white);
+            padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; margin-left: 10px;
+        }
+
+        /* २. बिझनेस स्टॅट्स */
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;
+            padding: 0 20px; margin-top: -25px;
+        }
+        .stat-card {
+            background: var(--white); padding: 15px; border-radius: 16px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: left; position: relative; overflow: hidden;
+        }
+        .stat-card::after {
+            content: ''; position: absolute; right: -15px; bottom: -15px; width: 60px; height: 60px; border-radius: 50%; opacity: 0.1;
+        }
+        .stat-card.users::after { background: #3B82F6; }
+        .stat-card.props::after { background: #F59E0B; }
+        .stat-card.ads::after { background: #8B5CF6; }
+        .stat-card.revenue::after { background: #10B981; }
+
+        .stat-icon { font-size: 20px; margin-bottom: 10px; }
+        .stat-val { font-size: 22px; font-weight: 800; color: var(--text-dark); margin-bottom: 2px; }
+        .stat-title { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* ३. सेक्शन्स कॉमन स्टाईल */
+        .section-header { padding: 25px 20px 15px 20px; font-size: 16px; font-weight: 800; color: var(--admin-dark); display: flex; justify-content: space-between; align-items: center; }
+        .badge { background: var(--danger); color: var(--white); padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+        .list-container { padding: 0 20px; }
+        
+        .action-card {
+            background: var(--white); border-radius: 16px; padding: 15px; margin-bottom: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.04); border-left: 4px solid #F59E0B; border-top: 1px solid var(--border-color); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);
+        }
+        
+        .live-card { border-left-color: #10B981; }
+        
+        .action-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .action-title { font-size: 15px; font-weight: 700; color: var(--text-dark); }
+        .action-subtitle { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 5px; margin-top: 4px;}
+        .action-price { font-size: 16px; font-weight: 800; color: #FF671F; }
+        
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
+        .btn { flex: 1; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 700; border: none; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 6px; transition: 0.2s; }
+        .btn:active { transform: scale(0.97); }
+        .btn-approve { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .btn-reject { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        .btn-edit { background: var(--bg-light); color: var(--text-dark); border: 1px solid #CBD5E1; }
+        
+        /* Report Download Styles & Date Picker */
+        .report-filter { margin-bottom: 15px; display: flex; flex-direction: column; gap: 8px; background: #E0F2FE; padding: 15px; border-radius: 12px; border: 1px dashed #0284C7; }
+        .report-filter label { font-size: 12px; font-weight: 700; color: #0284C7; }
+        .date-inputs { display: flex; gap: 10px; align-items: center; }
+        .date-inputs input[type="date"] { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #0284C7; background: var(--white); color: #0284C7; font-weight: 700; outline: none; }
+        .date-inputs span { color: #0284C7; font-weight: 700; font-size: 12px; }
+
+        .btn-download { background: #E2E8F0; color: #334155; font-size: 13px; font-weight: 700; padding: 12px 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border: 1px solid #CBD5E1; transition: 0.2s; margin-bottom: 10px; text-decoration: none; width: 100%; }
+        .btn-download:active { transform: scale(0.98); background: #CBD5E1; }
+        .btn-download i { color: #0284C7; font-size: 16px; }
+        
+        /* Expired Button Highlight */
+        .btn-download-alert { background: #FEF2F2; border-color: #FECACA; color: #991B1B; }
+        .btn-download-alert i { color: #DC2626; }
+        
+        /* 🆕 Payment Report Button Highlight */
+        .btn-download-payment { background: #ECFDF5; border-color: #A7F3D0; color: #065F46; }
+        .btn-download-payment i { color: #10B981; }
+
+        /* Toggle Switch */
+        .toggle-switch { position: relative; width: 42px; height: 22px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #CBD5E1; transition: .4s; border-radius: 22px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        input:checked + .slider { background-color: var(--success); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        /* CMS Editor Styles */
+        .cms-card { background: var(--white); border-radius: 16px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid var(--border-color); margin-bottom: 20px; }
+        .cms-header-title { font-size: 15px; font-weight: 800; color: #E65C00; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        .cms-header-title.blue { color: #2563EB; border-top: 1px dashed var(--border-color); padding-top: 20px; margin-top: 10px; }
+        .cms-header-title.green { color: #059669; }
+        .cms-header-title.purple { color: #8B5CF6; }
+        
+        .form-label { font-size: 12px; font-weight: 700; color: var(--text-dark); margin-bottom: 5px; display: block; }
+        .form-control { width: 100%; padding: 12px 15px; background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 10px; font-size: 14px; font-weight: 500; color: var(--text-dark); outline: none; margin-bottom: 15px; transition: 0.3s; }
+        .form-control:focus { border-color: var(--primary); background: var(--white); }
+        textarea.form-control { resize: vertical; min-height: 80px; }
+        
+        /* File Upload Styles */
+        .file-upload-wrapper { position: relative; width: 100%; height: 120px; border: 2px dashed #CBD5E1; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #F8FAFC; cursor: pointer; margin-bottom: 15px; overflow: hidden; transition: 0.3s; }
+        .file-upload-wrapper:hover { border-color: #D97706; background: #FFFBEB; }
+        .file-upload-wrapper input[type="file"] { position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+        .file-upload-content { text-align: center; pointer-events: none; }
+        .file-upload-content i { font-size: 30px; color: #94A3B8; margin-bottom: 5px; display: block; }
+        .file-upload-content span { font-size: 12px; color: #64748B; font-weight: 600; }
+        #ad-image-preview { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: none; z-index: 5; }
+
+        .btn-publish { background: #166534; color: var(--white); border: none; width: 100%; padding: 16px; border-radius: 12px; font-size: 15px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 20px; box-shadow: 0 4px 15px rgba(22, 101, 52, 0.2); transition: 0.2s; }
+        .btn-publish:active { transform: scale(0.97); }
+        
+        /* दोन कॉलम्ससाठी */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        /* Team Member Added List Item */
+        .team-member-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--bg-light); padding: 10px 15px; border-radius: 10px;
+            border: 1px solid var(--border-color); margin-bottom: 10px;
+        }
+        .team-member-info h4 { font-size: 13px; font-weight: 700; color: var(--text-dark); margin-bottom: 2px; }
+        .team-member-info p { font-size: 11px; color: var(--text-muted); }
+        .btn-delete-member { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 16px; }
+
+        /* Hero Slider Images Grid styling */
+        .slider-images-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .slider-img-box {
+            position: relative;
+            width: 100%;
+            padding-top: 100%; /* 1:1 Aspect Ratio */
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #CBD5E1;
+        }
+        .slider-img-box img {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;
+        }
+        .delete-slide-btn {
+            position: absolute;
+            top: 5px; right: 5px;
+            background: rgba(239, 68, 68, 0.9); color: white;
+            border: none; width: 25px; height: 25px; border-radius: 50%;
+            cursor: pointer; display: flex; justify-content: center; align-items: center;
+            font-size: 12px; z-index: 10;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed; bottom: 0; width: 100%; background: var(--white);
+            display: flex; justify-content: space-around; padding: 12px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05); border-top-left-radius: 20px; border-top-right-radius: 20px; z-index: 100;
+        }
+        .nav-item { text-align: center; color: var(--text-muted); font-size: 11px; text-decoration: none; flex: 1; }
+        .nav-item i { font-size: 20px; margin-bottom: 4px; display: block; }
+        .nav-item.active { color: var(--admin-dark); font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <!-- १. ॲडमिन हेडर -->
+    <div class="admin-header">
+        <div class="header-title">
+            <h1 data-lang="admin_panel_title"><i class="fa-solid fa-shield-halved" style="color: #FFD700;"></i> ॲडमिन पॅनेल</h1>
+            <p data-lang="admin_panel_subtitle">Satara Rental Hub - Control Room</p>
+        </div>
+        <div style="display: flex; align-items: center;">
+            <button class="lang-toggle-btn" onclick="toggleLanguage()">ENG / मराठी</button>
+            <div class="admin-profile" style="margin-left:10px;">PS</div>
+        </div>
+    </div>
+
+    <!-- २. बिझनेस स्टॅट्स -->
+    <div class="stats-grid">
+        <div class="stat-card users">
+            <i class="fa-solid fa-users stat-icon" style="color: #3B82F6;"></i>
+            <div class="stat-val" id="total_users_count">0</div>
+            <div class="stat-title" data-lang="total_users">एकूण युजर्स</div>
+        </div>
+        <div class="stat-card props">
+            <i class="fa-solid fa-building-circle-check stat-icon" style="color: #F59E0B;"></i>
+            <div class="stat-val" id="live_properties_count">0</div>
+            <div class="stat-title" data-lang="live_props">लाईव्ह प्रॉपर्टीज</div>
+        </div>
+        <div class="stat-card ads">
+            <i class="fa-solid fa-rectangle-ad stat-icon" style="color: #8B5CF6;"></i>
+            <div class="stat-val" id="pending_approvals_count">0</div>
+            <div class="stat-title">प्रलंबित मंजुरी</div>
+        </div>
+        <div class="stat-card revenue">
+            <i class="fa-solid fa-indian-rupee-sign stat-icon" style="color: #10B981;"></i>
+            <div class="stat-val" id="total_revenue_amount">₹ 0</div>
+            <div class="stat-title" data-lang="month_revenue">एकूण कमाई</div>
+        </div>
+    </div>
+
+    <!-- २.१ होम पेज स्लायडर सेटिंग्ज (Hero Slider Manager) -->
+    <div class="section-header">
+        <span style="color: #2563EB;"><i class="fa-solid fa-images"></i> होमपेज स्लायडर सेटिंग्ज</span>
+    </div>
+    <div class="list-container">
+        <div class="cms-card">
+            <h3 class="cms-header-title" style="color: #2563EB; border-bottom: 1px dashed var(--border-color); padding-bottom: 10px;">हिरो बॅकग्राऊंड इमेजेस (Hero Slider)</h3>
+            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px;">इथे टाकलेल्या इमेजेस होमपेजवर बॅकग्राऊंडला आपोआप बदलत राहतील.</p>
+            
+            <label class="form-label">फोटो स्लाईड होण्याची वेळ (Timer)</label>
+            <div style="position: relative; margin-bottom: 15px;">
+                <input type="number" class="form-control" id="slider-timer" value="3000" placeholder="उदा. 3000">
+                <span style="position: absolute; right: 15px; top: 12px; font-size: 12px; color: #94A3B8; font-weight:bold;">मिलीसेकंद (1000 = 1 sec)</span>
+            </div>
+
+            <label class="form-label">नवीन फोटो अपलोड करा (Multiple Select)</label>
+            <div class="file-upload-wrapper">
+                <input type="file" id="hero-slider-files" accept="image/png, image/jpeg, image/jpg" multiple onchange="uploadHeroSliderImages(event)">
+                <div class="file-upload-content">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <span id="slider-upload-status">इथे क्लिक करून फोटो निवडा</span>
+                </div>
+            </div>
+
+            <label class="form-label">सध्याच्या स्लायडर इमेजेस (Current Images)</label>
+            <div class="slider-images-grid" id="current-slider-images">
+                <!-- Javascript will load images here -->
+                <div style="grid-column: span 3; text-align: center; color: #94A3B8; font-size: 12px; padding: 10px;">लोड होत आहे...</div>
+            </div>
+
+            <button class="btn-publish" style="background: #2563EB; margin-top: 15px;" onclick="saveSliderTimer()">
+                <i class="fa-solid fa-floppy-disk"></i> <span>वेळ सेव्ह करा</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ३. डेटा आणि रिपोर्ट्स (Reports Downloads with Custom Date Picker) -->
+    <div class="section-header">
+        <span style="color: #0284C7;"><i class="fa-solid fa-file-excel"></i> डेटा रिपोर्ट्स (Downloads)</span>
+    </div>
+    <div class="list-container">
+        <div class="cms-card" style="background: #F0F9FF; border-color: #BAE6FD;">
+            
+            <div class="report-filter">
+                <label><i class="fa-solid fa-calendar-days"></i> कालावधी निवडा (Select Date Range)</label>
+                <div class="date-inputs">
+                    <input type="date" id="report-start-date" title="Start Date">
+                    <span>ते</span>
+                    <input type="date" id="report-end-date" title="End Date">
+                </div>
+            </div>
+            
+            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px;">वरील तारखांमधील संपूर्ण डेटा CSV (Excel) फॉरमॅटमध्ये डाऊनलोड करा. (तारखा न निवडल्यास सर्व डेटा येईल)</p>
+            
+            <!-- 🆕 NEW PAYMENT REPORT BUTTON -->
+            <button class="btn-download btn-download-payment" onclick="downloadReport('all_payments')">
+                <span><i class="fa-solid fa-credit-card" style="margin-right:8px;"></i> सर्व पेमेंट्स (Razorpay) रिपोर्ट</span>
+                <i class="fa-solid fa-download"></i>
+            </button>
+
+            <!-- <button class="btn-download" onclick="downloadReport('revenue')">
+                <span><i class="fa-solid fa-indian-rupee-sign" style="color:#10B981; margin-right:8px;"></i> उत्पन्न आणि पेमेंट रिपोर्ट</span>
+                <i class="fa-solid fa-download"></i>
+            </button> -->
+            <button class="btn-download" onclick="downloadReport('users')">
+                <span><i class="fa-solid fa-users" style="color:#3B82F6; margin-right:8px;"></i> युझर्स लिस्ट रिपोर्ट</span>
+                <i class="fa-solid fa-download"></i>
+            </button>
+            <button class="btn-download" onclick="downloadReport('properties')">
+                <span><i class="fa-solid fa-building" style="color:#F59E0B; margin-right:8px;"></i> सर्व प्रॉपर्टीज रिपोर्ट</span>
+                <i class="fa-solid fa-download"></i>
+            </button>
+            <button class="btn-download" onclick="downloadReport('leads')">
+                <span><i class="fa-solid fa-phone" style="color:#8B5CF6; margin-right:8px;"></i> संपर्क (Leads) अनलॉक रिपोर्ट</span>
+                <i class="fa-solid fa-download"></i>
+            </button>
+            <button class="btn-download btn-download-alert" onclick="downloadReport('expired_plans')">
+                <span><i class="fa-solid fa-clock-rotate-left" style="margin-right:8px;"></i> एक्सपायर झालेले प्लॅन्स रिपोर्ट</span>
+                <i class="fa-solid fa-download"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- ४. प्रॉपर्टी ॲप्रूव्हल सेटिंग्ज -->
+    <div class="section-header">
+        <span style="color: #E65C00;"><i class="fa-solid fa-house-circle-check"></i> प्रॉपर्टी ॲप्रूव्हल सिस्टीम</span>
+    </div>
+    <div class="list-container">
+        <div class="cms-card" style="padding: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h3 style="font-size: 14px; font-weight: 700; color: var(--text-dark);">मॅन्युअल ॲप्रूव्हल (Manual Approval)</h3>
+                    <p style="font-size: 11px; color: var(--text-muted); margin-top: 5px;">जर हे <b>OFF</b> असेल, तर प्रॉपर्टी थेट ॲपवर (लाईव्ह) जाईल. <b>ON</b> असल्यास ॲडमिनला 'Approve' करावे लागेल.</p>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="manual-approval-toggle" onchange="toggleManualApproval(this)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- ४.१. लाईव्ह प्रॉपर्टीज व्यवस्थापन (Delete Live Properties) -->
+    <div class="section-header">
+        <span style="color: #10B981;"><i class="fa-solid fa-list-check"></i> लाईव्ह प्रॉपर्टीज व्यवस्थापन</span>
+        <span class="badge" style="background:#10B981;" id="live_count_badge">0 लाईव्ह</span>
+    </div>
+    <div class="list-container">
+        <div class="cms-card" style="padding: 15px; max-height: 400px; overflow-y: auto; background: #F8FAFC;" id="admin_live_properties_list">
+            <div style="text-align: center; color: #94A3B8; padding: 20px;">लोड होत आहे...</div>
+        </div>
+    </div>
+
+    <!-- ५. मालकांसाठी सबस्क्रिप्शन पॅकेजेस -->
+    <div class="section-header">
+        <span style="color: #8B5CF6;"><i class="fa-solid fa-gem"></i> मालकांसाठी प्रीमियम प्लॅन्स</span>
+    </div>
+    <div class="list-container" id="packages-container">
+        <div class="cms-card">
+            <h3 class="cms-header-title purple" style="border-bottom: 1px dashed var(--border-color); padding-bottom: 10px;">प्रीमियम टॉप बॅनर प्लॅन्स</h3>
+            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px;"><b>बेसिक लिस्टिंग सर्वांसाठी फ्री राहील.</b> परंतु जर मालकाला आपली प्रॉपर्टी होमपेजवर सर्वात वर (टॉप बॅनर) दाखवायची असेल, तर तो खालीलपैकी एक प्रीमियम प्लॅन घेऊ शकतो.</p>
+            
+            <div style="background: #F8FAFC; padding: 15px; border-radius: 12px; border: 1px solid #CBD5E1; margin-bottom: 15px;">
+                <div class="form-label" style="color: #8B5CF6; font-size: 14px;"><i class="fa-solid fa-star"></i> प्रीमियम प्लॅन १ (लहान मुदत)</div>
+                <div class="grid-2" style="margin-top: 10px;">
+                    <div>
+                        <label class="form-label">प्लॅनची फी (₹)</label>
+                        <input type="number" class="form-control" id="plan1-fee" value="299">
+                    </div>
+                    <div>
+                        <label class="form-label">मुदत (दिवस)</label>
+                        <input type="number" class="form-control" id="plan1-validity" value="15">
+                    </div>
+                </div>
+            </div>
+
+            <div style="background: #FFFBEB; padding: 15px; border-radius: 12px; border: 1px solid #FCD34D; margin-bottom: 15px;">
+                <div class="form-label" style="color: #D97706; font-size: 14px;"><i class="fa-solid fa-crown"></i> प्रीमियम प्लॅन २ (मोठी मुदत)</div>
+                <div class="grid-2" style="margin-top: 10px;">
+                    <div>
+                        <label class="form-label">प्लॅनची फी (₹)</label>
+                        <input type="number" class="form-control" id="plan2-fee" value="399">
+                    </div>
+                    <div>
+                        <label class="form-label">मुदत (दिवस)</label>
+                        <input type="number" class="form-control" id="plan2-validity" value="30">
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-edit" style="width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; background: #8B5CF6; color: white; border: none; cursor: pointer;" onclick="savePlanSettings()"><i class="fa-solid fa-floppy-disk"></i> प्रीमियम प्लॅन्स सेव्ह करा</button>
+        </div>
+    </div>
+
+    <!-- ६. भाडेकरूंसाठी कॉन्टॅक्ट फी सेटिंग -->
+    <div class="section-header">
+        <span style="color: #10B981;"><i class="fa-solid fa-address-book"></i> भाडेकरूंसाठी संपर्क फी</span>
+    </div>
+    <div class="list-container">
+        <div class="cms-card">
+            <h3 class="cms-header-title green">मालकाचा नंबर पाहण्याची फी</h3>
+            <div style="position: relative; margin-bottom: 15px;">
+                <i class="fa-solid fa-indian-rupee-sign" style="position: absolute; left: 15px; top: 15px; color: #10B981;"></i>
+                <input type="number" class="form-control" value="20" id="tenant-unlock-fee" style="padding-left: 45px; border-color: #10B981;" placeholder="उदा. 20">
+            </div>
+            <button class="btn-edit" style="width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; background: #10B981; color: white; border: none; cursor: pointer;" onclick="saveTenantFee()"><i class="fa-solid fa-floppy-disk"></i> फी सेव्ह करा</button>
+        </div>
+    </div>
+
+    <!-- ७. प्रलंबित मंजुरी (Approvals) -->
+    <div class="section-header">
+        <span data-lang="pending_approvals">नवीन प्रॉपर्टीज (मंजुरीसाठी)</span> <span class="badge" id="pending_count_badge">0 नवीन</span>
+    </div>
+    <div class="list-container" id="admin_pending_properties_list">
+        <div style="text-align: center; color: #94A3B8; padding: 20px;">कोणत्याही नवीन प्रॉपर्टीज पेंडिंग नाहीत.</div>
+    </div>
+
+    <!-- ८. जाहिरात व्यवस्थापन (Mobile & Desktop Image Uploads) -->
+    <div class="section-header">
+        <span style="color: #D97706;"><i class="fa-solid fa-rectangle-ad"></i> जाहिरात व्यवस्थापन</span>
+    </div>
+    <div class="list-container">
+        <div class="cms-card">
+            <h3 class="cms-header-title" style="color: #D97706; border-bottom: 1px dashed var(--border-color); padding-bottom: 10px;"><i class="fa-solid fa-bolt"></i> वेलकम फ्लॅश ॲड (Welcome Flash Ad)</h3>
+            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px;">ही जाहिरात युझरने ॲप/वेबसाईट उघडल्यावर लगेच फुल स्क्रीनवर दिसेल. (Skip बटण युझर ॲपमध्ये आपोआप दिसेल)</p>
+            
+            <label class="form-label">जाहिरातीचा मजकूर (Ad Text)</label>
+            <input type="text" class="form-control" id="flash-ad-text" placeholder="उदा. नवीन 2BHK फ्लॅट्स उपलब्ध! २०% सूट">
+            
+            <label class="form-label">लिंक (URL) - युझरने क्लिक केल्यावर कुठे जावे?</label>
+            <input type="text" class="form-control" id="flash-ad-link" placeholder="उदा. https://yourlink.com">
+
+            <div class="grid-2">
+                <div>
+                    <label class="form-label">मोबाईलसाठी फोटो (उभी स्क्रीन)</label>
+                    <div class="file-upload-wrapper" style="height: 160px;">
+                        <input type="file" id="flash-ad-file-mobile" accept="image/png, image/jpeg, image/jpg" onchange="previewAdImage(event, 'mobile')">
+                        <div class="file-upload-content">
+                            <i class="fa-solid fa-mobile-screen"></i>
+                            <span>मोबाईल फोटो निवडा</span>
+                        </div>
+                        <img id="ad-image-preview-mobile" alt="Mobile Ad Preview" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; background: rgba(0,0,0,0.8); display: none; z-index: 5;">
+                    </div>
+                    <input type="hidden" id="flash-ad-image-url-mobile">
+                </div>
+                <div>
+                    <label class="form-label">कम्प्युटरसाठी फोटो (आडवी स्क्रीन)</label>
+                    <div class="file-upload-wrapper" style="height: 160px;">
+                        <input type="file" id="flash-ad-file-desktop" accept="image/png, image/jpeg, image/jpg" onchange="previewAdImage(event, 'desktop')">
+                        <div class="file-upload-content">
+                            <i class="fa-solid fa-desktop"></i>
+                            <span>कम्प्युटर फोटो निवडा</span>
+                        </div>
+                        <img id="ad-image-preview-desktop" alt="Desktop Ad Preview" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; background: rgba(0,0,0,0.8); display: none; z-index: 5;">
+                    </div>
+                    <input type="hidden" id="flash-ad-image-url-desktop">
+                </div>
+            </div>
+            
+            <div class="grid-2">
+                <button class="btn-publish" id="publish-ad-btn" style="background: #D97706; margin-top: 5px; padding: 12px;" onclick="publishFlashAd()">सेव्ह करा</button>
+                <button class="btn-reject" style="width: 100%; border-radius: 12px; margin-top: 5px; font-weight: bold; border: none; cursor: pointer;" onclick="removeFlashAd()"><i class="fa-solid fa-trash"></i> काढून टाका</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ९. सपोर्ट आणि कस्टमर केअर -->
+    <div class="section-header">
+        <i class="fa-solid fa-headset" style="color: #475569;"></i> <span style="color: #475569;">सपोर्ट आणि संपर्क</span>
+    </div>
+    <div class="list-container">
+        <div class="cms-card">
+            <label class="form-label">कस्टमर केअर नंबर (WhatsApp)</label>
+            <div style="position: relative;">
+                <i class="fa-brands fa-whatsapp" style="position: absolute; left: 15px; top: 15px; color: #25D366;"></i>
+                <input type="tel" class="form-control" value="9579535290" id="support-number" style="padding-left: 45px;">
+            </div>
+            
+            <label class="form-label">सपोर्ट ईमेल आयडी</label>
+            <div style="position: relative;">
+                <i class="fa-solid fa-envelope" style="position: absolute; left: 15px; top: 15px; color: #94A3B8;"></i>
+                <input type="email" class="form-control" value="support@satararentalhub.com" id="support-email" style="padding-left: 45px;">
+            </div>
+
+            <button class="btn-publish" id="publish-btn" style="background: #475569;" onclick="publishSupportContent()">
+                <i class="fa-solid fa-floppy-disk"></i> <span>सपोर्ट डिटेल्स सेव्ह करा</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- १०. आमची टीम (About Us - Multiple Members CMS) -->
+    <div class="section-header">
+        <i class="fa-solid fa-users" style="color: #2563EB;"></i> <span style="color: #2563EB;">आमची टीम (Team CMS)</span>
+    </div>
+    <div class="list-container">
+        <div class="cms-card">
+            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px;">इथे भरलेली माहिती 'About Us' पेजवर टीम सेक्शनमध्ये दिसेल. तुम्ही एकापेक्षा जास्त सपोर्ट मेंबर्स ॲड करू शकता.</p>
+            
+            <h3 style="font-size: 14px; margin-bottom: 10px; color: var(--primary);"><i class="fa-solid fa-user-tie"></i> संस्थापकाची माहिती (Founder)</h3>
+            <label class="form-label">नाव</label>
+            <input type="text" class="form-control" id="founder-name" placeholder="उदा. प्रज्योत साळुंखे">
+            <label class="form-label">पद</label>
+            <input type="text" class="form-control" id="founder-role" placeholder="उदा. संस्थापक (Founder)">
+            <label class="form-label">थोडक्यात माहिती (Bio)</label>
+            <textarea class="form-control" id="founder-bio" placeholder="माहिती..." style="min-height: 60px;"></textarea>
+            
+            <hr style="border: 0; border-top: 1px dashed var(--border-color); margin: 20px 0;">
+
+            <h3 style="font-size: 14px; margin-bottom: 10px; color: #10B981;"><i class="fa-solid fa-users"></i> सपोर्ट टीमची माहिती (Multiple)</h3>
+            
+            <div style="background: #ECFDF5; padding: 15px; border-radius: 12px; border: 1px solid #A7F3D0; margin-bottom: 15px;">
+                <label class="form-label">नाव</label>
+                <input type="text" class="form-control" id="new-team-name" placeholder="उदा. कस्टमर सपोर्ट">
+                <label class="form-label">पद</label>
+                <input type="text" class="form-control" id="new-team-role" placeholder="उदा. मदत आणि सहाय्य">
+                <label class="form-label">थोडक्यात माहिती (Bio)</label>
+                <textarea class="form-control" id="new-team-bio" placeholder="माहिती..." style="min-height: 40px; margin-bottom: 10px;"></textarea>
+                
+                <button class="btn-edit" style="width: 100%; background: #10B981; color: white; border: none; font-weight: bold;" onclick="addTeamMember()"><i class="fa-solid fa-user-plus"></i> मेंबर ॲड करा</button>
+            </div>
+
+            <div id="added-team-members-list">
+                <!-- Javascript द्वारे इथे लिस्ट तयार होईल -->
+            </div>
+
+            <button class="btn-publish" id="publish-team-btn" style="background: #2563EB;" onclick="publishTeamContent()">
+                <i class="fa-solid fa-floppy-disk"></i> <span>संपूर्ण टीम माहिती सेव्ह करा</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <a href="admin_dashboard.html" class="nav-item active">
+            <i class="fa-solid fa-chart-line"></i>
+            <span data-lang="nav_dashboard">डॅशबोर्ड</span>
+        </a>
+        <a href="admin_approvals.html" class="nav-item">
+            <i class="fa-solid fa-list-check"></i>
+            <span data-lang="nav_approvals">मंजुरी</span>
+        </a>
+        <a href="admin_ads.html" class="nav-item">
+            <i class="fa-solid fa-bullhorn"></i>
+            <span data-lang="nav_ads">जाहिराती</span>
+        </a>
+        <a href="index.html" class="nav-item">
+            <i class="fa-solid fa-house"></i>
+            <span data-lang="nav_user_app">युझर ॲप</span>
+        </a>
+    </div>
+
+    <!-- JavaScript For Admin Logic -->
+    <script>
+        let supportTeamMembers = [];
+        let heroSliderImagesArr = []; 
+
+        window.onload = function() {
+            if(typeof applySavedLanguage === 'function') { applySavedLanguage(); }
+            
+            let now = new Date();
+            let firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+            document.getElementById('report-start-date').value = firstDay.toISOString().split('T')[0];
+            document.getElementById('report-end-date').value = now.toISOString().split('T')[0];
+
+            loadAdminDashboardStats();
+            loadSettingsFromFirebase();
+            loadPendingProperties();
+            loadLiveProperties(); 
+            loadAdSettings();
+            loadTeamDataCMS(); 
+            loadHeroSliderConfig(); 
+        };
+
+        // --- Slider Config Logic ---
+        function loadHeroSliderConfig() {
+            if(typeof db !== 'undefined') {
+                db.collection("admin_settings").doc("hero_slider").get().then((doc) => {
+                    if(doc.exists) {
+                        let data = doc.data();
+                        if(data.interval) document.getElementById('slider-timer').value = data.interval;
+                        if(data.images && data.images.length > 0) {
+                            heroSliderImagesArr = data.images;
+                        }
+                        renderCurrentSliderImages();
+                    } else {
+                        document.getElementById('current-slider-images').innerHTML = '<div style="grid-column: span 3; text-align: center; color: #94A3B8; font-size: 12px; padding: 10px;">एकही इमेज अपलोड केलेली नाही. (डीफॉल्ट इमेज दिसेल)</div>';
+                    }
+                }).catch(e => console.log("Error fetching slider config", e));
+            }
+        }
+
+        function renderCurrentSliderImages() {
+            const container = document.getElementById('current-slider-images');
+            container.innerHTML = '';
+
+            if (heroSliderImagesArr.length === 0) {
+                container.innerHTML = '<div style="grid-column: span 3; text-align: center; color: #94A3B8; font-size: 12px; padding: 10px;">एकही इमेज अपलोड केलेली नाही.</div>';
+                return;
+            }
+
+            heroSliderImagesArr.forEach((imgUrl, index) => {
+                let html = `
+                <div class="slider-img-box">
+                    <button class="delete-slide-btn" onclick="deleteSliderImage(${index})"><i class="fa-solid fa-trash"></i></button>
+                    <img src="${imgUrl}" alt="Slider Image">
+                </div>`;
+                container.innerHTML += html;
+            });
+        }
+
+        function deleteSliderImage(index) {
+            if(confirm("ही इमेज स्लायडरमधून डिलीट करायची का?")) {
+                heroSliderImagesArr.splice(index, 1);
+                renderCurrentSliderImages();
+                saveSliderToFirebase(); 
+            }
+        }
+
+        async function uploadHeroSliderImages(event) {
+            const files = event.target.files;
+            if(!files || files.length === 0) return;
+
+            if(typeof db === 'undefined' || typeof firebase.storage === 'undefined') {
+                alert("Firebase Storage कनेक्टेड नाही.");
+                return;
+            }
+
+            let statusText = document.getElementById('slider-upload-status');
+            statusText.innerText = "अपलोड होत आहे... कृपया थांबा";
+            statusText.style.color = "#E65C00";
+
+            const storageRef = firebase.storage().ref();
+            let newUrls = [];
+
+            try {
+                for(let i=0; i<files.length; i++) {
+                    let file = files[i];
+                    let fileRef = storageRef.child(`hero_slider_images/slide_${Date.now()}_${i}`);
+                    let snapshot = await fileRef.put(file);
+                    let url = await snapshot.ref.getDownloadURL();
+                    newUrls.push(url);
+                }
+
+                heroSliderImagesArr = heroSliderImagesArr.concat(newUrls);
+                
+                if(heroSliderImagesArr.length > 10) {
+                    heroSliderImagesArr = heroSliderImagesArr.slice(heroSliderImagesArr.length - 10);
+                }
+
+                renderCurrentSliderImages();
+                await saveSliderToFirebase();
+                
+                statusText.innerText = "यशस्वीरित्या अपलोड झाले!";
+                statusText.style.color = "#10B981";
+                document.getElementById('hero-slider-files').value = ""; 
+                
+                setTimeout(() => {
+                    statusText.innerText = "इथे क्लिक करून फोटो निवडा";
+                    statusText.style.color = "#64748B";
+                }, 3000);
+
+            } catch (e) {
+                console.log("Slider upload error", e);
+                alert("इमेजेस अपलोड करताना एरर आला.");
+                statusText.innerText = "अपलोड फेल!";
+                statusText.style.color = "#EF4444";
+            }
+        }
+
+        function saveSliderTimer() {
+            let timerVal = document.getElementById('slider-timer').value;
+            if(!timerVal || timerVal < 1000) {
+                alert("कमीत कमी १००० मिलीसेकंद (१ सेकंद) वेळ असणे आवश्यक आहे.");
+                return;
+            }
+            saveSliderToFirebase(timerVal);
+            alert("✅ वेळ सेव्ह केली.");
+        }
+
+        async function saveSliderToFirebase(timerOverride = null) {
+            if(typeof db !== 'undefined') {
+                let intervalVal = timerOverride || document.getElementById('slider-timer').value || 3000;
+                await db.collection("admin_settings").doc("hero_slider").set({
+                    interval: parseInt(intervalVal),
+                    images: heroSliderImagesArr,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+            }
+        }
+
+        // --- Load Dashboard Stats ---
+        function loadAdminDashboardStats() {
+            if(typeof db !== 'undefined') {
+                db.collection("users").get().then(snap => {
+                    document.getElementById('total_users_count').innerText = snap.size;
+                }).catch(e => console.log(e));
+
+                db.collection("properties").get().then(snap => {
+                    let liveCount = 0;
+                    let pendingCount = 0;
+                    snap.forEach(doc => {
+                        if(doc.data().status === 'live') liveCount++;
+                        else if(doc.data().status === 'pending') pendingCount++;
+                    });
+                    document.getElementById('live_properties_count').innerText = liveCount;
+                    document.getElementById('pending_approvals_count').innerText = pendingCount;
+                    document.getElementById('pending_count_badge').innerText = pendingCount + " नवीन";
+                    document.getElementById('live_count_badge').innerText = liveCount + " लाईव्ह"; 
+                }).catch(e => console.log(e));
+
+                db.collection("payments").where("status", "==", "Success").get().then(snap => {
+                    let totalRev = 0;
+                    snap.forEach(doc => { totalRev += Number(doc.data().amount || 0); });
+                    document.getElementById('total_revenue_amount').innerText = "₹ " + totalRev;
+                }).catch(e => console.log("Revenue error", e));
+            }
+        }
+
+        // --- 🆕 Report Generation & Download Logic (ALL PAYMENTS) ---
+        function getSelectedDateRange() {
+            let startVal = document.getElementById('report-start-date').value;
+            let endVal = document.getElementById('report-end-date').value;
+            
+            if(!startVal || !endVal) {
+                return null; 
+            }
+            
+            let startDate = new Date(startVal);
+            startDate.setHours(0, 0, 0, 0);
+            
+            let endDate = new Date(endVal);
+            endDate.setHours(23, 59, 59, 999);
+
+            return { start: startDate.toISOString(), end: endDate.toISOString(), titleStr: `${startVal}_to_${endVal}` };
+        }
+
+        async function downloadReport(reportType) {
+            if(typeof db === 'undefined') { alert("Firebase Connected नाही!"); return; }
+            
+            let dateRange = getSelectedDateRange();
+            let dateTitle = dateRange ? dateRange.titleStr : "All_Time";
+            let csvContent = "\uFEFF"; // BOM for UTF-8 Excel support
+            
+            try {
+                // 🆕 NEW: ALL PAYMENTS REPORT LOGIC
+                if(reportType === 'all_payments') {
+                    csvContent += "Payment ID,User ID,User Mobile,Amount (Rs),Plan Type,Property ID,Status,Payment Date\r\n";
+                    let query = db.collection("payments");
+                    if(dateRange) { query = query.where("createdAt", ">=", dateRange.start).where("createdAt", "<=", dateRange.end); }
+                    
+                    let snap = await query.get();
+                    
+                    // We need to fetch User Details (Name/Mobile) for the UserID
+                    for (let doc of snap.docs) {
+                        let d = doc.data();
+                        let date = d.createdAt ? new Date(d.createdAt).toLocaleDateString() : 'N/A';
+                        let userMobile = "Not Found";
+                        
+                        // Try to get user mobile directly if saved, otherwise fetch from users collection
+                        if(d.userId && d.userId.includes("user_")) {
+                            userMobile = d.userId.replace("user_", "");
+                        } else if(d.userId) {
+                            try {
+                                let userDoc = await db.collection("users").doc(d.userId).get();
+                                if(userDoc.exists) userMobile = userDoc.data().mobile || "N/A";
+                            } catch(e) {}
+                        }
+
+                        csvContent += `"${d.paymentId || 'N/A'}","${d.userId || ''}","${userMobile}","${d.amount || 0}","${d.planType || 'Unknown'}","${d.propertyId || 'N/A'}","${d.status || ''}","${date}"\r\n`;
+                    }
+                } 
+                else if(reportType === 'revenue') {
+                    csvContent += "Payment ID,User ID,Amount (Rs),Plan Type,Status,Date\r\n";
+                    let query = db.collection("payments");
+                    if(dateRange) { query = query.where("createdAt", ">=", dateRange.start).where("createdAt", "<=", dateRange.end); }
+                    
+                    let snap = await query.get();
+                    snap.forEach(doc => {
+                        let d = doc.data();
+                        let date = d.createdAt ? new Date(d.createdAt).toLocaleDateString() : 'N/A';
+                        csvContent += `"${doc.id}","${d.userId || ''}","${d.amount || 0}","${d.planType || 'Unlock'}","${d.status || ''}","${date}"\r\n`;
+                    });
+                } 
+                else if(reportType === 'users') {
+                    csvContent += "User ID,Name,Mobile,Role,Registered On\r\n";
+                    let query = db.collection("users");
+                    if(dateRange) { query = query.where("createdAt", ">=", dateRange.start).where("createdAt", "<=", dateRange.end); }
+
+                    let snap = await query.get();
+                    snap.forEach(doc => {
+                        let d = doc.data();
+                        let date = d.createdAt ? new Date(d.createdAt).toLocaleDateString() : 'N/A';
+                        csvContent += `"${doc.id}","${d.name || ''}","${d.mobile || ''}","${d.role || ''}","${date}"\r\n`;
+                    });
+                }
+                else if(reportType === 'properties') {
+                    csvContent += "Property ID,Title,Owner,Type,Taluka,Area,Rent,Status,Plan,Created Date\r\n";
+                    let query = db.collection("properties");
+                    if(dateRange) { query = query.where("createdAt", ">=", dateRange.start).where("createdAt", "<=", dateRange.end); }
+
+                    let snap = await query.get();
+                    snap.forEach(doc => {
+                        let d = doc.data();
+                        let date = d.createdAt ? new Date(d.createdAt).toLocaleDateString() : 'N/A';
+                        csvContent += `"${doc.id}","${d.title || ''}","${d.ownerName || ''}","${d.type || ''}","${d.taluka || ''}","${d.area || ''}","${d.rent || 0}","${d.status || ''}","${d.planType || 'basic'}","${date}"\r\n`;
+                    });
+                }
+                else if(reportType === 'leads') {
+                    csvContent += "Property ID,Title,Owner Mobile,Total Views,Total Leads Generated,Created Date\r\n";
+                    let query = db.collection("properties");
+                    if(dateRange) { query = query.where("createdAt", ">=", dateRange.start).where("createdAt", "<=", dateRange.end); }
+
+                    let snap = await query.get();
+                    snap.forEach(doc => {
+                        let d = doc.data();
+                        let date = d.createdAt ? new Date(d.createdAt).toLocaleDateString() : 'N/A';
+                        csvContent += `"${doc.id}","${d.title || ''}","${d.ownerMobile || ''}","${d.views || 0}","${d.leads || 0}","${date}"\r\n`;
+                    });
+                }
+                else if(reportType === 'expired_plans') {
+                    csvContent += "Property ID,Title,Owner Name,Owner Mobile,Plan Type,Expired On Date\r\n";
+                    let query = db.collection("properties");
+                    let snap = await query.get();
+                    let now = new Date();
+                    
+                    snap.forEach(doc => {
+                        let d = doc.data();
+                        if (d.planType && d.planType !== 'basic' && d.expiryDate && d.expiryDate !== 'Lifetime') {
+                            let expiryTime = new Date(d.expiryDate);
+                            let isExpired = false;
+                            
+                            if (now > expiryTime) {
+                                if (!dateRange) {
+                                    isExpired = true; 
+                                } else {
+                                    let startRange = new Date(dateRange.start);
+                                    let endRange = new Date(dateRange.end);
+                                    if (expiryTime >= startRange && expiryTime <= endRange) {
+                                        isExpired = true;
+                                    }
+                                }
+                            }
+
+                            if (isExpired) {
+                                let formattedExpiryDate = expiryTime.toLocaleDateString();
+                                csvContent += `"${doc.id}","${d.title || ''}","${d.ownerName || ''}","${d.ownerMobile || ''}","${d.planType}","${formattedExpiryDate}"\r\n`;
+                            }
+                        }
+                    });
+                }
+
+                // Create download link
+                let encodedUri = encodeURI(csvContent);
+                let link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", `${reportType}_report_${dateTitle}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+            } catch (error) {
+                console.error("Error generating report: ", error);
+                alert("रिपोर्ट बनवताना एरर आला. Firebase Indexing आवश्यक असू शकते.");
+            }
+        }
+
+        // --- Load and Save Master Settings ---
+        function loadSettingsFromFirebase() {
+            if(typeof db !== 'undefined') {
+                db.collection("admin_settings").doc("master_config").get().then((doc) => {
+                    if(doc.exists) {
+                        let data = doc.data();
+                        document.getElementById('manual-approval-toggle').checked = data.manualPropertyApproval || false;
+                        if(data.plans) {
+                            document.getElementById('plan1-fee').value = data.plans.plan1_fee || 299;
+                            document.getElementById('plan1-validity').value = data.plans.plan1_validity || 15;
+                            document.getElementById('plan2-fee').value = data.plans.plan2_fee || 399;
+                            document.getElementById('plan2-validity').value = data.plans.plan2_validity || 30;
+                        }
+                        document.getElementById('tenant-unlock-fee').value = data.tenantUnlockFee || 20;
+                        if(data.support) {
+                            document.getElementById('support-number').value = data.support.phone || "9579535290";
+                            document.getElementById('support-email').value = data.support.email || "support@satararentalhub.com";
+                        }
+                    }
+                }).catch(e => console.log("Error loading settings:", e));
+            }
+        }
+
+        function toggleManualApproval(checkbox) {
+            let isManualOn = checkbox.checked;
+            if(typeof db !== 'undefined') {
+                db.collection("admin_settings").doc("master_config").set({ manualPropertyApproval: isManualOn }, { merge: true }).then(() => {
+                    alert(isManualOn ? "मॅन्युअल ॲप्रूव्हल चालू (ON) झाले आहे." : "मॅन्युअल ॲप्रूव्हल बंद (OFF) झाले आहे.");
+                });
+            }
+        }
+
+        function savePlanSettings() {
+            let p1Fee = document.getElementById('plan1-fee').value;
+            let p1Val = document.getElementById('plan1-validity').value;
+            let p2Fee = document.getElementById('plan2-fee').value;
+            let p2Val = document.getElementById('plan2-validity').value;
+
+            if(!p1Fee || !p1Val || !p2Fee || !p2Val) { alert("कृपया सर्व माहिती भरा."); return; }
+
+            if(typeof db !== 'undefined') {
+                db.collection("admin_settings").doc("master_config").set({
+                    plans: { plan1_fee: Number(p1Fee), plan1_validity: Number(p1Val), plan2_fee: Number(p2Fee), plan2_validity: Number(p2Val) }
+                }, { merge: true }).then(() => { alert("✅ प्लॅन्स अपडेट केले!"); });
+            }
+        }
+
+        function saveTenantFee() {
+            let tFee = document.getElementById('tenant-unlock-fee').value;
+            if(tFee === "") { alert("कृपया फी टाका."); return; }
+
+            if(typeof db !== 'undefined') {
+                db.collection("admin_settings").doc("master_config").set({ tenantUnlockFee: Number(tFee) }, { merge: true }).then(() => {
+                    alert(`✅ फी ₹${tFee} सेट केली!`);
+                });
+            }
+        }
+
+        function publishSupportContent() {
+            let phone = document.getElementById('support-number').value;
+            let email = document.getElementById('support-email').value;
+
+            if(typeof db !== 'undefined') {
+                const btn = document.getElementById('publish-btn');
+                btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Saving...";
+                btn.disabled = true;
+
+                db.collection("admin_settings").doc("master_config").set({ support: { phone: phone, email: email } }, { merge: true }).then(() => {
+                    alert("✅ सपोर्ट डिटेल्स अपडेट केले!");
+                    btn.innerHTML = "<i class='fa-solid fa-floppy-disk'></i> सपोर्ट डिटेल्स सेव्ह करा";
+                    btn.disabled = false;
+                });
+            }
+        }
+
+        // --- Load Pending Properties ---
+        function loadPendingProperties() {
+            let container = document.getElementById('admin_pending_properties_list');
+            if(typeof db !== 'undefined') {
+                db.collection("properties").where("status", "==", "pending").get().then(snap => {
+                    if(snap.empty) {
+                        container.innerHTML = '<div style="text-align: center; color: #94A3B8; padding: 20px;">कोणत्याही नवीन प्रॉपर्टीज पेंडिंग नाहीत.</div>';
+                        return;
+                    }
+                    let html = '';
+                    snap.forEach(doc => {
+                        let p = doc.data();
+                        let premiumBadge = (p.planType === 'premium1' || p.planType === 'premium2') ? `<span style="background:#8B5CF6; color:white; padding:2px 6px; font-size:10px; border-radius:8px; margin-left:5px;">Top Ad</span>` : `<span style="background:#64748B; color:white; padding:2px 6px; font-size:10px; border-radius:8px; margin-left:5px;">Free</span>`;
+                        
+                        html += `
+                        <div class="action-card" id="pending_prop_${doc.id}">
+                            <div class="action-header">
+                                <div><div class="action-title">${p.title || 'Property'} ${premiumBadge}</div><div class="action-subtitle"><i class="fa-solid fa-user"></i> ${p.ownerName} (${p.ownerMobile})</div></div>
+                                <div class="action-price">₹ ${p.rent}</div>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-reject" onclick="rejectProperty('${doc.id}')"><i class="fa-solid fa-xmark"></i> रद्द करा</button>
+                                <button class="btn btn-approve" onclick="approveProperty('${doc.id}')"><i class="fa-solid fa-check"></i> मंजूर करा</button>
+                            </div>
+                        </div>`;
+                    });
+                    container.innerHTML = html;
+                });
+            }
+        }
+
+        // --- Load Live Properties (For Admin Deletion Feature) ---
+        function loadLiveProperties() {
+            let container = document.getElementById('admin_live_properties_list');
+            if(typeof db !== 'undefined') {
+                db.collection("properties").where("status", "==", "live").get().then(snap => {
+                    if(snap.empty) {
+                        container.innerHTML = '<div style="text-align: center; color: #94A3B8; padding: 20px;">सध्या कोणतीही प्रॉपर्टी ॲपवर लाईव्ह नाही.</div>';
+                        return;
+                    }
+                    let html = '';
+                    snap.forEach(doc => {
+                        let p = doc.data();
+                        let premiumBadge = (p.planType === 'premium1' || p.planType === 'premium2') ? `<span style="background:#8B5CF6; color:white; padding:2px 6px; font-size:10px; border-radius:8px; margin-left:5px;">Top Ad</span>` : `<span style="background:#64748B; color:white; padding:2px 6px; font-size:10px; border-radius:8px; margin-left:5px;">Free</span>`;
+                        
+                        html += `
+                        <div class="action-card live-card" id="live_prop_${doc.id}">
+                            <div class="action-header">
+                                <div><div class="action-title">${p.title || 'Property'} ${premiumBadge}</div><div class="action-subtitle"><i class="fa-solid fa-user"></i> ${p.ownerName} (${p.ownerMobile})</div></div>
+                                <div class="action-price">₹ ${p.rent}</div>
+                            </div>
+                            <div class="action-subtitle" style="margin-bottom: 5px;"><i class="fa-solid fa-location-dot"></i> ${p.area}, ${p.taluka}</div>
+                            
+                            <div class="btn-group">
+                                <button class="btn btn-reject" style="width:100%" onclick="adminDeleteProperty('${doc.id}')"><i class="fa-solid fa-trash"></i> ही प्रॉपर्टी काढून टाका (Delete)</button>
+                            </div>
+                        </div>`;
+                    });
+                    container.innerHTML = html;
+                });
+            }
+        }
+
+        function adminDeleteProperty(propId) {
+            if(confirm("तुम्हाला खात्री आहे का? ही प्रॉपर्टी कायमची डिलीट होईल आणि ॲपवरून काढून टाकली जाईल.")) {
+                db.collection("properties").doc(propId).delete().then(() => {
+                    alert("❌ प्रॉपर्टी यशस्वीरित्या डिलीट केली."); 
+                    loadLiveProperties(); 
+                    loadAdminDashboardStats();
+                }).catch(e => {
+                    console.log("Delete error", e);
+                    alert("प्रॉपर्टी डिलीट करताना एरर आला.");
+                });
+            }
+        }
+
+        function approveProperty(propId) {
+            if(confirm("ही प्रॉपर्टी लाईव्ह करायची का?")) {
+                db.collection("properties").doc(propId).update({ status: 'live' }).then(() => {
+                    alert("✅ प्रॉपर्टी ॲपवर लाईव्ह झाली!"); 
+                    loadPendingProperties(); 
+                    loadLiveProperties();
+                    loadAdminDashboardStats();
+                });
+            }
+        }
+
+        function rejectProperty(propId) {
+            if(confirm("ही प्रॉपर्टी रद्द/डिलीट करायची का?")) {
+                db.collection("properties").doc(propId).delete().then(() => {
+                    alert("❌ प्रॉपर्टी रद्द केली."); loadPendingProperties(); loadAdminDashboardStats();
+                });
+            }
+        }
+
+        // --- Flash Ads (Mobile and Desktop separate images) ---
+        let selectedAdFileMobile = null;
+        let selectedAdFileDesktop = null;
+
+        function previewAdImage(event, type) {
+            const file = event.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (type === 'mobile') {
+                        selectedAdFileMobile = file;
+                        const preview = document.getElementById('ad-image-preview-mobile');
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                    } else if (type === 'desktop') {
+                        selectedAdFileDesktop = file;
+                        const preview = document.getElementById('ad-image-preview-desktop');
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                    }
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function loadAdSettings() {
+            if(typeof db !== 'undefined') {
+                db.collection("admin_settings").doc("ads_config").get().then((doc) => {
+                    if(doc.exists && doc.data().flashAd) {
+                        let adData = doc.data().flashAd;
+                        document.getElementById('flash-ad-text').value = adData.text || '';
+                        document.getElementById('flash-ad-link').value = adData.link || '';
+                        
+                        if(adData.imageUrlMobile) {
+                            document.getElementById('flash-ad-image-url-mobile').value = adData.imageUrlMobile;
+                            const previewMobile = document.getElementById('ad-image-preview-mobile');
+                            previewMobile.src = adData.imageUrlMobile;
+                            previewMobile.style.display = 'block';
+                        }
+                        
+                        let desktopUrl = adData.imageUrlDesktop || adData.imageUrl;
+                        if(desktopUrl) {
+                            document.getElementById('flash-ad-image-url-desktop').value = desktopUrl;
+                            const previewDesktop = document.getElementById('ad-image-preview-desktop');
+                            previewDesktop.src = desktopUrl;
+                            previewDesktop.style.display = 'block';
+                        }
+                    }
+                });
+            }
+        }
+
+        async function publishFlashAd() {
+            let text = document.getElementById('flash-ad-text').value;
+            let link = document.getElementById('flash-ad-link').value;
+            let currentImgUrlMobile = document.getElementById('flash-ad-image-url-mobile').value;
+            let currentImgUrlDesktop = document.getElementById('flash-ad-image-url-desktop').value;
+
+            if(!text) { alert("कृपया फ्लॅश ॲडचा मजकूर भरा!"); return; }
+
+            const btn = document.getElementById('publish-ad-btn');
+            btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Uploading...";
+            btn.disabled = true;
+
+            try {
+                if(typeof firebase.storage !== 'undefined') {
+                    const storageRef = firebase.storage().ref();
+                    
+                    if(selectedAdFileMobile) {
+                        const fileRefMobile = storageRef.child(`admin_ads/flash_ad_mobile_${Date.now()}`);
+                        const snapshotMobile = await fileRefMobile.put(selectedAdFileMobile);
+                        currentImgUrlMobile = await snapshotMobile.ref.getDownloadURL();
+                    }
+                    
+                    if(selectedAdFileDesktop) {
+                        const fileRefDesktop = storageRef.child(`admin_ads/flash_ad_desktop_${Date.now()}`);
+                        const snapshotDesktop = await fileRefDesktop.put(selectedAdFileDesktop);
+                        currentImgUrlDesktop = await snapshotDesktop.ref.getDownloadURL();
+                    }
+                }
+
+                if(typeof db !== 'undefined') {
+                    await db.collection("admin_settings").doc("ads_config").set({ 
+                        flashAd: { 
+                            text: text, 
+                            link: link, 
+                            imageUrlMobile: currentImgUrlMobile, 
+                            imageUrlDesktop: currentImgUrlDesktop,
+                            active: true 
+                        }
+                    }, { merge: true });
+                    
+                    alert("⚡ फ्लॅश जाहिरात (मोबाईल आणि लॅपटॉप दोन्हीसाठी) ॲपवर लाईव्ह झाली!");
+                }
+            } catch(e) {
+                console.log("Error uploading Ad", e);
+                alert("जाहिरात सेव्ह करताना एरर आला. Firebase Storage चालू आहे का तपासा.");
+            } finally {
+                btn.innerHTML = "सेव्ह करा";
+                btn.disabled = false;
+            }
+        }
+
+        function removeFlashAd() {
+            if(confirm("फ्लॅश जाहिरात काढून टाकायची आहे का?")) {
+                if(typeof db !== 'undefined') {
+                    db.collection("admin_settings").doc("ads_config").set({ flashAd: { active: false } }, { merge: true }).then(() => {
+                        document.getElementById('flash-ad-text').value = ''; 
+                        document.getElementById('flash-ad-link').value = ''; 
+                        
+                        document.getElementById('flash-ad-image-url-mobile').value = ''; 
+                        document.getElementById('ad-image-preview-mobile').style.display = 'none';
+                        selectedAdFileMobile = null;
+                        
+                        document.getElementById('flash-ad-image-url-desktop').value = ''; 
+                        document.getElementById('ad-image-preview-desktop').style.display = 'none';
+                        selectedAdFileDesktop = null;
+                        
+                        alert("🗑️ जाहिरात काढून टाकली.");
+                    });
+                }
+            }
+        }
+
+        // --- Team CMS ---
+        function loadTeamDataCMS() {
+            if(typeof db !== 'undefined') {
+                db.collection("settings").doc("founder").get().then((doc) => {
+                    if(doc.exists) {
+                        let data = doc.data();
+                        document.getElementById('founder-name').value = data.name || '';
+                        document.getElementById('founder-role').value = data.role || '';
+                        document.getElementById('founder-bio').value = data.bio || '';
+                    }
+                });
+                db.collection("settings").doc("teamData").get().then((doc) => {
+                    if (doc.exists && doc.data().members) { supportTeamMembers = doc.data().members; renderTeamMembersList(); }
+                });
+            }
+        }
+
+        function addTeamMember() {
+            let mName = document.getElementById('new-team-name').value.trim();
+            let mRole = document.getElementById('new-team-role').value.trim();
+            let mBio = document.getElementById('new-team-bio').value.trim();
+
+            if(mName === "" || mRole === "") { alert("कृपया नाव आणि पद टाका."); return; }
+            supportTeamMembers.push({ id: Date.now().toString(), name: mName, role: mRole, bio: mBio });
+            document.getElementById('new-team-name').value = ''; document.getElementById('new-team-role').value = ''; document.getElementById('new-team-bio').value = '';
+            renderTeamMembersList();
+        }
+
+        function removeTeamMember(id) { supportTeamMembers = supportTeamMembers.filter(member => member.id !== id); renderTeamMembersList(); }
+
+        function renderTeamMembersList() {
+            const listContainer = document.getElementById('added-team-members-list'); listContainer.innerHTML = '';
+            if(supportTeamMembers.length === 0) { listContainer.innerHTML = '<div style="font-size:12px; color:#94A3B8; text-align:center; padding:10px;">कोणताही मेंबर नाही.</div>'; return; }
+            supportTeamMembers.forEach(member => {
+                listContainer.innerHTML += `<div class="team-member-item"><div class="team-member-info"><h4><i class="fa-solid fa-user"></i> ${member.name} (${member.role})</h4></div><button class="btn-delete-member" onclick="removeTeamMember('${member.id}')"><i class="fa-solid fa-trash"></i></button></div>`;
+            });
+        }
+
+        function publishTeamContent() {
+            let fName = document.getElementById('founder-name').value.trim(); let fRole = document.getElementById('founder-role').value.trim(); let fBio = document.getElementById('founder-bio').value.trim();
+            if(fName === "" || fRole === "") { alert("कृपया संस्थापकाचे नाव आणि पद भरा."); return; }
+            const btn = document.getElementById('publish-team-btn'); btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Saving..."; btn.disabled = true;
+
+            if(typeof db !== 'undefined') {
+                Promise.all([
+                    db.collection("settings").doc("founder").set({ name: fName, role: fRole, bio: fBio, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true }),
+                    db.collection("settings").doc("teamData").set({ members: supportTeamMembers, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true })
+                ]).then(() => { alert("✅ टीम अपडेट झाली!"); btn.innerHTML = "<i class='fa-solid fa-floppy-disk'></i> <span>सेव्ह करा</span>"; btn.disabled = false; });
+            }
+        }
+    </script>
+</body>
+</html>

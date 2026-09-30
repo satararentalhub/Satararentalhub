@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>नियम आणि अटी | Satara Rental Hub</title>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <!-- Firebase Configuration File -->
+    <script src="firebase-config.js"></script>
+    
+    <!-- Multi-Language Support File -->
+    <script src="lang.js"></script>
+    
+    <style>
+        :root {
+            --primary: #FF671F;
+            --bg-light: #F4F6F9;
+            --text-dark: #2C3E50;
+            --text-muted: #64748B;
+            --white: #FFFFFF;
+            --border: #EAECEE;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-light); color: var(--text-dark); padding-bottom: 30px; }
+
+        /* टॉप बार */
+        .top-bar {
+            background: var(--primary); color: var(--white); padding: 15px 20px;
+            position: sticky; top: 0; z-index: 100; display: flex; align-items: center; gap: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .back-btn { color: var(--white); font-size: 20px; text-decoration: none; }
+        .page-title { flex: 1; font-size: 18px; font-weight: 700; }
+
+        /* भाषा बदलणारे बटण (Top Right) */
+        .lang-toggle-btn {
+            background: rgba(255,255,255,0.2); color: var(--white); border: 1px solid var(--white);
+            padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;
+        }
+
+        /* हेडर ग्राफिक */
+        .header-graphic {
+            background: linear-gradient(135deg, var(--white) 0%, #FFF5F0 100%);
+            padding: 30px 20px; text-align: center; border-bottom: 1px solid #FFE4D6;
+        }
+        .header-graphic i { font-size: 40px; color: var(--primary); margin-bottom: 10px; }
+        .header-graphic h2 { font-size: 20px; font-weight: 800; color: var(--text-dark); }
+        .header-graphic p { font-size: 13px; color: var(--text-muted); margin-top: 5px; }
+
+        /* कंटेंट बॉक्स */
+        .content-container { padding: 20px; }
+        
+        .terms-box {
+            background: var(--white); padding: 20px; border-radius: 16px; margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid var(--border);
+        }
+        
+        .term-section { margin-bottom: 20px; }
+        .term-section:last-child { margin-bottom: 0; }
+        
+        .term-title {
+            font-size: 15px; font-weight: 800; color: var(--text-dark);
+            margin-bottom: 8px; display: flex; align-items: center; gap: 8px;
+        }
+        .term-title i { color: var(--primary); }
+        
+        .term-text {
+            font-size: 13.5px; color: var(--text-muted); line-height: 1.7; text-align: justify;
+        }
+        .term-text ul { padding-left: 20px; margin-top: 8px; }
+        .term-text li { margin-bottom: 6px; }
+
+        /* संपर्क माहिती */
+        .contact-box {
+            background: #F8FAFC; padding: 15px; border-radius: 12px;
+            text-align: center; border: 1px dashed #CBD5E1; margin-top: 10px;
+        }
+        .contact-box p { font-size: 13px; color: var(--text-dark); font-weight: 600; margin-bottom: 5px; }
+        .contact-box a { color: var(--primary); text-decoration: none; font-weight: 800; }
+
+        /* Accept Button */
+        .btn-accept {
+            width: 100%; background: var(--primary); color: var(--white); border: none;
+            padding: 16px; border-radius: 12px; font-size: 15px; font-weight: 800;
+            cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px;
+            box-shadow: 0 8px 20px rgba(255, 103, 31, 0.3); transition: 0.2s;
+        }
+        .btn-accept:active { transform: scale(0.97); }
+
+    </style>
+</head>
+<body>
+
+    <!-- टॉप बार -->
+    <div class="top-bar">
+        <a href="profile.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+        <div class="page-title" data-lang="terms_title_top">नियम आणि अटी</div>
+        <button class="lang-toggle-btn" onclick="toggleLanguage()">ENG / मराठी</button>
+    </div>
+
+    <!-- हेडर -->
+    <div class="header-graphic">
+        <i class="fa-solid fa-file-contract"></i>
+        <h2 data-lang="terms_heading">नियम आणि अटी (Terms)</h2>
+        <p data-lang="terms_subtitle">Satara Rental Hub ॲप वापरण्यापूर्वी कृपया खालील नियम काळजीपूर्वक वाचा.</p>
+    </div>
+
+    <!-- कंटेंट -->
+    <div class="content-container">
+        <div class="terms-box">
+            
+            <!-- नियम १ -->
+            <div class="term-section">
+                <div class="term-title"><i class="fa-solid fa-circle-info"></i> <span data-lang="term1_title">१. ॲपचा उद्देश</span></div>
+                <div class="term-text" data-lang="term1_desc">
+                    'सातारा रेंटल हब' हे केवळ एक माहिती देणारे प्लॅटफॉर्म (माध्यम) आहे. साताऱ्यातील घरमालक आणि भाडेकरू यांच्यामध्ये थेट संपर्क घडवून आणणे हा आमचा मुख्य उद्देश आहे. आम्ही स्वतः कोणत्याही प्रॉपर्टीची खरेदी-विक्री किंवा भाडेतत्वावर देण्याचे काम करत नाही.
+                </div>
+            </div>
+
+            <!-- नियम २ -->
+            <div class="term-section">
+                <div class="term-title"><i class="fa-solid fa-shield-halved"></i> <span data-lang="term2_title">२. वापरकर्त्याची जबाबदारी</span></div>
+                <div class="term-text" data-lang="term2_desc">
+                    ॲपवर दिसणारी कोणतीही प्रॉपर्टी भाड्याने घेताना किंवा खरेदी करताना, <b>संबंधित घरमालकाची, कागदपत्रांची आणि जागेची खात्री स्वतः वापरकर्त्याने (युझरने) करावी.</b> कोणत्याही प्रकारच्या फसवणुकीस किंवा खोट्या माहितीस ॲप प्रशासन जबाबदार राहणार नाही.
+                </div>
+            </div>
+
+            <!-- नियम ३ -->
+            <div class="term-section">
+                <div class="term-title"><i class="fa-solid fa-indian-rupee-sign"></i> <span data-lang="term3_title">३. आर्थिक व्यवहार (Payments)</span></div>
+                <div class="term-text" data-lang="term3_desc">
+                    <ul>
+                        <li>घरमालकाला ॲडव्हान्स (Deposit) किंवा भाडे देण्यापूर्वी घर प्रत्यक्ष जाऊन पाहणे अनिवार्य आहे.</li>
+                        <li>कधीही फोनवर बोलून अनोळखी व्यक्तीला ऑनलाईन पैसे (Google Pay/PhonePe) पाठवू नका.</li>
+                        <li>आमच्या ॲपवर नंबर अनलॉक करण्यासाठी घेतलेली फी (उदा. ₹२०) किंवा सबस्क्रिप्शन फी कोणत्याही परिस्थितीत परत (Refund) केली जाणार नाही.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- नियम ४ -->
+            <div class="term-section">
+                <div class="term-title"><i class="fa-solid fa-ban"></i> <span data-lang="term4_title">४. खाते ब्लॉक करणे</span></div>
+                <div class="term-text" data-lang="term4_desc">
+                    जर कोणत्याही युझरने किंवा घरमालकाने ॲपवर चुकीची माहिती, चुकीचे फोटो, किंवा स्पॅम ॲड टाकण्याचा प्रयत्न केला, तर ॲडमिनला त्याचे खाते (Account) पूर्वसूचनेशिवाय कायमचे ब्लॉक करण्याचा अधिकार आहे.
+                </div>
+            </div>
+
+            <!-- संपर्क -->
+            <div class="contact-box">
+                <p data-lang="contact_us_text">काही शंका किंवा तक्रार असल्यास संपर्क करा:</p>
+                <a href="mailto:support@satararentalhub.com" id="support-email-link"><i class="fa-solid fa-envelope"></i> <span id="support-email-text">support@satararentalhub.com</span></a>
+            </div>
+
+        </div>
+
+        <!-- संमती बटन -->
+        <button class="btn-accept" onclick="goBack()">
+            <i class="fa-solid fa-check"></i> <span data-lang="btn_agree">मला मान्य आहे (I Agree)</span>
+        </button>
+    </div>
+
+    <script>
+        window.onload = function() {
+            if(typeof applySavedLanguage === 'function') {
+                applySavedLanguage();
+            }
+            loadSupportEmail();
+        };
+
+        function goBack() {
+            // प्रोफाईल पेजवर परत जाणे
+            window.location.href = "profile.html";
+        }
+
+        // ॲडमिनने सेट केलेला सपोर्ट ईमेल Firebase किंवा LocalStorage मधून वाचणे
+        function loadSupportEmail() {
+            const emailLink = document.getElementById('support-email-link');
+            const emailText = document.getElementById('support-email-text');
+
+            if(typeof db !== 'undefined') {
+                db.collection("settings").doc("support").get().then((doc) => {
+                    if(doc.exists && doc.data().email) {
+                        let email = doc.data().email;
+                        emailLink.href = "mailto:" + email;
+                        emailText.innerText = email;
+                    } else {
+                        fallbackEmailLoad();
+                    }
+                }).catch(() => fallbackEmailLoad());
+            } else {
+                fallbackEmailLoad();
+            }
+        }
+
+        function fallbackEmailLoad() {
+            let savedEmail = localStorage.getItem("supportEmail");
+            if(savedEmail) {
+                document.getElementById('support-email-link').href = "mailto:" + savedEmail;
+                document.getElementById('support-email-text').innerText = savedEmail;
+            }
+        }
+    </script>
+</body>
+</html>

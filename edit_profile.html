@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>प्रोफाईल एडिट करा | Satara Rental Hub</title>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    
+    <!-- Firebase Configuration File -->
+    <script src="firebase-config.js"></script>
+    
+    <!-- Multi-Language Support File -->
+    <script src="lang.js"></script>
+    
+    <style>
+        :root {
+            --primary: #FF671F;
+            --primary-dark: #E65C00;
+            --bg-light: #F4F6F9;
+            --text-dark: #2C3E50;
+            --text-muted: #7F8C8D;
+            --white: #FFFFFF;
+            --border: #EAECEE;
+            --success: #10B981;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-light); color: var(--text-dark); padding-bottom: 30px; }
+
+        /* टॉप बार */
+        .top-bar {
+            background: var(--primary); color: var(--white); padding: 15px 20px;
+            position: sticky; top: 0; z-index: 100; display: flex; align-items: center; gap: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .back-btn { color: var(--white); font-size: 20px; text-decoration: none; }
+        .page-title { flex: 1; font-size: 18px; font-weight: 700; }
+        
+        /* भाषा बदलणारे बटण (Top Right) */
+        .lang-toggle-btn {
+            background: rgba(255,255,255,0.2); color: var(--white); border: 1px solid var(--white);
+            padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; margin-left: 10px;
+        }
+
+        /* फोटो एडिट विभाग */
+        .photo-section {
+            background: var(--white); padding: 30px 20px; text-align: center;
+            border-bottom-left-radius: 25px; border-bottom-right-radius: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 20px; border-bottom: 1px solid var(--border);
+        }
+        .avatar-container {
+            position: relative; width: 100px; height: 100px; margin: 0 auto; cursor: pointer;
+        }
+        .avatar {
+            width: 100%; height: 100%; background: #E2E8F0; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 45px; color: #94A3B8; border: 4px solid var(--bg-light); overflow: hidden;
+        }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; display: none; }
+        .edit-badge {
+            position: absolute; bottom: 0; right: 0; background: var(--primary); color: var(--white);
+            width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            border: 3px solid var(--white); font-size: 13px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* लपवलेला फाईल इनपुट */
+        #profile-photo-input { display: none; }
+
+        /* फॉर्म कंटेनर */
+        .form-container { padding: 0 20px; }
+        
+        .form-group {
+            background: var(--white); padding: 20px; border-radius: 16px; margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid var(--border);
+        }
+        
+        .form-label { font-size: 13px; font-weight: 700; color: var(--text-dark); margin-bottom: 6px; display: block; }
+        
+        .input-box { position: relative; margin-bottom: 18px; }
+        .input-box:last-child { margin-bottom: 0; }
+        .input-box i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #94A3B8; font-size: 16px; pointer-events: none; }
+        
+        .form-control {
+            width: 100%; padding: 14px 15px 14px 45px; background: #F8FAFC;
+            border: 1.5px solid var(--border); border-radius: 12px; font-size: 14px;
+            font-weight: 600; color: var(--text-dark); outline: none; transition: 0.3s;
+        }
+        .form-control:focus { border-color: var(--primary); background: var(--white); box-shadow: 0 0 0 4px rgba(255, 103, 31, 0.1); }
+        .form-control[readonly] { background: #E2E8F0; color: #64748B; cursor: not-allowed; }
+        select.form-control { appearance: none; }
+
+        /* सबमिट बटन */
+        .btn-save {
+            width: 100%; background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--white); border: none; padding: 16px; border-radius: 12px;
+            font-size: 16px; font-weight: 800; cursor: pointer; display: flex;
+            justify-content: center; align-items: center; gap: 8px; transition: 0.2s;
+            box-shadow: 0 8px 20px rgba(255, 103, 31, 0.3); margin-top: 10px;
+        }
+        .btn-save:active { transform: scale(0.97); }
+        .btn-save:disabled { background: #94A3B8; box-shadow: none; cursor: not-allowed; }
+
+    </style>
+</head>
+<body>
+
+    <!-- टॉप बार -->
+    <div class="top-bar">
+        <a href="profile.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+        <div class="page-title" data-lang="edit_profile_title">वैयक्तिक माहिती</div>
+        <button class="lang-toggle-btn" onclick="toggleLanguage()">ENG / मराठी</button>
+    </div>
+
+    <!-- फोटो एडिट -->
+    <div class="photo-section">
+        <div class="avatar-container" onclick="document.getElementById('profile-photo-input').click()">
+            <div class="avatar">
+                <i class="fa-solid fa-user-tie" id="default-avatar-icon"></i>
+                <img id="preview-avatar" src="" alt="Profile Photo">
+            </div>
+            <div class="edit-badge">
+                <i class="fa-solid fa-camera"></i>
+            </div>
+        </div>
+        <input type="file" id="profile-photo-input" accept="image/*" onchange="previewProfileImage(event)">
+        <p style="font-size: 12px; color: var(--text-muted); margin-top: 10px; font-weight: 600;" data-lang="change_photo">प्रोफाईल फोटो बदला</p>
+    </div>
+
+    <!-- फॉर्म -->
+    <div class="form-container">
+        <div class="form-group">
+            
+            <!-- नाव -->
+            <label class="form-label" data-lang="full_name_label">पूर्ण नाव</label>
+            <div class="input-box">
+                <i class="fa-regular fa-user"></i>
+                <input type="text" class="form-control" id="user-name" value="रमेश पाटील" placeholder="तुमचे नाव टाका" data-lang-placeholder="name_placeholder">
+            </div>
+
+            <!-- मोबाईल नंबर (Readonly) -->
+            <label class="form-label" data-lang="mobile_label">मोबाईल नंबर <small style="color:var(--danger);" data-lang="cannot_change">(बदलता येणार नाही)</small></label>
+            <div class="input-box">
+                <i class="fa-solid fa-phone"></i>
+                <input type="text" class="form-control" id="user-mobile" value="+91 98765 43210" readonly>
+            </div>
+
+            <!-- ईमेल -->
+            <label class="form-label" data-lang="email_label">ईमेल आयडी (पर्यायी)</label>
+            <div class="input-box">
+                <i class="fa-regular fa-envelope"></i>
+                <input type="email" class="form-control" id="user-email" placeholder="उदा. ramesh@example.com" data-lang-placeholder="email_placeholder">
+            </div>
+
+            <!-- रोल (Tenant / Owner) -->
+            <label class="form-label" data-lang="role_label">तुम्ही कोण आहात?</label>
+            <div class="input-box">
+                <i class="fa-solid fa-house-user"></i>
+                <select class="form-control" id="user-role">
+                    <option value="owner" selected data-lang="role_owner">घरमालक (प्रॉपर्टी द्यायची आहे)</option>
+                    <option value="tenant" data-lang="role_tenant">भाडेकरू (प्रॉपर्टी हवी आहे)</option>
+                </select>
+            </div>
+
+            <!-- पत्ता -->
+            <label class="form-label" data-lang="address_label">सध्याचा पत्ता (शहर/गाव)</label>
+            <div class="input-box">
+                <i class="fa-solid fa-location-dot"></i>
+                <input type="text" class="form-control" id="user-city" value="सातारा" placeholder="उदा. सातारा, फलटण" data-lang-placeholder="address_placeholder">
+            </div>
+
+        </div>
+
+        <!-- सेव्ह बटन -->
+        <button class="btn-save" id="btn-save-profile" onclick="saveProfile()">
+            <span data-lang="btn_save_info">माहिती सेव्ह करा</span> <i class="fa-solid fa-floppy-disk"></i>
+        </button>
+    </div>
+
+    <!-- JavaScript (Firebase & Logic) -->
+    <script>
+        let selectedProfilePhoto = null;
+        let currentUserId = "user_123"; // डेमोसाठी (खऱ्या ॲपमध्ये हे Firebase Auth मधून येईल)
+
+        window.onload = function() {
+            if(typeof applySavedLanguage === 'function') {
+                applySavedLanguage();
+            }
+            loadUserData();
+        };
+
+        // फोटो निवडल्यावर त्याचा प्रिव्ह्यू दाखवणे
+        function previewProfileImage(event) {
+            selectedProfilePhoto = event.target.files[0];
+            if(selectedProfilePhoto) {
+                let reader = new FileReader();
+                reader.onload = function(){
+                    document.getElementById('default-avatar-icon').style.display = 'none';
+                    let output = document.getElementById('preview-avatar');
+                    output.src = reader.result;
+                    output.style.display = 'block';
+                };
+                reader.readAsDataURL(selectedProfilePhoto);
+            }
+        }
+
+        // Firebase वरून युझरचा जुना डेटा वाचणे
+        function loadUserData() {
+            if(typeof db !== 'undefined') {
+                db.collection("users").doc(currentUserId).get().then((doc) => {
+                    if (doc.exists) {
+                        let data = doc.data();
+                        document.getElementById('user-name').value = data.name || "";
+                        document.getElementById('user-email').value = data.email || "";
+                        document.getElementById('user-city').value = data.city || "";
+                        document.getElementById('user-role').value = data.role || "tenant";
+                        
+                        // जर प्रोफाईल फोटो असेल तर तो दाखवणे
+                        if(data.photoUrl) {
+                            document.getElementById('default-avatar-icon').style.display = 'none';
+                            let output = document.getElementById('preview-avatar');
+                            output.src = data.photoUrl;
+                            output.style.display = 'block';
+                        }
+                    }
+                }).catch((error) => {
+                    console.log("Error loading user data:", error);
+                });
+            }
+        }
+
+        // माहिती सेव्ह करणे (Firebase Firestore & Storage)
+        function saveProfile() {
+            const name = document.getElementById('user-name').value;
+            const email = document.getElementById('user-email').value;
+            const role = document.getElementById('user-role').value;
+            const city = document.getElementById('user-city').value;
+
+            if(name.trim() === "") {
+                alert("कृपया तुमचे नाव टाका!");
+                return;
+            }
+
+            const saveBtn = document.getElementById('btn-save-profile');
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = "सेव्ह होत आहे... <i class='fa-solid fa-spinner fa-spin'></i>";
+
+            // जर नवीन फोटो निवडला असेल तर आधी तो अपलोड करा
+            if (selectedProfilePhoto && typeof storage !== 'undefined') {
+                const storageRef = storage.ref('profile_photos/' + currentUserId + '_' + Date.now());
+                storageRef.put(selectedProfilePhoto).then(function(snapshot) {
+                    snapshot.ref.getDownloadURL().then(function(downloadURL) {
+                        updateFirestoreData(name, email, role, city, downloadURL, saveBtn);
+                    });
+                }).catch(function(error) {
+                    alert("फोटो अपलोड करताना एरर आला: " + error.message);
+                    resetSaveBtn(saveBtn);
+                });
+            } else {
+                // फक्त टेक्स्ट डेटा अपडेट करा (फोटो न निवडल्यास)
+                updateFirestoreData(name, email, role, city, null, saveBtn);
+            }
+        }
+
+        // Firestore मध्ये डेटा अपडेट करणे
+        function updateFirestoreData(name, email, role, city, photoUrl, saveBtn) {
+            let userData = {
+                name: name,
+                email: email,
+                role: role,
+                city: city,
+                updatedAt: typeof firebase !== 'undefined' ? firebase.firestore.FieldValue.serverTimestamp() : Date.now()
+            };
+
+            // जर नवीन फोटोची लिंक असेल तरच ती ॲड करा
+            if (photoUrl) {
+                userData.photoUrl = photoUrl;
+            }
+
+            if(typeof db !== 'undefined') {
+                // merge: true म्हणजे जुना डेटा (उदा. मोबाईल नंबर) तसाच राहील आणि फक्त नवीन माहिती अपडेट होईल
+                db.collection("users").doc(currentUserId).set(userData, { merge: true }).then(() => {
+                    alert("तुमची माहिती यशस्वीरित्या सेव्ह झाली आहे!");
+                    window.location.href = "profile.html";
+                }).catch((error) => {
+                    alert("डेटा सेव्ह करताना एरर आला: " + error.message);
+                    resetSaveBtn(saveBtn);
+                });
+            } else {
+                console.log("Local testing: Profile saved", userData);
+                alert("प्रोफाईल सेव्ह झाले (Local Test).");
+                window.location.href = "profile.html";
+            }
+        }
+
+        function resetSaveBtn(btn) {
+            btn.innerHTML = "<span data-lang='btn_save_info'>माहिती सेव्ह करा</span> <i class='fa-solid fa-floppy-disk'></i>";
+            btn.disabled = false;
+            applySavedLanguage();
+        }
+    </script>
+</body>
+</html>
