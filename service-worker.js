@@ -1,17 +1,17 @@
-const CACHE_NAME = "satara-rental-hub-v1";
+const CACHE_NAME = "satara-rental-hub-v2";
 const urlsToCache = [
-  "/",
-  "/index.html",
-  "/listing.html",
-  "/details.html",
-  "/owner_dashboard.html",
-  "/admin_dashboard.html",
-  "/saved.html",
-  "/about_us.html",
-  "/Logo.png",
-  "/background.png",
-  "/firebase-config.js",
-  "/lang.js"
+  "./",
+  "./index.html",
+  "./listing.html",
+  "./details.html",
+  "./owner_dashboard.html",
+  "./admin_dashboard.html",
+  "./saved.html",
+  "./about_us.html",
+  "./Logo.png",
+  "./background.png",
+  "./firebase-config.js",
+  "./lang.js"
 ];
 
 // Install Event: Caching Core Assets
@@ -31,28 +31,21 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
-        // Cache hit - return response
         if (response) {
           return response;
         }
         return fetch(event.request).then(
           (response) => {
-            // Check if we received a valid response
             if(!response || response.status !== 200 || response.type !== 'basic') {
               return response;
             }
-
-            // Clone the response
             var responseToCache = response.clone();
-
             caches.open(CACHE_NAME)
               .then((cache) => {
-                // कॅशमध्ये नवीन फाईल सेव्ह करा (Firebase डेटा कॅश करू नका)
                 if (event.request.url.indexOf('firestore') === -1) {
                   cache.put(event.request, responseToCache);
                 }
               });
-
             return response;
           }
         );
