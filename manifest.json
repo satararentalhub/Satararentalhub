@@ -1,10 +1,10 @@
 {
   "name": "Satara Rental Hub",
-  "short_name": "Rental Hub",
+  "short_name": "Satara Rental Hub",
   "description": "साताऱ्यातील हक्काचे घर! भाड्याने घरे, फ्लॅट्स, दुकाने आणि हॉस्टेल्स शोधा.",
   
-  "start_url": "https://satararentalhub.github.io/Satararentalhub/index.html",
-  "scope": "https://satararentalhub.github.io/Satararentalhub/",
+  "start_url": "./index.html",
+  "scope": "./",
   
   "display": "standalone",
   "background_color": "#F8FAFC",
