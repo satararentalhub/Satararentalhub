@@ -1,17 +1,17 @@
-const CACHE_NAME = "satara-rental-hub-v2";
+const CACHE_NAME = "satara-rental-hub-v3";
 const urlsToCache = [
-  "./",
-  "./index.html",
-  "./listing.html",
-  "./details.html",
-  "./owner_dashboard.html",
-  "./admin_dashboard.html",
-  "./saved.html",
-  "./about_us.html",
-  "./Logo.png",
-  "./background.png",
-  "./firebase-config.js",
-  "./lang.js"
+  "/Satararentalhub/",
+  "/Satararentalhub/index.html",
+  "/Satararentalhub/listing.html",
+  "/Satararentalhub/details.html",
+  "/Satararentalhub/owner_dashboard.html",
+  "/Satararentalhub/admin_dashboard.html",
+  "/Satararentalhub/saved.html",
+  "/Satararentalhub/about_us.html",
+  "/Satararentalhub/Logo.png",
+  "/Satararentalhub/background.png",
+  "/Satararentalhub/firebase-config.js",
+  "/Satararentalhub/lang.js"
 ];
 
 // Install Event: Caching Core Assets
