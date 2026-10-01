@@ -14,12 +14,14 @@
     <!-- Firebase Configuration File -->
     <script src="firebase-config.js"></script>
 
-    <!-- 🆕 Role Based Auto-Redirect Logic (Before Page Renders) -->
+    <!-- 🆕 Role Based Auto-Redirect Logic (UPDATED WITH SESSION STORAGE) -->
     <script>
         (function checkUserRoleAndRedirect() {
             let savedId = localStorage.getItem("currentUserId");
-            if(savedId && typeof firebase !== 'undefined') {
-                // Initialize Firebase temporarily if not initialized
+            let hasRedirected = sessionStorage.getItem("hasRedirectedToDashboard");
+
+            // जर युझरचा ID असेल आणि या सेशनमध्ये त्याला आधी डॅशबोर्डवर पाठवले नसेल तरच चेक करा
+            if(savedId && !hasRedirected && typeof firebase !== 'undefined') {
                 if (!firebase.apps.length) {
                     firebase.initializeApp(firebaseConfig);
                 }
@@ -27,11 +29,12 @@
                 db.collection("users").doc(savedId).get().then((doc) => {
                     if(doc.exists) {
                         let role = doc.data().role;
-                        // If owner, redirect immediately to dashboard
+                        
+                        // जर मालक (owner) असेल, तर डॅशबोर्डवर पाठवा आणि Session मध्ये नोंद करा
                         if(role === "owner") {
+                            sessionStorage.setItem("hasRedirectedToDashboard", "true");
                             window.location.replace("owner_dashboard.html");
                         }
-                        // If tenant, let them stay on index.html
                     }
                 }).catch(e => console.log("Routing Check Error:", e));
             }
@@ -770,7 +773,7 @@
         }
 
         /* -------------------------------------------------------------------------
-           🆕 मीडिया क्वेरीज (Responsive Design for Laptops/Tablets)
+           मीडिया क्वेरीज (Responsive Design for Laptops/Tablets)
         ------------------------------------------------------------------------- */
         @media (min-width: 768px) {
             
@@ -939,6 +942,14 @@
         <input type="text" placeholder="Search Powai Naka, Flat, Hostel..." data-lang-placeholder="search_placeholder" onkeypress="if(event.keyCode===13) searchListing(this.value)">
     </div>
 
+    <!-- 🆕 Active Subscription Pass Badge (Hidden by default) -->
+    <div id="home-pass-badge" style="display:none; margin: 0 20px 15px 20px; background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 10px 15px; border-radius: 12px; font-size: 13px; font-weight: 700; align-items: center; justify-content: space-between; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.1);">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-crown" style="color: #10B981; font-size: 18px;"></i> 
+            <span>तुमचा अनलिमिटेड पास ॲक्टिव्ह आहे!</span>
+        </div>
+    </div>
+
     <!-- काय शोधत आहात? (Categories Grid with Slide) -->
     <div class="section-title" style="margin-top: 15px;">
         <span data-lang="what_looking">What are you looking for?</span>
@@ -1100,6 +1111,9 @@
             loadHeroSlider(); 
             loadPremiumBanners(); 
             
+            // 🆕 Check for Active Pass
+            checkUserSubscriptionPass();
+
             if (window.innerWidth >= 768) {
                 document.getElementById('properties-container').classList.add('grid-view');
             }
@@ -1112,7 +1126,26 @@
         });
 
         // -------------------------------------------------------------------------
-        // 🆕 Owner Registration Logic (With Firebase Cloud Verification)
+        // 🆕 Check Tenant Subscription Pass (Display Badge)
+        // -------------------------------------------------------------------------
+        function checkUserSubscriptionPass() {
+            let savedId = localStorage.getItem("currentUserId");
+            if(savedId && typeof db !== 'undefined') {
+                db.collection("users").doc(savedId).get().then((doc) => {
+                    if(doc.exists && doc.data().subscriptionExpiry) {
+                        let expiryDate = new Date(doc.data().subscriptionExpiry);
+                        let now = new Date();
+                        if(now <= expiryDate) {
+                            // Show Badge on Homepage
+                            document.getElementById('home-pass-badge').style.display = "flex";
+                        }
+                    }
+                }).catch(e => console.log("Pass Check Error:", e));
+            }
+        }
+
+        // -------------------------------------------------------------------------
+        // Owner Registration Logic (With Firebase Cloud Verification)
         // -------------------------------------------------------------------------
         function openOwnerModal() {
             let savedId = localStorage.getItem("currentUserId");
@@ -1246,24 +1279,35 @@
         }
 
         // -------------------------------------------------------------------------
-        // Hero Background Slider Logic
+        // 🆕 Hero Background Slider Logic (UPDATED WITH RANDOM SHUFFLE)
         // -------------------------------------------------------------------------
         let slideIndex = 0;
         let slideIntervalTimer;
+
+        // Fisher-Yates Shuffle Algorithm to randomize the images array
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
 
         function loadHeroSlider() {
             if (typeof db !== 'undefined') {
                 db.collection("admin_settings").doc("hero_slider").get().then((doc) => {
                     let images = ['background.png']; 
-                    let intervalTime = 3000; 
+                    let intervalTime = 3000; // Default to 3 seconds
 
                     if (doc.exists) {
                         let data = doc.data();
                         if (data.images && data.images.length > 0) {
-                            images = ['background.png'].concat(data.images);
+                            // 🆕 Shuffle the images retrieved from Firebase so everyone sees a different first ad
+                            let shuffledImages = shuffleArray(data.images.slice());
+                            images = ['background.png'].concat(shuffledImages);
                         }
                         if (data.interval) {
-                            intervalTime = parseInt(data.interval);
+                            intervalTime = parseInt(data.interval); // Use Admin defined time
                         }
                     }
                     
