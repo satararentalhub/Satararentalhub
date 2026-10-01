@@ -7,6 +7,11 @@
     <!-- FontAwesome आयकॉन्ससाठी -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- PWA Manifest & Icons -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#f45A0A">
+    <link rel="apple-touch-icon" href="Logo.png">
+
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -67,6 +72,27 @@
             color: var(--text-dark);
             padding-bottom: 80px;
         }
+
+        /* -------------------------------------------------------------------------
+           🆕 PWA App Install Banner (Smart Popup)
+        ------------------------------------------------------------------------- */
+        .app-install-banner {
+            position: fixed; bottom: -120px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 400px; background: var(--white); border-radius: 16px;
+            padding: 15px; box-shadow: 0 -5px 25px rgba(0,0,0,0.15); z-index: 10000;
+            display: flex; align-items: center; justify-content: space-between; gap: 15px;
+            transition: bottom 0.5s ease-in-out; border: 2px solid var(--primary);
+        }
+        .app-install-banner.show { bottom: 85px; } /* Bottom Nav च्या थोडं वर */
+        
+        .install-info { display: flex; align-items: center; gap: 12px; flex: 1; }
+        .install-info img { width: 45px; height: 45px; border-radius: 10px; }
+        .install-text h4 { font-size: 14px; font-weight: 800; color: var(--text-dark); margin-bottom: 2px; }
+        .install-text p { font-size: 11px; color: var(--text-muted); }
+        
+        .install-actions { display: flex; flex-direction: column; gap: 5px; }
+        .btn-install-app { background: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 10px rgba(244, 90, 10, 0.3); }
+        .btn-skip-app { background: transparent; color: #94A3B8; border: none; font-size: 11px; font-weight: 600; cursor: pointer; text-decoration: underline; }
 
         /* -------------------------------------------------------------------------
            Full Screen Welcome Flash Ad (Pop-up)
@@ -773,6 +799,30 @@
         }
 
         /* -------------------------------------------------------------------------
+           WhatsApp Floating Button
+        ------------------------------------------------------------------------- */
+        .whatsapp-floating-btn {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            z-index: 9998;
+            background: #25D366;
+            border-radius: 50%;
+            padding: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+            display: none; 
+        }
+        .whatsapp-floating-btn:hover {
+            transform: scale(1.1);
+        }
+        .whatsapp-floating-btn img {
+            width: 35px;
+            height: 35px;
+            display: block;
+        }
+
+        /* -------------------------------------------------------------------------
            मीडिया क्वेरीज (Responsive Design for Laptops/Tablets)
         ------------------------------------------------------------------------- */
         @media (min-width: 768px) {
@@ -787,6 +837,11 @@
 
             body {
                 padding-bottom: 30px;
+            }
+
+            .whatsapp-floating-btn {
+                bottom: 30px;
+                right: 30px;
             }
 
             .top-hero {
@@ -865,7 +920,22 @@
 </head>
 <body>
 
-    <!-- 🆕 Owner Registration Modal (Form) -->
+    <!-- 🆕 PWA App Install Banner -->
+    <div id="installAppBanner" class="app-install-banner">
+        <div class="install-info">
+            <img src="Logo.png" alt="App Logo" onerror="this.src='https://via.placeholder.com/45?text=App'">
+            <div class="install-text">
+                <h4>Satara Rental Hub</h4>
+                <p>Fast & Easy. Add to Home Screen.</p>
+            </div>
+        </div>
+        <div class="install-actions">
+            <button class="btn-install-app" id="btnInstallConfirm">Install App</button>
+            <button class="btn-skip-app" onclick="skipAppInstall()">Skip</button>
+        </div>
+    </div>
+
+    <!-- Owner Registration Modal (Form) -->
     <div id="owner-registration-modal" class="owner-reg-modal">
         <div class="owner-reg-content">
             <button class="close-modal-btn" onclick="closeOwnerModal()"><i class="fa-solid fa-xmark"></i></button>
@@ -942,7 +1012,7 @@
         <input type="text" placeholder="Search Powai Naka, Flat, Hostel..." data-lang-placeholder="search_placeholder" onkeypress="if(event.keyCode===13) searchListing(this.value)">
     </div>
 
-    <!-- 🆕 Active Subscription Pass Badge (Hidden by default) -->
+    <!-- Active Subscription Pass Badge (Hidden by default) -->
     <div id="home-pass-badge" style="display:none; margin: 0 20px 15px 20px; background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 10px 15px; border-radius: 12px; font-size: 13px; font-weight: 700; align-items: center; justify-content: space-between; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.1);">
         <div style="display: flex; align-items: center; gap: 10px;">
             <i class="fa-solid fa-crown" style="color: #10B981; font-size: 18px;"></i> 
@@ -1094,8 +1164,71 @@
         </button>
     </div>
 
+    <!-- Floating WhatsApp Button -->
+    <a href="#" id="dynamic-whatsapp-btn" class="whatsapp-floating-btn" target="_blank">
+       <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp">
+    </a>
+
     <!-- JavaScript For Firebase Fetching, Form Logic & View Toggle -->
     <script>
+        // -------------------------------------------------------------------------
+        // 🆕 PWA Smart Install Prompt Logic
+        // -------------------------------------------------------------------------
+        let deferredPrompt;
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent the mini-infobar from appearing on mobile
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Check if user has permanently skipped before
+            let hasSkipped = localStorage.getItem("appInstallSkipped");
+            
+            if (!hasSkipped) {
+                // Wait 5 seconds before showing the banner
+                setTimeout(() => {
+                    document.getElementById('installAppBanner').classList.add('show');
+                }, 5000);
+            }
+        });
+
+        // Handle Install Click
+        document.getElementById('btnInstallConfirm').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                // Hide the custom popup
+                document.getElementById('installAppBanner').classList.remove('show');
+                // Show the official prompt
+                deferredPrompt.prompt();
+                // Wait for user choice
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    console.log('User accepted the install prompt');
+                }
+                // Clear the prompt variable
+                deferredPrompt = null;
+            }
+        });
+
+        // Handle Skip Click
+        function skipAppInstall() {
+            document.getElementById('installAppBanner').classList.remove('show');
+            // Save choice permanently in local storage so it never shows again
+            localStorage.setItem("appInstallSkipped", "true");
+        }
+
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then((registration) => {
+                        console.log('ServiceWorker registered successfully.');
+                    }).catch((error) => {
+                        console.log('ServiceWorker registration failed: ', error);
+                    });
+            });
+        }
+        // -------------------------------------------------------------------------
+
         window.onload = function() {
             if(typeof applySavedLanguage === 'function') {
                 applySavedLanguage();
@@ -1111,8 +1244,8 @@
             loadHeroSlider(); 
             loadPremiumBanners(); 
             
-            // 🆕 Check for Active Pass
             checkUserSubscriptionPass();
+            loadSupportNumber();
 
             if (window.innerWidth >= 768) {
                 document.getElementById('properties-container').classList.add('grid-view');
@@ -1125,9 +1258,27 @@
             }
         });
 
-        // -------------------------------------------------------------------------
-        // 🆕 Check Tenant Subscription Pass (Display Badge)
-        // -------------------------------------------------------------------------
+        // Load Support Number from Firebase
+        function loadSupportNumber() {
+            if(typeof db !== 'undefined') {
+                db.collection("admin_settings").doc("master_config").get().then((doc) => {
+                    if (doc.exists && doc.data().support && doc.data().support.phone) {
+                        let phoneStr = doc.data().support.phone.replace(/\D/g,''); 
+                        if(phoneStr.length === 10) {
+                            phoneStr = "91" + phoneStr;
+                        }
+                        let waLink = `https://wa.me/${phoneStr}?text=${encodeURIComponent("नमस्कार, मला भाड्याच्या घराबद्दल माहिती हवी आहे")}`;
+                        let waBtn = document.getElementById('dynamic-whatsapp-btn');
+                        if(waBtn) {
+                            waBtn.href = waLink;
+                            waBtn.style.display = "block"; 
+                        }
+                    }
+                }).catch(e => console.log("Support Number Fetch Error:", e));
+            }
+        }
+
+        // Check Tenant Subscription Pass (Display Badge)
         function checkUserSubscriptionPass() {
             let savedId = localStorage.getItem("currentUserId");
             if(savedId && typeof db !== 'undefined') {
@@ -1136,7 +1287,6 @@
                         let expiryDate = new Date(doc.data().subscriptionExpiry);
                         let now = new Date();
                         if(now <= expiryDate) {
-                            // Show Badge on Homepage
                             document.getElementById('home-pass-badge').style.display = "flex";
                         }
                     }
@@ -1144,33 +1294,24 @@
             }
         }
 
-        // -------------------------------------------------------------------------
-        // Owner Registration Logic (With Firebase Cloud Verification)
-        // -------------------------------------------------------------------------
+        // Owner Registration Logic
         function openOwnerModal() {
             let savedId = localStorage.getItem("currentUserId");
-            
             if(savedId) {
-                // If Local Storage has ID, verify with Firebase (Cloud sync)
                 if(typeof db !== 'undefined') {
                     db.collection("users").doc(savedId).get().then((doc) => {
                         if(doc.exists) {
-                            // User exists in cloud, go straight to add_property
                             window.location.href = "add_property.html";
                         } else {
-                            // Rare case: ID in local storage but not in cloud, show form
                             document.getElementById("owner-registration-modal").style.display = "flex";
                         }
                     }).catch(e => {
-                        console.log("Firebase Check Error:", e);
-                        // Fallback to local storage if offline
                         window.location.href = "add_property.html";
                     });
                 } else {
                     window.location.href = "add_property.html";
                 }
             } else {
-                // No Local Storage ID, show form to capture details
                 document.getElementById("owner-registration-modal").style.display = "flex";
             }
         }
@@ -1193,7 +1334,6 @@
             submitBtn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> सेव्ह होत आहे...";
             submitBtn.disabled = true;
 
-            // 1. Save to Firebase (Cloud)
             if(typeof db !== 'undefined') {
                 db.collection("users").doc(userId).set({
                     name: name,
@@ -1201,15 +1341,11 @@
                     role: "owner",
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true }).then(() => {
-                    // 2. Save to Local Storage
                     localStorage.setItem("currentUserId", userId);
                     localStorage.setItem("currentUserName", name);
                     localStorage.setItem("currentUserMobile", mobile);
-                    
-                    // Redirect to Add Property Page
                     window.location.href = "add_property.html";
                 }).catch((error) => {
-                    console.log("Error saving to Firebase:", error);
                     alert("नोंदणी करताना एरर आला. कृपया पुन्हा प्रयत्न करा.");
                     submitBtn.innerHTML = "पुढे जा <i class='fa-solid fa-arrow-right'></i>";
                     submitBtn.disabled = false;
@@ -1221,9 +1357,7 @@
             }
         }
 
-        // -------------------------------------------------------------------------
-        // Welcome Flash Ad Logic (Full Screen Popup)
-        // -------------------------------------------------------------------------
+        // Welcome Flash Ad Logic
         let flashAdTimerId;
 
         function loadWelcomeFlashAd() {
@@ -1247,18 +1381,14 @@
 
                         if(imgUrl) {
                             document.getElementById("welcome-ad-image").src = imgUrl;
-                            
                             if(adData.link) {
                                 document.getElementById("welcome-ad-link").href = adData.link;
                             } else {
                                 document.getElementById("welcome-ad-link").href = "javascript:void(0)";
                             }
-
                             const adOverlay = document.getElementById("welcome-flash-ad");
                             adOverlay.classList.add("active");
-                            
                             sessionStorage.setItem("flashAdSeen", "true");
-
                             flashAdTimerId = setTimeout(() => {
                                 closeFlashAd();
                             }, 30000);
@@ -1272,19 +1402,13 @@
             clearTimeout(flashAdTimerId); 
             const adOverlay = document.getElementById("welcome-flash-ad");
             adOverlay.classList.remove("active");
-            
-            setTimeout(() => {
-                adOverlay.style.display = 'none';
-            }, 400); 
+            setTimeout(() => { adOverlay.style.display = 'none'; }, 400); 
         }
 
-        // -------------------------------------------------------------------------
-        // 🆕 Hero Background Slider Logic (UPDATED WITH RANDOM SHUFFLE)
-        // -------------------------------------------------------------------------
+        // Hero Background Slider Logic (WITH RANDOM SHUFFLE)
         let slideIndex = 0;
         let slideIntervalTimer;
 
-        // Fisher-Yates Shuffle Algorithm to randomize the images array
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -1297,25 +1421,18 @@
             if (typeof db !== 'undefined') {
                 db.collection("admin_settings").doc("hero_slider").get().then((doc) => {
                     let images = ['background.png']; 
-                    let intervalTime = 3000; // Default to 3 seconds
+                    let intervalTime = 3000; 
 
                     if (doc.exists) {
                         let data = doc.data();
                         if (data.images && data.images.length > 0) {
-                            // 🆕 Shuffle the images retrieved from Firebase so everyone sees a different first ad
                             let shuffledImages = shuffleArray(data.images.slice());
                             images = ['background.png'].concat(shuffledImages);
                         }
-                        if (data.interval) {
-                            intervalTime = parseInt(data.interval); // Use Admin defined time
-                        }
+                        if (data.interval) { intervalTime = parseInt(data.interval); }
                     }
-                    
                     initHeroCarousel(images, intervalTime);
-
-                }).catch(e => {
-                    initHeroCarousel(['background.png'], 3000);
-                });
+                }).catch(e => { initHeroCarousel(['background.png'], 3000); });
             } else {
                 initHeroCarousel(['background.png'], 3000);
             }
@@ -1342,20 +1459,13 @@
                 sliderBg.appendChild(div);
 
                 let preloadImg = new Image();
-                preloadImg.onload = function() {
-                    loadedImagesCount++;
-                    checkAllLoaded();
-                };
-                preloadImg.onerror = function() {
-                    loadedImagesCount++; 
-                    checkAllLoaded();
-                };
+                preloadImg.onload = function() { loadedImagesCount++; checkAllLoaded(); };
+                preloadImg.onerror = function() { loadedImagesCount++; checkAllLoaded(); };
                 preloadImg.src = imgUrl;
             });
 
             function applySlideState(index) {
                 sliderBg.style.transform = `translateX(-${index * 100}%)`;
-                
                 if (index === 0) {
                     overlay.style.opacity = "0"; 
                     mainContent.classList.remove("hide-all"); 
@@ -1376,18 +1486,14 @@
                     clearInterval(slideIntervalTimer);
                     slideIntervalTimer = setInterval(() => {
                         slideIndex++;
-                        if (slideIndex >= imagesArray.length) {
-                            slideIndex = 0; 
-                        }
+                        if (slideIndex >= imagesArray.length) { slideIndex = 0; }
                         applySlideState(slideIndex);
                     }, interval);
                 }
             }
         }
 
-        // -------------------------------------------------------------------------
         // Categories & View Logic
-        // -------------------------------------------------------------------------
         function toggleCategories() {
             var extraCats = document.getElementById("extra-cats");
             var icon = document.getElementById("cat-toggle-icon");
@@ -1422,7 +1528,6 @@
 
         function sharePropertyCard(propId, propTitle, propRent, propTaluka) {
             event.preventDefault(); 
-            
             let origin = window.location.origin;
             let pathname = window.location.pathname;
             let folderPath = pathname.substring(0, pathname.lastIndexOf('/'));
@@ -1433,15 +1538,11 @@
             }
 
             let shareText = `*${propTitle}* 🏠\n📍 *ठिकाण:* ${propTaluka}\n💰 *भाडे:* ₹${propRent} /महिना\n\nया प्रॉपर्टीची अधिक माहिती पाहण्यासाठी खालील लिंकवर क्लिक करा:\n\n ${shareUrl} \n\n*सातारा रेंटल हब* - साताऱ्यातील हक्काचे घर!`;
-            
             let encodedMsg = encodeURIComponent(shareText);
-            
             window.open(`https://wa.me/?text=${encodedMsg}`, '_blank');
         }
 
-        // -------------------------------------------------------------------------
         // Properties & Banner Logic
-        // -------------------------------------------------------------------------
         function loadPremiumBanners() {
             if(typeof db !== 'undefined') {
                 const adsWrapper = document.getElementById('ads-wrapper');
@@ -1452,9 +1553,7 @@
                     .where("status", "==", "live")
                     .where("planType", "in", ["premium1", "premium2"])
                     .get().then((querySnapshot) => {
-                    
                     let now = new Date();
-                    
                     querySnapshot.forEach(doc => {
                         let prop = doc.data();
                         prop.id = doc.id;
@@ -1462,9 +1561,7 @@
                         let isExpired = false;
                         if (prop.expiryDate && prop.expiryDate !== 'Lifetime') {
                             let expiryTime = new Date(prop.expiryDate);
-                            if (now > expiryTime) {
-                                isExpired = true;
-                            }
+                            if (now > expiryTime) { isExpired = true; }
                         }
                         
                         if (!isExpired) {
@@ -1480,24 +1577,18 @@
                             </a>`;
                         }
                     });
-                    
-                    if(hasBanners) {
-                        adsSection.style.display = 'block';
-                    }
+                    if(hasBanners) { adsSection.style.display = 'block'; }
                 }).catch(e => console.log("Premium banners fetch error:", e));
             }
         }
 
         function getAmenitiesHtml(amenitiesLabels) {
             let html = '';
-            
             if (amenitiesLabels && amenitiesLabels.length > 0) {
                 let displayCount = Math.min(amenitiesLabels.length, 3);
-                
                 for(let i=0; i<displayCount; i++) {
                     let lbl = amenitiesLabels[i];
                     let icon = 'fa-check'; 
-                    
                     if(lbl.includes('पाणी') || lbl.toLowerCase().includes('water')) icon = 'fa-faucet-drip';
                     else if(lbl.includes('पार्किंग') || lbl.toLowerCase().includes('parking')) icon = 'fa-square-parking';
                     else if(lbl.includes('लिफ्ट') || lbl.toLowerCase().includes('lift')) icon = 'fa-elevator';
@@ -1505,17 +1596,14 @@
                     else if(lbl.includes('वाय-फाय') || lbl.toLowerCase().includes('wifi') || lbl.includes('इंटरनेट')) icon = 'fa-wifi';
                     else if(lbl.includes('मेस') || lbl.toLowerCase().includes('mess') || lbl.includes('जेवण')) icon = 'fa-utensils';
                     else if(lbl.includes('पॉवर') || lbl.toLowerCase().includes('power')) icon = 'fa-bolt';
-                    
                     html += `<span class="facility-item"><i class="fa-solid ${icon}"></i> ${lbl}</span>`;
                 }
-                
                 if (amenitiesLabels.length > 3) {
                     html += `<span class="facility-item" style="color: #64748B;">+${amenitiesLabels.length - 3} अधिक</span>`;
                 }
             } else {
                 html = `<span class="facility-item" style="color: #94A3B8;"><i class="fa-solid fa-circle-info"></i> विशेष सुविधा नमूद नाही</span>`;
             }
-            
             return html;
         }
 
@@ -1523,58 +1611,36 @@
             if(typeof db !== 'undefined') {
                 db.collection("properties").where("status", "==", "live").limit(10).get().then((querySnapshot) => {
                     const propsContainer = document.getElementById('properties-container');
-                    
                     if(querySnapshot.empty) {
                         propsContainer.innerHTML = `<div class="loading-state">सध्या कोणतीही नवीन प्रॉपर्टी उपलब्ध नाही.</div>`;
                         return;
                     }
-
                     let propsList = [];
                     let now = new Date();
-
                     querySnapshot.forEach(doc => { 
                         let d = doc.data(); 
                         d.id = doc.id; 
-
                         if (d.status === 'live') {
                             if (d.planType && d.planType !== 'basic' && d.expiryDate && d.expiryDate !== 'Lifetime') {
                                 let expiryTime = new Date(d.expiryDate);
-                                if (now > expiryTime) {
-                                    d.planType = 'basic';
-                                }
+                                if (now > expiryTime) { d.planType = 'basic'; }
                             }
                             propsList.push(d); 
                         }
                     });
-
                     propsList.sort((a,b) => {
                         let aIsPremium = (a.planType === 'premium1' || a.planType === 'premium2') ? 1 : 0;
                         let bIsPremium = (b.planType === 'premium1' || b.planType === 'premium2') ? 1 : 0;
-                        
-                        if(bIsPremium !== aIsPremium) {
-                            return bIsPremium - aIsPremium; 
-                        } else {
-                            return new Date(b.createdAt) - new Date(a.createdAt); 
-                        }
+                        if(bIsPremium !== aIsPremium) { return bIsPremium - aIsPremium; } else { return new Date(b.createdAt) - new Date(a.createdAt); }
                     });
 
                     propsContainer.innerHTML = '';
-                    
                     propsList.forEach((prop) => {
-                        let imgHtml = (prop.photoUrls && prop.photoUrls.length > 0) 
-                            ? `<img src="${prop.photoUrls[0]}" alt="${prop.title}">` 
-                            : `<i class="fa-regular fa-image"></i>`;
-
-                        let badgeHtml = (prop.planType === 'premium1' || prop.planType === 'premium2')
-                            ? `<div class="property-badge"><i class="fa-solid fa-crown"></i> Premium</div>` 
-                            : ``;
-
+                        let imgHtml = (prop.photoUrls && prop.photoUrls.length > 0) ? `<img src="${prop.photoUrls[0]}" alt="${prop.title}">` : `<i class="fa-regular fa-image"></i>`;
+                        let badgeHtml = (prop.planType === 'premium1' || prop.planType === 'premium2') ? `<div class="property-badge"><i class="fa-solid fa-crown"></i> Premium</div>` : ``;
                         let talukaText = prop.taluka;
                         let currentLang = localStorage.getItem('appLang') || 'mr';
-                        if(translations && translations[currentLang] && translations[currentLang][`taluka_${prop.taluka}`]) {
-                            talukaText = translations[currentLang][`taluka_${prop.taluka}`];
-                        }
-
+                        if(translations && translations[currentLang] && translations[currentLang][`taluka_${prop.taluka}`]) { talukaText = translations[currentLang][`taluka_${prop.taluka}`]; }
                         let amenitiesHtml = getAmenitiesHtml(prop.amenitiesLabels);
 
                         let propHtml = `
@@ -1586,35 +1652,25 @@
                             <div class="property-info">
                                 <div class="property-title">${prop.title}</div>
                                 <div class="property-meta"><i class="fa-solid fa-location-dot"></i> ${prop.area}, ${talukaText}</div>
-                                
-                                <div class="property-facilities">
-                                    ${amenitiesHtml}
-                                </div>
-                                
+                                <div class="property-facilities">${amenitiesHtml}</div>
                                 <div class="property-footer">
                                     <div class="property-price">₹ ${prop.rent} <small>/ महिना</small></div>
-                                    
                                     <div class="footer-actions">
                                         <button class="share-inline-btn" onclick="sharePropertyCard('${prop.id}', '${prop.title.replace(/'/g, "\\'")}', '${prop.rent}', '${talukaText}')" title="Share via WhatsApp">
                                             <i class="fa-brands fa-whatsapp"></i>
                                         </button>
                                         <div class="view-details-btn">View Details &rarr;</div>
                                     </div>
-
                                 </div>
                             </div>
                         </a>`;
-                        
                         propsContainer.innerHTML += propHtml;
                     });
                 }).catch((error) => {
-                    console.log("Properties Error:", error);
                     document.getElementById('properties-container').innerHTML = `<div class="loading-state" style="color:red;">डेटा लोड करताना एरर आला.</div>`;
                 });
             } else {
-                document.getElementById('properties-container').innerHTML = `
-                    <div class="loading-state">Firebase कनेक्टेड नाही.</div>
-                `;
+                document.getElementById('properties-container').innerHTML = `<div class="loading-state">Firebase कनेक्टेड नाही.</div>`;
             }
         }
 
