@@ -10,7 +10,6 @@
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <!-- Firebase Storage SDK Added for File Uploads -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     
     <!-- Firebase Configuration File -->
@@ -30,6 +29,7 @@
             --success: #10B981;
             --danger: #EF4444;
             --border-color: #E2E8F0;
+            --primary: #FF671F;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -111,11 +111,9 @@
         .btn-download:active { transform: scale(0.98); background: #CBD5E1; }
         .btn-download i { color: #0284C7; font-size: 16px; }
         
-        /* Expired Button Highlight */
         .btn-download-alert { background: #FEF2F2; border-color: #FECACA; color: #991B1B; }
         .btn-download-alert i { color: #DC2626; }
         
-        /* Payment Report Button Highlight */
         .btn-download-payment { background: #ECFDF5; border-color: #A7F3D0; color: #065F46; }
         .btn-download-payment i { color: #10B981; }
 
@@ -134,82 +132,55 @@
         .cms-header-title.green { color: #059669; }
         .cms-header-title.purple { color: #8B5CF6; }
         
-        .form-label { font-size: 12px; font-weight: 700; color: var(--text-dark); margin-bottom: 5px; display: block; }
-        .form-control { width: 100%; padding: 12px 15px; background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 10px; font-size: 14px; font-weight: 500; color: var(--text-dark); outline: none; margin-bottom: 15px; transition: 0.3s; }
+        /* Form & Grid Styles */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .form-label { font-size: 12px; font-weight: 700; color: var(--text-dark); margin-bottom: 5px; margin-top: 10px; display: block; }
+        .form-control { width: 100%; padding: 12px 15px; background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 10px; font-size: 14px; font-weight: 500; color: var(--text-dark); outline: none; transition: 0.3s; }
         .form-control:focus { border-color: var(--primary); background: var(--white); }
         textarea.form-control { resize: vertical; min-height: 80px; }
+        select.form-control { appearance: none; background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23131313%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right 15px center; background-size: 12px auto; padding-right: 40px; }
         
+        .category-toggle { display: flex; background: #E2E8F0; border-radius: 12px; padding: 5px; margin-bottom: 10px; margin-top:5px; }
+        .category-btn { flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 800; border-radius: 8px; cursor: pointer; color: var(--text-muted); transition: 0.3s; }
+        .category-btn.active { background: var(--white); color: var(--primary); box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        
+        .amenities-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 5px; }
+        .checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--text-dark); background: #F8FAFC; padding: 10px; border-radius: 10px; border: 1px solid var(--border-color); }
+        .checkbox-label input { width: 16px; height: 16px; accent-color: var(--primary); }
+
         /* File Upload Styles */
-        .file-upload-wrapper { position: relative; width: 100%; height: 120px; border: 2px dashed #CBD5E1; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #F8FAFC; cursor: pointer; margin-bottom: 15px; overflow: hidden; transition: 0.3s; }
-        .file-upload-wrapper:hover { border-color: #D97706; background: #FFFBEB; }
+        .file-upload-wrapper { position: relative; width: 100%; height: 120px; border: 2px dashed #CBD5E1; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #F8FAFC; cursor: pointer; overflow: hidden; transition: 0.3s; margin-top:5px;}
+        .file-upload-wrapper:hover { border-color: var(--primary); background: #FFFBEB; }
         .file-upload-wrapper input[type="file"] { position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
         .file-upload-content { text-align: center; pointer-events: none; }
         .file-upload-content i { font-size: 30px; color: #94A3B8; margin-bottom: 5px; display: block; }
         .file-upload-content span { font-size: 12px; color: #64748B; font-weight: 600; }
-        #ad-image-preview { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: none; z-index: 5; }
+        
+        .preview-img-wrapper { position: relative; width: 70px; height: 70px; }
+        .preview-img-wrapper img { width: 100%; height: 100%; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-color); }
 
         .btn-publish { background: #166534; color: var(--white); border: none; width: 100%; padding: 16px; border-radius: 12px; font-size: 15px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 20px; box-shadow: 0 4px 15px rgba(22, 101, 52, 0.2); transition: 0.2s; }
         .btn-publish:active { transform: scale(0.97); }
-        
-        /* दोन कॉलम्ससाठी */
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
         /* Team Member Added List Item */
-        .team-member-item {
-            display: flex; justify-content: space-between; align-items: center;
-            background: var(--bg-light); padding: 10px 15px; border-radius: 10px;
-            border: 1px solid var(--border-color); margin-bottom: 10px;
-        }
+        .team-member-item { display: flex; justify-content: space-between; align-items: center; background: var(--bg-light); padding: 10px 15px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 10px; }
         .team-member-info h4 { font-size: 13px; font-weight: 700; color: var(--text-dark); margin-bottom: 2px; }
         .team-member-info p { font-size: 11px; color: var(--text-muted); }
         .btn-delete-member { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 16px; }
 
         /* Hero Slider Images Grid styling */
-        .slider-images-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 15px;
-        }
-        .slider-img-box {
-            position: relative;
-            width: 100%;
-            padding-top: 100%; /* 1:1 Aspect Ratio */
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid #CBD5E1;
-        }
-        .slider-img-box img {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;
-        }
-        .delete-slide-btn {
-            position: absolute;
-            top: 5px; right: 5px;
-            background: rgba(239, 68, 68, 0.9); color: white;
-            border: none; width: 25px; height: 25px; border-radius: 50%;
-            cursor: pointer; display: flex; justify-content: center; align-items: center;
-            font-size: 12px; z-index: 10;
-        }
+        .slider-images-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+        .slider-img-box { position: relative; width: 100%; padding-top: 100%; border-radius: 8px; overflow: hidden; border: 1px solid #CBD5E1; }
+        .slider-img-box img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+        .delete-slide-btn { position: absolute; top: 5px; right: 5px; background: rgba(239, 68, 68, 0.9); color: white; border: none; width: 25px; height: 25px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 12px; z-index: 10; }
         
         /* Lead/Enquiry Checkbox Styles */
-        .lead-checkbox {
-            width: 20px; height: 20px; accent-color: #25D366; cursor: pointer;
-        }
-        .whatsapp-share-btn {
-            background: #25D366; color: white; border: none; padding: 12px 15px;
-            border-radius: 10px; font-weight: 800; font-size: 14px; display: flex;
-            align-items: center; justify-content: center; gap: 8px; width: 100%; cursor: pointer;
-            box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3); transition: 0.2s; margin-top: 10px;
-        }
+        .lead-checkbox { width: 20px; height: 20px; accent-color: #25D366; cursor: pointer; }
+        .whatsapp-share-btn { background: #25D366; color: white; border: none; padding: 12px 15px; border-radius: 10px; font-weight: 800; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; cursor: pointer; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3); transition: 0.2s; margin-top: 10px; }
         .whatsapp-share-btn:active { transform: scale(0.97); }
 
         /* Bottom Navigation */
-        .bottom-nav {
-            position: fixed; bottom: 0; width: 100%; background: var(--white);
-            display: flex; justify-content: space-around; padding: 12px 0;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.05); border-top-left-radius: 20px; border-top-right-radius: 20px; z-index: 100;
-        }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--white); display: flex; justify-content: space-around; padding: 12px 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); border-top-left-radius: 20px; border-top-right-radius: 20px; z-index: 100; }
         .nav-item { text-align: center; color: var(--text-muted); font-size: 11px; text-decoration: none; flex: 1; }
         .nav-item i { font-size: 20px; margin-bottom: 4px; display: block; }
         .nav-item.active { color: var(--admin-dark); font-weight: bold; }
@@ -253,6 +224,124 @@
         </div>
     </div>
 
+    <!-- 🆕 २.१ ॲडमिन कडून प्रॉपर्टी ॲड करा (Full Detailed Form) -->
+    <div class="section-header">
+        <span style="color: #2563EB;"><i class="fa-solid fa-building-user"></i> नवीन प्रॉपर्टी ॲड करा (Admin Form)</span>
+    </div>
+    <div class="list-container">
+        <div class="cms-card" style="background: #EFF6FF; border-color: #BFDBFE;">
+            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 10px;">येथे भरलेली माहिती थेट ॲपवर 'लाईव्ह' होईल. मालकाला पेमेंट करण्याची गरज लागणार नाही.</p>
+            
+            <div class="grid-2">
+                <div>
+                    <label class="form-label">मालकाचे नाव</label>
+                    <input type="text" class="form-control" id="admin-owner-name" placeholder="उदा. रमेश पाटील">
+                </div>
+                <div>
+                    <label class="form-label" style="color: #166534;">मालकाचा मोबाईल नंबर</label>
+                    <input type="tel" class="form-control" id="admin-owner-mobile" placeholder="उदा. 9876543210" maxlength="10" style="border-color: #22C55E;">
+                </div>
+            </div>
+
+            <label class="form-label">प्रॉपर्टीची श्रेणी (Category)</label>
+            <div class="category-toggle">
+                <div class="category-btn active" id="admin-cat-residential" onclick="setAdminCategory('residential')">रहिवासी (Residential)</div>
+                <div class="category-btn" id="admin-cat-commercial" onclick="setAdminCategory('commercial')">व्यावसायिक (Commercial)</div>
+            </div>
+
+            <div class="grid-2">
+                <div>
+                    <label class="form-label">प्रॉपर्टीचा प्रकार</label>
+                    <select class="form-control" id="admin-prop-type" onchange="adminCheckOtherType()"></select>
+                    <input type="text" class="form-control" id="admin-other-type-input" placeholder="प्रकार टाईप करा..." style="display:none; margin-top:10px;">
+                </div>
+                <div>
+                    <label class="form-label">कोणासाठी आहे?</label>
+                    <select class="form-control" id="admin-prop-target" onchange="adminCheckOtherTarget()"></select>
+                    <input type="text" class="form-control" id="admin-other-target-input" placeholder="उदा. बँक कर्मचारी..." style="display:none; margin-top:10px;">
+                </div>
+            </div>
+
+            <label class="form-label">फर्निचरची स्थिती</label>
+            <select class="form-control" id="admin-prop-furnish">
+                <option value="" disabled selected>स्थिती निवडा...</option>
+                <option value="Unfurnished">फर्निचर नाही (Unfurnished)</option>
+                <option value="Semi-Furnished">अंशतः फर्निचर (Semi-Furnished)</option>
+                <option value="Fully-Furnished">पूर्ण फर्निचर (Fully-Furnished)</option>
+            </select>
+
+            <label class="form-label">जाहिरातीचे शीर्षक</label>
+            <input type="text" class="form-control" id="admin-prop-title" placeholder="उदा. 2 BHK फ्लॅट भाड्याने देणे आहे">
+
+            <div class="grid-2">
+                <div>
+                    <label class="form-label">महिन्याचे भाडे (₹)</label>
+                    <input type="number" class="form-control" id="admin-prop-rent" placeholder="उदा. 5000">
+                </div>
+                <div>
+                    <label class="form-label">डिपॉझिट (₹)</label>
+                    <input type="number" class="form-control" id="admin-prop-deposit" placeholder="उदा. 20000">
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div>
+                    <label class="form-label">तालुका</label>
+                    <select class="form-control" id="admin-prop-taluka" onchange="adminPopulateAreas()">
+                        <option value="" disabled selected>तालुका निवडा...</option>
+                        <option value="satara">सातारा</option>
+                        <option value="karad">कराड</option>
+                        <option value="wai">वाई</option>
+                        <option value="phaltan">फलटण</option>
+                        <option value="koregaon">कोरेगाव</option>
+                        <option value="mahabaleshwar">महाबळेश्वर</option>
+                        <option value="patan">पाटण</option>
+                        <option value="man">माण (दहिवडी)</option>
+                        <option value="khatav">खटाव (वडूज)</option>
+                        <option value="khandala">खंडाळा</option>
+                        <option value="jawali">जावळी (मेढा)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">परिसर / गाव</label>
+                    <select class="form-control" id="admin-prop-area" onchange="adminCheckOtherArea()">
+                        <option value="" disabled selected>आधी तालुका निवडा</option>
+                    </select>
+                </div>
+            </div>
+            <input type="text" class="form-control" id="admin-other-area-input" placeholder="तुमच्या गावाचे नाव टाईप करा..." style="display:none; margin-top:10px;">
+
+            <label class="form-label">सुविधा (Amenities)</label>
+            <div class="amenities-grid" id="admin-amenities-container">
+                <!-- Javascript will load checkboxes here -->
+            </div>
+
+            <label class="form-label">नियम आणि अधिक माहिती</label>
+            <textarea class="form-control" id="admin-prop-desc" placeholder="उदा. ११ महिन्यांचा करार अनिवार्य. लाईट बिल वेगळे."></textarea>
+
+            <label class="form-label">फोटो अपलोड करा (कमाल 5 फोटो)</label>
+            <div class="file-upload-wrapper">
+                <input type="file" id="admin-prop-images" accept="image/*" multiple onchange="adminPreviewMultipleImages(event)">
+                <div class="file-upload-content">
+                    <i class="fa-solid fa-images"></i>
+                    <span id="admin-prop-img-status">गॅलरीतून फोटो निवडा</span>
+                </div>
+            </div>
+            <div id="admin-preview-container" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px;"></div>
+
+            <label class="form-label">लिस्टिंग प्लॅन (ॲडमिन बायपास)</label>
+            <select class="form-control" id="admin-prop-plan">
+                <option value="basic">बेसिक लिस्टिंग (मोफत)</option>
+                <option value="premium1">प्रीमियम ॲड (लहान मुदत - Top Banner)</option>
+                <option value="premium2">प्रीमियम ॲड (मोठी मुदत - Top Banner)</option>
+            </select>
+
+            <button class="btn-publish" style="background: #2563EB;" onclick="adminSubmitFullProperty()" id="admin-prop-submit-btn">
+                <i class="fa-solid fa-cloud-arrow-up"></i> <span>ही प्रॉपर्टी सेव्ह आणि लाईव्ह करा</span>
+            </button>
+        </div>
+    </div>
+
     <!-- २.० युझर इन्क्वायरीज (Leads with Multi-Select WhatsApp Share) -->
     <div class="section-header">
         <span style="color: #25D366;"><i class="fa-solid fa-clipboard-user"></i> नवीन संपर्कांची यादी (Leads)</span>
@@ -261,24 +350,21 @@
         <div class="cms-card" style="background: #F0FDF4; border-color: #BBF7D0;">
             <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px;">ज्या भाडेकरूंनी पैसे भरून मालकाचा नंबर अनलॉक केला आहे, त्यांची रोजची यादी येथे दिसेल. त्यांना सिलेक्ट करून तुम्ही मालकाला WhatsApp वर पाठवू शकता.</p>
             
-            <!-- Date Filter for Leads -->
             <div class="date-inputs" style="margin-bottom: 15px;">
                 <input type="date" id="lead-filter-date" style="border-color: #25D366; color: #166534;" onchange="loadUserLeads()">
             </div>
 
-            <!-- Leads List Container -->
             <div id="leads-list-container" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;">
                 <div style="text-align: center; color: #94A3B8; padding: 10px;">लोड होत आहे...</div>
             </div>
 
-            <!-- WhatsApp Share Button -->
             <button class="whatsapp-share-btn" onclick="shareSelectedLeadsOnWhatsApp()">
                 <i class="fa-brands fa-whatsapp"></i> निवडलेले संपर्क्स WhatsApp वर शेअर करा
             </button>
         </div>
     </div>
 
-    <!-- २.१ होम पेज स्लायडर सेटिंग्ज (Hero Slider Manager) -->
+    <!-- २.१ होम पेज स्लायडर सेटिंग्ज -->
     <div class="section-header">
         <span style="color: #2563EB;"><i class="fa-solid fa-images"></i> होमपेज स्लायडर सेटिंग्ज</span>
     </div>
@@ -304,7 +390,6 @@
 
             <label class="form-label">सध्याच्या स्लायडर इमेजेस (Current Images)</label>
             <div class="slider-images-grid" id="current-slider-images">
-                <!-- Javascript will load images here -->
                 <div style="grid-column: span 3; text-align: center; color: #94A3B8; font-size: 12px; padding: 10px;">लोड होत आहे...</div>
             </div>
 
@@ -314,7 +399,7 @@
         </div>
     </div>
 
-    <!-- ३. डेटा आणि रिपोर्ट्स (Reports Downloads with Custom Date Picker) -->
+    <!-- ३. डेटा आणि रिपोर्ट्स -->
     <div class="section-header">
         <span style="color: #0284C7;"><i class="fa-solid fa-file-excel"></i> डेटा रिपोर्ट्स (Downloads)</span>
     </div>
@@ -332,22 +417,16 @@
             
             <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px;">वरील तारखांमधील संपूर्ण डेटा CSV (Excel) फॉरमॅटमध्ये डाऊनलोड करा. (तारखा न निवडल्यास सर्व डेटा येईल)</p>
             
-            <!-- NEW PAYMENT REPORT BUTTON -->
             <button class="btn-download btn-download-payment" onclick="downloadReport('all_payments')">
                 <span><i class="fa-solid fa-credit-card" style="margin-right:8px;"></i> सर्व पेमेंट्स (Razorpay) रिपोर्ट</span>
                 <i class="fa-solid fa-download"></i>
             </button>
 
-            <!-- 🆕 NEW SUBSCRIPTION REPORT BUTTON -->
             <button class="btn-download btn-download-payment" style="background: #F3E8FF; border-color: #D8B4FE; color: #6B21A8;" onclick="downloadReport('tenant_subscriptions')">
                 <span><i class="fa-solid fa-crown" style="margin-right:8px; color: #8B5CF6;"></i> युझर सबस्क्रिप्शन (Pass) रिपोर्ट</span>
                 <i class="fa-solid fa-download" style="color: #8B5CF6;"></i>
             </button>
 
-            <!-- <button class="btn-download" onclick="downloadReport('revenue')">
-                <span><i class="fa-solid fa-indian-rupee-sign" style="color:#10B981; margin-right:8px;"></i> उत्पन्न आणि पेमेंट रिपोर्ट</span>
-                <i class="fa-solid fa-download"></i>
-            </button> -->
             <button class="btn-download" onclick="downloadReport('users')">
                 <span><i class="fa-solid fa-users" style="color:#3B82F6; margin-right:8px;"></i> युझर्स लिस्ट रिपोर्ट</span>
                 <i class="fa-solid fa-download"></i>
@@ -386,7 +465,7 @@
         </div>
     </div>
 
-    <!-- ४.१. लाईव्ह प्रॉपर्टीज व्यवस्थापन (Delete Live Properties) -->
+    <!-- ४.१. लाईव्ह प्रॉपर्टीज व्यवस्थापन -->
     <div class="section-header">
         <span style="color: #10B981;"><i class="fa-solid fa-list-check"></i> लाईव्ह प्रॉपर्टीज व्यवस्थापन</span>
         <span class="badge" style="background:#10B981;" id="live_count_badge">0 लाईव्ह</span>
@@ -404,7 +483,7 @@
     <div class="list-container" id="packages-container">
         <div class="cms-card">
             <h3 class="cms-header-title purple" style="border-bottom: 1px dashed var(--border-color); padding-bottom: 10px;">प्रीमियम टॉप बॅनर प्लॅन्स</h3>
-            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px;"><b>बेसिक लिस्टिंग सर्वांसाठी ফ্রি राहील.</b> परंतु जर मालकाला आपली प्रॉपर्टी होमपेजवर सर्वात वर (टॉप बॅनर) दाखवायची असेल, तर तो खालीलपैकी एक प्रीमियम प्लॅन घेऊ शकतो.</p>
+            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px;"><b>बेसिक लिस्टिंग सर्वांसाठी फ्री राहील.</b> परंतु जर मालकाला आपली प्रॉपर्टी होमपेजवर सर्वात वर (टॉप बॅनर) दाखवायची असेल, तर तो खालीलपैकी एक प्रीमियम प्लॅन घेऊ शकतो.</p>
             
             <div style="background: #F8FAFC; padding: 15px; border-radius: 12px; border: 1px solid #CBD5E1; margin-bottom: 15px;">
                 <div class="form-label" style="color: #8B5CF6; font-size: 14px;"><i class="fa-solid fa-star"></i> प्रीमियम प्लॅन १ (लहान मुदत)</div>
@@ -434,7 +513,6 @@
                 </div>
             </div>
             
-            <!-- 🆕 टॉप प्रायोरिटी ॲड्स स्लायडर टाइमिंग -->
             <h3 class="cms-header-title purple" style="border-top: 1px dashed var(--border-color); padding-top: 15px; margin-top: 10px;"><i class="fa-solid fa-stopwatch"></i> प्रीमियम ॲड्स स्लायडर टाइमिंग</h3>
             <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px;">होमपेजवर प्रीमियम प्रॉपर्टीज (Top Priority Listing) किती सेकंदांनी आपोआप स्लाईड झाल्या पाहिजेत याची वेळ सेट करा.</p>
             <div style="position: relative; margin-bottom: 15px;">
@@ -458,7 +536,6 @@
                 <input type="number" class="form-control" value="20" id="tenant-unlock-fee" style="padding-left: 45px; border-color: #10B981;" placeholder="उदा. 20">
             </div>
             
-            <!-- TENANT SUBSCRIPTION PASS SETTINGS -->
             <h3 class="cms-header-title purple" style="border-top: 1px dashed var(--border-color); padding-top: 15px; margin-top: 10px;"><i class="fa-solid fa-crown"></i> भाडेकरू अनलिमिटेड पास (Subscription Pass)</h3>
             <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px;">हा पास घेतल्यावर भाडेकरू कितीही नंबर फ्री मध्ये पाहू शकेल.</p>
             <div class="grid-2">
@@ -484,7 +561,7 @@
         <div style="text-align: center; color: #94A3B8; padding: 20px;">कोणत्याही नवीन प्रॉपर्टीज पेंडिंग नाहीत.</div>
     </div>
 
-    <!-- ८. जाहिरात व्यवस्थापन (Mobile & Desktop Image Uploads) -->
+    <!-- ८. जाहिरात व्यवस्थापन -->
     <div class="section-header">
         <span style="color: #D97706;"><i class="fa-solid fa-rectangle-ad"></i> जाहिरात व्यवस्थापन</span>
     </div>
@@ -588,9 +665,7 @@
                 <button class="btn-edit" style="width: 100%; background: #10B981; color: white; border: none; font-weight: bold;" onclick="addTeamMember()"><i class="fa-solid fa-user-plus"></i> मेंबर ॲड करा</button>
             </div>
 
-            <div id="added-team-members-list">
-                <!-- Javascript द्वारे इथे लिस्ट तयार होईल -->
-            </div>
+            <div id="added-team-members-list"></div>
 
             <button class="btn-publish" id="publish-team-btn" style="background: #2563EB;" onclick="publishTeamContent()">
                 <i class="fa-solid fa-floppy-disk"></i> <span>संपूर्ण टीम माहिती सेव्ह करा</span>
@@ -622,8 +697,14 @@
     <script>
         let supportTeamMembers = [];
         let heroSliderImagesArr = []; 
-        
         let currentLoadedLeads = [];
+        let adminSelectedFiles = []; // For multiple admin photos
+        let currentAdminCategory = 'residential';
+        
+        let globalPlan1Days = 15;
+        let globalPlan2Days = 30;
+        let globalPlan1Price = 299;
+        let globalPlan2Price = 399;
 
         window.onload = function() {
             if(typeof applySavedLanguage === 'function') { applySavedLanguage(); }
@@ -632,8 +713,9 @@
             let firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
             document.getElementById('report-start-date').value = firstDay.toISOString().split('T')[0];
             document.getElementById('report-end-date').value = now.toISOString().split('T')[0];
-            
             document.getElementById('lead-filter-date').value = now.toISOString().split('T')[0];
+
+            setAdminCategory('residential'); // Initialize Admin Property Form
 
             loadAdminDashboardStats();
             loadSettingsFromFirebase();
@@ -644,6 +726,256 @@
             loadHeroSliderConfig(); 
             loadUserLeads();
         };
+
+        // ----------------------------------------------------------------------------------
+        // 🆕 ॲडमिन कडून प्रॉपर्टी ॲड करण्याचे संपूर्ण लॉजिक (Full Form Logic)
+        // ----------------------------------------------------------------------------------
+        const adminAreasData = {
+            "satara": ["शाहूपुरी", "सदरबझार", "गोडोली", "करंजे", "शनिवार पेठ", "विसावा पार्क", "संगम नगर", "मोळाचा ओढा", "अजिंक्य कॉलनी", "इतर"],
+            "karad": ["विद्यानगर", "मलकापूर", "मंगळवार पेठ", "आगाशिवनगर", "वनवासमाची", "कोयना वसाहत", "ओगलेवाडी", "इतर"],
+            "wai": ["सोनगीरवाडी", "सिद्धनाथवाडी", "शेलारवाडी", "रविवार पेठ", "पाचगणी-महाबळेश्वर रोड", "धर्मपुरी", "इतर"],
+            "phaltan": ["पद्मावती नगर", "अक्षत नगर", "जाधववाडी", "लक्ष्मीनगर", "सिडको कॉलनी", "रिंग रोड परिसर", "इतर"],
+            "mahabaleshwar": ["मुख्य बाजारपेठ", "पाचगणी रोड", "वेण्णा लेक परिसर", "मॅप्रो गार्डन जवळ", "इतर"],
+            "koregaon": ["एकतानगर", "मुख्य बाजारपेठ", "रहिमतपूर रोड", "सातारा रोड परिसर", "इतर"],
+            "khatav": ["वडूज शहर", "पुसेगाव", "मायणी", "दहिवडी रोड परिसर", "इतर"],
+            "man": ["दहिवडी", "म्हसवड", "पिंगळी", "गोंदवले", "इतर"],
+            "patan": ["पाटण शहर", "कोयनानगर", "मल्हारपेठ", "तारळे", "इतर"],
+            "khandala": ["लोणंद", "शिरवळ (MIDC)", "खंडाळा शहर", "पारगाव", "इतर"],
+            "jawali": ["मेढा शहर", "कुडाळ", "केळघर", "इतर"]
+        };
+
+        function setAdminCategory(category) {
+            currentAdminCategory = category;
+            document.getElementById('admin-cat-residential').classList.remove('active');
+            document.getElementById('admin-cat-commercial').classList.remove('active');
+            document.getElementById('admin-cat-residential').style.color = '#64748B';
+            document.getElementById('admin-cat-commercial').style.color = '#64748B';
+            
+            document.getElementById('admin-cat-' + category).classList.add('active');
+            document.getElementById('admin-cat-' + category).style.color = 'var(--primary)';
+
+            document.getElementById('admin-other-type-input').style.display = 'none';
+            document.getElementById('admin-other-target-input').style.display = 'none';
+
+            adminPopulateTypesAndTargets(category);
+            adminPopulateAmenities(category);
+        }
+
+        function adminPopulateTypesAndTargets(category) {
+            let typeSelect = document.getElementById('admin-prop-type');
+            let targetSelect = document.getElementById('admin-prop-target');
+            
+            typeSelect.innerHTML = '<option value="" disabled selected>प्रकार निवडा...</option>';
+            targetSelect.innerHTML = '<option value="" disabled selected>कोणासाठी आहे ते निवडा...</option>';
+
+            if (category === 'residential') {
+                let types = [{val: '1rk', text: '1 RK'}, {val: '1bhk', text: '1 BHK'}, {val: '2bhk', text: '2 BHK'}, {val: '3bhk', text: '3 BHK'}, {val: 'single-room', text: 'सिंगल रूम'}, {val: 'cot-basis', text: 'कॉट बेसिस'}, {val: 'hostel-pg', text: 'हॉस्टेल / PG'}, {val: 'flat', text: 'फ्लॅट'}, {val: 'other', text: 'इतर (Other)'}];
+                types.forEach(t => typeSelect.innerHTML += `<option value="${t.val}">${t.text}</option>`);
+
+                let targets = [{val: 'फक्त फॅमिलीसाठी', text: 'फक्त फॅमिलीसाठी'}, {val: 'फक्त मुलांसाठी (Bachelor)', text: 'फक्त मुलांसाठी (Student/Bachelor)'}, {val: 'फक्त मुलींसाठी (Bachelor)', text: 'फक्त मुलींसाठी (Student/Bachelor)'}, {val: 'सर्वांसाठी', text: 'सर्वांसाठी (Anyone)'}, {val: 'other', text: 'इतर (Other)'}];
+                targets.forEach(t => targetSelect.innerHTML += `<option value="${t.val}">${t.text}</option>`);
+            } else {
+                let types = [{val: 'shop', text: 'गाळा / दुकान (Shop)'}, {val: 'corporate-office', text: 'कॉर्पोरेट ऑफिस (Office)'}, {val: 'godown', text: 'गोडाऊन (Warehouse)'}, {val: 'plot', text: 'प्लॉट / जागा (Plot)'}, {val: 'other', text: 'इतर (Other)'}];
+                types.forEach(t => typeSelect.innerHTML += `<option value="${t.val}">${t.text}</option>`);
+
+                let targets = [{val: 'कोणत्याही व्यवसायासाठी', text: 'कोणत्याही व्यवसायासाठी'}, {val: 'फक्त ऑफिससाठी', text: 'फक्त ऑफिस/कॉर्पोरेटसाठी'}, {val: 'फक्त दुकानासाठी', text: 'फक्त दुकानासाठी'}, {val: 'फक्त गोडाऊनसाठी', text: 'फक्त स्टोरेज/गोडाऊन'}, {val: 'other', text: 'इतर (Other)'}];
+                targets.forEach(t => targetSelect.innerHTML += `<option value="${t.val}">${t.text}</option>`);
+            }
+        }
+
+        function adminPopulateAmenities(category) {
+            let container = document.getElementById('admin-amenities-container');
+            if (category === 'residential') {
+                container.innerHTML = `
+                    <label class="checkbox-label"><input type="checkbox" id="adm-am-water" value="२४ तास पाणी"> २४ तास पाणी</label>
+                    <label class="checkbox-label"><input type="checkbox" id="adm-am-parking" value="पार्किंग"> पार्किंग</label>
+                    <label class="checkbox-label"><input type="checkbox" id="adm-am-lift" value="लिफ्ट"> लिफ्ट</label>
+                    <label class="checkbox-label"><input type="checkbox" id="adm-am-security" value="सुरक्षा रक्षक"> सुरक्षा रक्षक</label>
+                    <label class="checkbox-label"><input type="checkbox" id="adm-am-wifi" value="वाय-फाय"> वाय-फाय</label>
+                    <label class="checkbox-label"><input type="checkbox" id="adm-am-mess" value="मेस / जेवण"> मेस / जेवण</label>
+                `;
+            } else {
+                container.innerHTML = `
+                    <label class="checkbox-label"><input type="checkbox" id="adm-am-water" value="वॉशरूम सुविधा"> वॉशरूम सुविधा</label>
+                    <label class="checkbox-label"><input type="checkbox" id="adm-am-parking" value="कस्टमर पार्किंग"> कस्टमर पार्किंग</label>
+                    <label class="checkbox-label"><input type="checkbox" id="adm-am-lift" value="पॉवर बॅकअप"> पॉवर बॅकअप</label>
+                    <label class="checkbox-label"><input type="checkbox" id="adm-am-security" value="CCTV कॅमेरा"> CCTV कॅमेरा</label>
+                    <label class="checkbox-label"><input type="checkbox" id="adm-am-wifi" value="फायर सेफ्टी"> फायर सेफ्टी</label>
+                    <label class="checkbox-label"><input type="checkbox" id="adm-am-mess" value="हाय-स्पीड इंटरनेट"> इंटरनेट</label>
+                `;
+            }
+        }
+
+        function adminCheckOtherType() {
+            if(document.getElementById('admin-prop-type').value === 'other') { document.getElementById('admin-other-type-input').style.display = 'block'; } 
+            else { document.getElementById('admin-other-type-input').style.display = 'none'; }
+        }
+
+        function adminCheckOtherTarget() {
+            if(document.getElementById('admin-prop-target').value === 'other') { document.getElementById('admin-other-target-input').style.display = 'block'; } 
+            else { document.getElementById('admin-other-target-input').style.display = 'none'; }
+        }
+
+        function adminPopulateAreas() {
+            const taluka = document.getElementById("admin-prop-taluka").value;
+            const areaSelect = document.getElementById("admin-prop-area");
+            document.getElementById("admin-other-area-input").style.display = 'none';
+            areaSelect.innerHTML = '<option value="" disabled selected>परिसर निवडा...</option>';
+            if (taluka && adminAreasData[taluka]) {
+                adminAreasData[taluka].forEach(area => {
+                    areaSelect.innerHTML += `<option value="${area}">${area}</option>`;
+                });
+            }
+        }
+
+        function adminCheckOtherArea() {
+            if(document.getElementById('admin-prop-area').value === 'इतर') { document.getElementById('admin-other-area-input').style.display = 'block'; } 
+            else { document.getElementById('admin-other-area-input').style.display = 'none'; }
+        }
+
+        function adminPreviewMultipleImages(event) {
+            const files = event.target.files;
+            const previewContainer = document.getElementById('admin-preview-container');
+            previewContainer.innerHTML = ''; 
+            adminSelectedFiles = []; 
+            if(files.length > 0) {
+                document.getElementById('admin-prop-img-status').innerText = `${files.length} फोटो निवडले`;
+                document.getElementById('admin-prop-img-status').style.color = "#166534";
+                for(let i = 0; i < files.length; i++) {
+                    if(i >= 5) break; // Max 5 photos
+                    adminSelectedFiles.push(files[i]); 
+                    let reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewContainer.innerHTML += `<div class="preview-img-wrapper"><img src="${e.target.result}"></div>`;
+                    };
+                    reader.readAsDataURL(files[i]);
+                }
+            } else {
+                document.getElementById('admin-prop-img-status').innerText = "फोटो निवडा";
+                document.getElementById('admin-prop-img-status').style.color = "#64748B";
+            }
+        }
+
+        async function adminSubmitFullProperty() {
+            let ownerName = document.getElementById('admin-owner-name').value.trim();
+            let ownerMobile = document.getElementById('admin-owner-mobile').value.trim();
+            
+            let propTypeRaw = document.getElementById('admin-prop-type').value;
+            let finalType = propTypeRaw === 'other' ? document.getElementById('admin-other-type-input').value.trim() : propTypeRaw;
+            
+            let targetRaw = document.getElementById('admin-prop-target').value;
+            let finalTarget = targetRaw === 'other' ? document.getElementById('admin-other-target-input').value.trim() : targetRaw;
+
+            let furnish = document.getElementById('admin-prop-furnish').value;
+            let title = document.getElementById('admin-prop-title').value.trim();
+            let rent = document.getElementById('admin-prop-rent').value.trim();
+            let deposit = document.getElementById('admin-prop-deposit').value.trim();
+
+            let taluka = document.getElementById('admin-prop-taluka').value;
+            let areaRaw = document.getElementById('admin-prop-area').value;
+            let finalArea = areaRaw === 'इतर' ? document.getElementById('admin-other-area-input').value.trim() : areaRaw;
+            let desc = document.getElementById('admin-prop-desc').value.trim();
+            
+            let selectedPlan = document.getElementById('admin-prop-plan').value;
+
+            if(!ownerName || !ownerMobile || ownerMobile.length !== 10 || !finalType || !finalTarget || !furnish || !title || !rent || !taluka || !finalArea || adminSelectedFiles.length === 0) {
+                alert("कृपया सर्व माहिती भरा आणि किमान 1 फोटो निवडा. (मोबाईल नंबर 10 अंकी असावा)");
+                return;
+            }
+
+            const btn = document.getElementById('admin-prop-submit-btn');
+            btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Uploading & Saving...";
+            btn.disabled = true;
+
+            try {
+                let uploadedUrls = [];
+                if(typeof firebase.storage !== 'undefined') {
+                    for(let i = 0; i < adminSelectedFiles.length; i++) {
+                        let file = adminSelectedFiles[i];
+                        let storageRef = firebase.storage().ref().child(`property_images/${Date.now()}_admin_${i}_${file.name}`);
+                        let snapshot = await storageRef.put(file);
+                        let url = await snapshot.ref.getDownloadURL();
+                        uploadedUrls.push(url);
+                    }
+                } else {
+                    alert("Firebase Storage कनेक्टेड नाही!");
+                    btn.disabled = false; btn.innerHTML = "<i class='fa-solid fa-cloud-arrow-up'></i> <span>ही प्रॉपर्टी सेव्ह आणि लाईव्ह करा</span>";
+                    return;
+                }
+
+                let validDays = 0;
+                if(selectedPlan === 'premium1') validDays = globalPlan1Days;
+                else if(selectedPlan === 'premium2') validDays = globalPlan2Days;
+                
+                let expiryDateStr = "Lifetime";
+                if(validDays > 0) {
+                    let expiryDate = new Date();
+                    expiryDate.setDate(expiryDate.getDate() + parseInt(validDays));
+                    expiryDateStr = expiryDate.toISOString();
+                }
+
+                let amenitiesLabels = [];
+                if(document.getElementById('adm-am-water') && document.getElementById('adm-am-water').checked) amenitiesLabels.push(document.getElementById('adm-am-water').value);
+                if(document.getElementById('adm-am-parking') && document.getElementById('adm-am-parking').checked) amenitiesLabels.push(document.getElementById('adm-am-parking').value);
+                if(document.getElementById('adm-am-lift') && document.getElementById('adm-am-lift').checked) amenitiesLabels.push(document.getElementById('adm-am-lift').value);
+                if(document.getElementById('adm-am-security') && document.getElementById('adm-am-security').checked) amenitiesLabels.push(document.getElementById('adm-am-security').value);
+                if(document.getElementById('adm-am-wifi') && document.getElementById('adm-am-wifi').checked) amenitiesLabels.push(document.getElementById('adm-am-wifi').value);
+                if(document.getElementById('adm-am-mess') && document.getElementById('adm-am-mess').checked) amenitiesLabels.push(document.getElementById('adm-am-mess').value);
+
+                const propData = {
+                    ownerId: "user_" + ownerMobile,
+                    ownerName: ownerName,
+                    ownerMobile: ownerMobile,
+                    propertyCategory: currentAdminCategory,
+                    title: title,
+                    type: finalType,
+                    targetTenant: finalTarget,
+                    furnishingStatus: furnish,
+                    rent: Number(rent),
+                    deposit: deposit ? Number(deposit) : 0,
+                    taluka: taluka,
+                    area: finalArea,
+                    description: desc,
+                    photoUrls: uploadedUrls,
+                    status: 'live', 
+                    planType: selectedPlan,
+                    validityDays: validDays,
+                    expiryDate: expiryDateStr,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    amenitiesLabels: amenitiesLabels,
+                    addedBy: 'admin'
+                };
+
+                let docRef = await db.collection("properties").add(propData);
+                
+                // Add to premium banners directly if it's a premium plan
+                if(selectedPlan === 'premium1' || selectedPlan === 'premium2') {
+                    db.collection("payments").add({
+                        paymentId: "admin_bypass_" + Date.now(),
+                        userId: "user_" + ownerMobile,
+                        propertyId: docRef.id,
+                        amount: 0,
+                        planType: "Premium Listing (Admin)",
+                        status: "Success",
+                        createdAt: new Date().toISOString()
+                    });
+
+                    db.collection("admin_settings").doc("premium_banners").set({
+                        [docRef.id]: { title: title, imageUrl: uploadedUrls[0], link: "details.html?id="+docRef.id, active: true }
+                    }, { merge: true });
+                }
+
+                alert("✅ प्रॉपर्टी यशस्वीरित्या ॲड आणि युझरच्या ॲपवर लाईव्ह झाली!");
+                window.location.reload(); // Reload to refresh everything smoothly
+
+            } catch (error) {
+                console.error("Admin add property error:", error);
+                alert("प्रॉपर्टी सेव्ह करताना एरर आला.");
+            } finally {
+                btn.disabled = false; btn.innerHTML = "<i class='fa-solid fa-cloud-arrow-up'></i> <span>ही प्रॉपर्टी सेव्ह आणि लाईव्ह करा</span>";
+            }
+        }
+        // ----------------------------------------------------------------------------------
 
         async function loadUserLeads() {
             let selectedDateStr = document.getElementById('lead-filter-date').value;
@@ -827,7 +1159,7 @@
             }
 
             let statusText = document.getElementById('slider-upload-status');
-            statusText.innerText = "अपलोड होत approach... कृपया थांबा";
+            statusText.innerText = "अपलोड होत आहे... कृपया थांबा";
             statusText.style.color = "#E65C00";
 
             const storageRef = firebase.storage().ref();
@@ -995,7 +1327,7 @@
                     });
                 }
                 else if(reportType === 'properties') {
-                    csvContent += "Property ID,Title,Owner,Type,Taluka,Area,Rent,Status,Plan,Created Date\r\n";
+                    csvContent += "Property ID,Title,Owner,Owner Mobile,Type,Taluka,Area,Rent,Status,Plan,Created Date\r\n";
                     let query = db.collection("properties");
                     if(dateRange) { query = query.where("createdAt", ">=", dateRange.start).where("createdAt", "<=", dateRange.end); }
 
@@ -1003,7 +1335,7 @@
                     snap.forEach(doc => {
                         let d = doc.data();
                         let date = d.createdAt ? new Date(d.createdAt).toLocaleDateString() : 'N/A';
-                        csvContent += `"${doc.id}","${d.title || ''}","${d.ownerName || ''}","${d.type || ''}","${d.taluka || ''}","${d.area || ''}","${d.rent || 0}","${d.status || ''}","${d.planType || 'basic'}","${date}"\r\n`;
+                        csvContent += `"${doc.id}","${d.title || ''}","${d.ownerName || ''}","${d.ownerMobile || ''}","${d.type || ''}","${d.taluka || ''}","${d.area || ''}","${d.rent || 0}","${d.status || ''}","${d.planType || 'basic'}","${date}"\r\n`;
                     });
                 }
                 else if(reportType === 'leads') {
@@ -1075,9 +1407,13 @@
                             document.getElementById('plan1-validity').value = data.plans.plan1_validity || 15;
                             document.getElementById('plan2-fee').value = data.plans.plan2_fee || 399;
                             document.getElementById('plan2-validity').value = data.plans.plan2_validity || 30;
+                            
+                            globalPlan1Days = data.plans.plan1_validity || 15;
+                            globalPlan2Days = data.plans.plan2_validity || 30;
+                            globalPlan1Price = data.plans.plan1_fee || 299;
+                            globalPlan2Price = data.plans.plan2_fee || 399;
                         }
                         
-                        // 🆕 Load Premium Slider Timer
                         if(data.premiumSliderTimer) {
                             document.getElementById('premium-slider-timer').value = data.premiumSliderTimer;
                         }
@@ -1112,14 +1448,14 @@
             let p1Val = document.getElementById('plan1-validity').value;
             let p2Fee = document.getElementById('plan2-fee').value;
             let p2Val = document.getElementById('plan2-validity').value;
-            let pTimer = document.getElementById('premium-slider-timer').value; // 🆕 Added
+            let pTimer = document.getElementById('premium-slider-timer').value; 
 
             if(!p1Fee || !p1Val || !p2Fee || !p2Val || !pTimer) { alert("कृपया सर्व माहिती भरा."); return; }
 
             if(typeof db !== 'undefined') {
                 db.collection("admin_settings").doc("master_config").set({
                     plans: { plan1_fee: Number(p1Fee), plan1_validity: Number(p1Val), plan2_fee: Number(p2Fee), plan2_validity: Number(p2Val) },
-                    premiumSliderTimer: Number(pTimer) // 🆕 Added
+                    premiumSliderTimer: Number(pTimer)
                 }, { merge: true }).then(() => { alert("✅ प्लॅन्स आणि स्लायडर टाइमिंग अपडेट केले!"); });
             }
         }
