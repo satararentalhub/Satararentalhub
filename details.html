@@ -35,7 +35,7 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
         
-        /* 🆕 Body changes for PC Centering */
+        /* Body changes for PC Centering */
         body { 
             background-color: var(--bg-light); 
             color: var(--text-dark); 
@@ -45,10 +45,10 @@
             align-items: center;
         }
 
-        /* 🆕 App Wrapper for Desktop View */
+        /* App Wrapper for Desktop View */
         .app-wrapper {
             width: 100%;
-            max-width: 800px; /* PC वर फॉर्म एवढाच राहील */
+            max-width: 800px; 
             background-color: var(--bg-light);
             min-height: 100vh;
             position: relative;
@@ -154,7 +154,7 @@
         
         /* Unlocked State Classes */
         .btn-action.unlocked { opacity: 1; pointer-events: auto; }
-        .number-revealed { color: #10B981 !important; text-shadow: none !important; }
+        /* 🆕 Removed number-revealed color change as number stays partially hidden */
 
         .loading-fullscreen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-light);
@@ -162,9 +162,7 @@
             font-size: 18px; font-weight: 800; color: var(--primary);
         }
 
-        /* -------------------------------------------------------------------------
-           🆕 User Details Modal (Popup for Tenants before Payment)
-        ------------------------------------------------------------------------- */
+        /* User Details Modal (Popup for Tenants before Payment) */
         .user-reg-modal {
             display: none; 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -208,9 +206,7 @@
             font-size: 15px; font-weight: 800; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 15px rgba(244, 90, 10, 0.3);
         }
 
-        /* -------------------------------------------------------------------------
-           🆕 Subscription Payment Options Modal (Plan Selection)
-        ------------------------------------------------------------------------- */
+        /* Subscription Payment Options Modal (Plan Selection) */
         .plan-selection-modal {
             display: none; 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -235,36 +231,25 @@
         .plan-price-tag { font-size: 20px; font-weight: 800; color: var(--primary); }
         .plan-card.premium-pass .plan-price-tag { color: var(--premium); }
 
-        /* -------------------------------------------------------------------------
-           🆕 मीडिया क्वेरीज (Responsive Design for Laptops/Tablets)
-        ------------------------------------------------------------------------- */
+        /* मीडिया क्वेरीज (Responsive Design for Laptops/Tablets) */
         @media (min-width: 768px) {
-            body {
-                background-color: #E2E8F0; 
-            }
-            .app-wrapper {
-                box-shadow: 0 0 20px rgba(0,0,0,0.1); 
-                margin-top: 20px;
-                border-radius: 20px;
-                overflow: hidden;
-            }
-            .top-bar {
-                position: absolute;
-            }
+            body { background-color: #E2E8F0; }
+            .app-wrapper { box-shadow: 0 0 20px rgba(0,0,0,0.1); margin-top: 20px; border-radius: 20px; overflow: hidden; }
+            .top-bar { position: absolute; }
         }
     </style>
 </head>
 <body>
 
-<div class="app-wrapper"> <!-- 🆕 App Wrapper Started -->
+<div class="app-wrapper"> 
 
-    <!-- 🆕 User Registration Modal (Form before Payment) -->
+    <!-- User Registration Modal (Form before Payment) -->
     <div id="user-registration-modal" class="user-reg-modal">
         <div class="user-reg-content">
             <button class="close-modal-btn" onclick="closeUserModal()"><i class="fa-solid fa-xmark"></i></button>
             <div class="user-reg-icon"><i class="fa-solid fa-user-shield"></i></div>
             <div class="user-reg-title">युझर माहिती</div>
-            <div class="user-reg-desc">मालकाचा नंबर पाहण्यासाठी कृपया तुमचे नाव आणि मोबाईल नंबर टाका. (ही माहिती फक्त एकदाच विचारली जाईल)</div>
+            <div class="user-reg-desc">मालकाशी संपर्क साधण्यासाठी कृपया तुमचे नाव आणि मोबाईल नंबर टाका. (ही माहिती फक्त एकदाच विचारली जाईल)</div>
             
             <div class="input-group">
                 <label>पूर्ण नाव (Full Name)</label>
@@ -275,32 +260,29 @@
                 <input type="tel" id="user-mobile-input" placeholder="उदा. 9876543210" maxlength="10">
             </div>
             
-            <!-- Updated Button: Now opens Plan Selection instead of direct payment -->
             <button class="user-submit-btn" id="user-submit-btn" onclick="submitUserDetailsAndShowPlans()">पुढे जा <i class="fa-solid fa-arrow-right"></i></button>
         </div>
     </div>
 
-    <!-- 🆕 Plan Selection Modal -->
+    <!-- Plan Selection Modal -->
     <div id="plan-selection-modal" class="plan-selection-modal">
         <div class="plan-selection-content">
             <button class="close-modal-btn" onclick="closePlanModal()"><i class="fa-solid fa-xmark"></i></button>
             <h3 style="font-size: 18px; font-weight: 800; color: var(--text-dark); margin-bottom: 5px; text-align: center;">प्लॅन निवडा</h3>
-            <p style="font-size: 12px; color: var(--text-muted); text-align: center; margin-bottom: 20px;">मालकाचा नंबर पाहण्यासाठी खालीलपैकी एक पर्याय निवडा.</p>
+            <p style="font-size: 12px; color: var(--text-muted); text-align: center; margin-bottom: 20px;">मालकाशी संपर्क साधण्यासाठी खालीलपैकी एक पर्याय निवडा.</p>
 
-            <!-- Option 1: Single Unlock -->
             <div class="plan-card" onclick="initiatePayment('single')">
                 <div class="plan-details">
                     <h4><i class="fa-solid fa-unlock"></i> सिंगल अनलॉक</h4>
-                    <p>फक्त या एका प्रॉपर्टीचा नंबर कायमस्वरूपी अनलॉक करा.</p>
+                    <p>फक्त या एका प्रॉपर्टीसाठी मालकाशी कायमस्वरूपी संपर्क करा.</p>
                 </div>
                 <div class="plan-price-tag">₹<span id="modal-single-fee">20</span></div>
             </div>
 
-            <!-- Option 2: Subscription Pass -->
             <div class="plan-card premium-pass" onclick="initiatePayment('pass')">
                 <div class="plan-details">
                     <h4 style="color: var(--premium);"><i class="fa-solid fa-crown"></i> अनलिमिटेड पास</h4>
-                    <p><span id="modal-sub-days">15</span> दिवसांसाठी कोणत्याही प्रॉपर्टीचा मालकाचा नंबर <b>मोफत</b> पहा!</p>
+                    <p><span id="modal-sub-days">15</span> दिवसांसाठी कोणत्याही प्रॉपर्टीच्या मालकाशी <b>मोफत</b> संपर्क साधा!</p>
                 </div>
                 <div class="plan-price-tag">₹<span id="modal-sub-fee">500</span></div>
             </div>
@@ -331,7 +313,6 @@
     <!-- फोटो गॅलरी (Scrollable) -->
     <div class="image-gallery" id="property-gallery">
         <div id="premiumBadge" class="badge-premium"><i class="fa-solid fa-crown"></i> Premium</div>
-        <!-- Firebase मधून फोटो इथे डायनॅमिकली लोड होतील -->
     </div>
 
     <!-- मुख्य माहिती -->
@@ -341,7 +322,7 @@
         <h1 class="prop-title" id="prop-title-display">...</h1>
         <div class="prop-location"><i class="fa-solid fa-location-dot" style="color:var(--primary);"></i> <span id="prop-location-display">...</span></div>
 
-        <!-- 🆕 Subscription Badge (Will show if active) -->
+        <!-- Subscription Badge (Will show if active) -->
         <div id="active-pass-badge" style="display:none; background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; margin-bottom: 15px; align-items: center; gap: 8px;">
             <i class="fa-solid fa-crown" style="color: #10B981; font-size: 16px;"></i> तुमचा अनलिमिटेड पास ॲक्टिव्ह आहे!
         </div>
@@ -388,9 +369,7 @@
 
         <!-- सुविधा -->
         <div class="section-title"><i class="fa-solid fa-star" style="color:#F59E0B;"></i> <span data-lang="amenities_sec">उपलब्ध सुविधा</span></div>
-        <div class="amenities-list" id="prop-amenities-display">
-            <!-- Firebase मधून सुविधा डायनॅमिकली लोड होतील -->
-        </div>
+        <div class="amenities-list" id="prop-amenities-display"></div>
 
         <!-- वर्णन -->
         <div class="section-title"><i class="fa-solid fa-align-left" style="color:#3B82F6;"></i> <span data-lang="more_info">अधिक माहिती</span></div>
@@ -405,9 +384,9 @@
             
             <!-- डायनॅमिक बटन -->
             <button class="btn-unlock" id="unlockBtn" onclick="checkUserAndPay()">
-                <i class="fa-solid fa-lock-open"></i> <span data-lang="unlock_number_btn">मालकाचा नंबर पहा</span>
+                <i class="fa-solid fa-lock-open"></i> <span data-lang="unlock_number_btn">मालकाशी संपर्क साधा</span>
             </button>
-            <div class="unlock-note" id="unlockNote" data-lang="unlock_note_desc">सुरक्षित पेमेंट करा. नंबर कायमस्वरूपी अनलॉक होईल.</div>
+            <div class="unlock-note" id="unlockNote" data-lang="unlock_note_desc">सुरक्षित पेमेंट करा आणि मालकाशी ॲपद्वारे संपर्क साधा.</div>
         </div>
 
     </div>
@@ -422,7 +401,7 @@
         </button>
     </div>
 
-</div> <!-- 🆕 App Wrapper Ended -->
+</div> <!-- App Wrapper Ended -->
 
     <!-- JavaScript (Firebase Read & Dynamic Razorpay Payment Logic) -->
     <script>
@@ -437,7 +416,7 @@
         window.onload = function() {
             if(typeof applySavedLanguage === 'function') { applySavedLanguage(); }
 
-            // Sync Local Storage to Firebase Cloud (Makes ID permanent across devices)
+            // Sync Local Storage to Firebase Cloud
             verifyAndSyncUserToCloud();
 
             fetchUnlockFeeFromFirebase();
@@ -472,31 +451,28 @@
             }
         }
 
-        // १. Firebase मधून ॲडमिनने सेट केलेली फी वाचणे (Single & Subscription Pass)
+        // १. Firebase मधून ॲडमिनने सेट केलेली फी वाचणे
         function fetchUnlockFeeFromFirebase() {
             if(typeof db !== 'undefined') {
                 db.collection("admin_settings").doc("master_config").get().then((doc) => {
                     if (doc.exists) {
                         let data = doc.data();
-                        
                         if(data.tenantUnlockFee) {
                             currentUnlockFee = data.tenantUnlockFee;
                             document.getElementById("modal-single-fee").innerText = currentUnlockFee;
                         }
-                        
                         if(data.tenantPass) {
                             subPassFee = data.tenantPass.fee || 500;
                             subPassValidityDays = data.tenantPass.validity || 15;
                             document.getElementById("modal-sub-fee").innerText = subPassFee;
                             document.getElementById("modal-sub-days").innerText = subPassValidityDays;
                         }
-
                     }
                 }).catch(e => console.log("Fees fetch error:", e));
             }
         }
 
-        // २. Firebase मधून प्रॉपर्टीची माहिती लोड करणे आणि ऑटो-एक्सपायर तपासणे
+        // २. Firebase मधून प्रॉपर्टीची माहिती लोड करणे
         function loadPropertyDetails() {
             const urlParams = new URLSearchParams(window.location.search);
             const propId = urlParams.get('id');
@@ -513,7 +489,6 @@
                         propertyData = doc.data();
                         propertyData.id = doc.id;
 
-                        // ऑटोमॅटिक प्रीमियम एक्सपायरी चेक
                         if (propertyData.planType && propertyData.planType !== 'basic' && propertyData.expiryDate && propertyData.expiryDate !== 'Lifetime') {
                             let now = new Date();
                             let expiryTime = new Date(propertyData.expiryDate);
@@ -530,7 +505,6 @@
 
                         populateUI(propertyData);
                         
-                        // Property Views Update Logic
                         if(propertyData.ownerId !== currentUserId) {
                             db.collection("properties").doc(propId).update({
                                 views: firebase.firestore.FieldValue.increment(1)
@@ -623,26 +597,30 @@
                 amenitiesContainer.innerHTML = `<div style="font-size:13px; color:#94A3B8;">विशेष सुविधा नोंदवलेल्या नाहीत.</div>`;
             }
 
+            // 🆕 Set Partially Hidden Number BEFORE unlock
+            if(data.ownerMobile) {
+                let m = data.ownerMobile;
+                document.getElementById('phoneNumber').innerText = `+91 ${m.substring(0,4)} XXXX ${m.substring(8)}`;
+            }
+
             if(data.ownerId === currentUserId) {
                 unlockNumberUI();
                 return;
             }
 
-            // 🆕 Check if User has ACTIVE Subscription Pass from Firebase
+            // Check if User has ACTIVE Subscription Pass
             if(typeof db !== 'undefined' && currentUserId !== "unknown") {
                 db.collection("users").doc(currentUserId).get().then((doc) => {
                     if (doc.exists && doc.data().subscriptionExpiry) {
                         let expiryDate = new Date(doc.data().subscriptionExpiry);
                         let now = new Date();
                         if (now <= expiryDate) {
-                            // Pass is Active! Free Unlock!
                             document.getElementById('active-pass-badge').style.display = "flex";
                             unlockNumberUI();
                             return; 
                         }
                     }
                     
-                    // If no active pass, check if this specific property was unlocked via Single Unlock
                     let unlockedProps = JSON.parse(localStorage.getItem('unlockedProperties')) || [];
                     if(unlockedProps.includes(data.id)) {
                         unlockNumberUI(); 
@@ -657,7 +635,7 @@
         }
 
         // -------------------------------------------------------------------------
-        // 🆕 User Details Check & Plan Modals
+        // User Details Check & Plan Modals
         // -------------------------------------------------------------------------
         function checkUserAndPay() {
             let savedId = localStorage.getItem("currentUserId");
@@ -666,10 +644,8 @@
                 if(typeof db !== 'undefined') {
                     db.collection("users").doc(savedId).get().then((doc) => {
                         if(doc.exists) {
-                            // User exists in cloud, directly show Plans Modal
                             document.getElementById('plan-selection-modal').style.display = "flex";
                         } else {
-                            // Rare case
                             document.getElementById('user-registration-modal').style.display = "flex";
                         }
                     }).catch(e => {
@@ -679,7 +655,6 @@
                     document.getElementById('plan-selection-modal').style.display = "flex";
                 }
             } else {
-                // No Local Storage ID, show form
                 document.getElementById('user-registration-modal').style.display = "flex";
             }
         }
@@ -706,7 +681,6 @@
             submitBtn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> सेव्ह होत आहे...";
             submitBtn.disabled = true;
 
-            // Save to Firebase
             if(typeof db !== 'undefined') {
                 db.collection("users").doc(userId).set({
                     name: name,
@@ -723,11 +697,9 @@
                     submitBtn.innerHTML = "पुढे जा <i class='fa-solid fa-arrow-right'></i>";
                     submitBtn.disabled = false;
                     
-                    // Show Plans Modal now
                     document.getElementById('plan-selection-modal').style.display = "flex";
 
                 }).catch((error) => {
-                    console.log("Error saving to Firebase:", error);
                     alert("नोंदणी करताना एरर आला. कृपया पुन्हा प्रयत्न करा.");
                     submitBtn.innerHTML = "पुढे जा <i class='fa-solid fa-arrow-right'></i>";
                     submitBtn.disabled = false;
@@ -740,7 +712,7 @@
         }
 
         // -------------------------------------------------------------------------
-        // 🆕 Razorpay Payment Logic (Handles BOTH Single and Subscription Pass)
+        // Razorpay Payment Logic 
         // -------------------------------------------------------------------------
         function initiatePayment(type) {
             closePlanModal();
@@ -751,14 +723,13 @@
             let paymentDescription = (type === 'pass') ? `Unlimited Access Pass (${subPassValidityDays} Days)` : "Unlock Single Owner Contact";
 
             var options = {
-                "key": "rzp_live_TIkGEzUM5ygyd6", // Live API Key
-                "amount": amountToPay * 100, // Amount in paise
+                "key": "rzp_live_TIkGEzUM5ygyd6", 
+                "amount": amountToPay * 100, 
                 "currency": "INR",
                 "name": "Satara Rental Hub",
                 "description": paymentDescription,
                 "image": "Logo.png", 
                 "handler": function (response){
-                    // Pass type flag to success handler
                     handleSuccessfulPayment(response.razorpay_payment_id, type);
                 },
                 "prefill": {
@@ -792,32 +763,21 @@
             rzp1.open();
         }
 
-        // ५. पेमेंट यशस्वी झाल्यानंतरचे लॉजिक (Handles DB Sync for Passes)
         function handleSuccessfulPayment(paymentId, paymentType) {
-            
             if(typeof db !== 'undefined') {
-                
-                // Track lead for this specific property
-                db.collection("properties").doc(propertyData.id).update({
-                    leads: firebase.firestore.FieldValue.increment(1)
-                }).catch(e => console.log(e));
-
                 if(paymentType === 'pass') {
-                    // SUBSCRIPTION PASS BOUGHT
                     let expiryDate = new Date();
                     expiryDate.setDate(expiryDate.getDate() + parseInt(subPassValidityDays));
                     
-                    // Update User Profile with Expiry Date
                     db.collection("users").doc(currentUserId).update({
                         subscriptionExpiry: expiryDate.toISOString(),
                         subscriptionStatus: "active"
                     }).catch(e => console.log("User update error", e));
 
-                    // Save Payment Record
                     db.collection("payments").add({
                         paymentId: paymentId,
                         userId: currentUserId,
-                        propertyId: "ALL_PROPERTIES", // Indicates a Pass
+                        propertyId: "ALL_PROPERTIES",
                         amount: subPassFee,
                         planType: "Tenant Pass",
                         validityDays: subPassValidityDays,
@@ -830,14 +790,12 @@
                     document.getElementById('active-pass-badge').style.display = "flex";
 
                 } else {
-                    // SINGLE PROPERTY UNLOCK BOUGHT
                     let unlockedProps = JSON.parse(localStorage.getItem('unlockedProperties')) || [];
                     if(!unlockedProps.includes(propertyData.id)) {
                         unlockedProps.push(propertyData.id);
                         localStorage.setItem('unlockedProperties', JSON.stringify(unlockedProps));
                     }
 
-                    // Save Payment Record
                     db.collection("payments").add({
                         paymentId: paymentId,
                         userId: currentUserId,
@@ -848,45 +806,66 @@
                         createdAt: new Date().toISOString()
                     }).catch(e => console.log("Payment record save error", e));
 
-                    alert("पेमेंट यशस्वी! नंबर अनलॉक झाला आहे.");
+                    alert("पेमेंट यशस्वी! आता तुम्ही मालकाशी थेट संपर्क करू शकता.");
                 }
             }
-
             unlockNumberUI();
         }
 
+        // -------------------------------------------------------------------------
+        // 🆕 THE ULTIMATE UNLOCK LOGIC (PARTIAL NUMBER + FORCED BUTTONS)
+        // -------------------------------------------------------------------------
         function unlockNumberUI() {
             isUnlocked = true;
-            let realNumber = propertyData.ownerMobile || "नंबर उपलब्ध नाही";
             
-            const phoneText = document.getElementById('phoneNumber');
-            phoneText.innerText = "+91 " + realNumber;
-            phoneText.classList.add('number-revealed');
-            
+            // १. नंबर अंशतः लपवून ठेवा जेणेकरून युझरला बटण दाबावेच लागेल.
+            if(propertyData && propertyData.ownerMobile) {
+                let m = propertyData.ownerMobile;
+                // उदा: +91 9876 XXXX 10 (मधले ४ आकडे लपवले)
+                document.getElementById('phoneNumber').innerText = `+91 ${m.substring(0,4)} XXXX ${m.substring(8)}`;
+            }
+
+            // २. अनलॉक बटण लपवा
             document.getElementById('unlockBtn').style.display = "none";
-            let unlockNote = document.getElementById('unlockNote');
             
+            // ३. नोट अपडेट करा
+            let unlockNote = document.getElementById('unlockNote');
             if(propertyData.ownerId === currentUserId) {
                 unlockNote.innerText = "ही तुमची स्वतःची प्रॉपर्टी आहे.";
             } else {
-                unlockNote.innerText = "पेमेंट यशस्वी! आता तुम्ही मालकाला थेट संपर्क करू शकता.";
+                unlockNote.innerText = "संपर्क करण्यासाठी खाली दिलेल्या 'कॉल' किंवा 'WhatsApp' बटणावर क्लिक करा.";
             }
             unlockNote.style.color = "#10B981";
 
+            // ४. खालील बटणे (Call/WhatsApp) ऍक्टिव्हेट करा (यावर क्लिक केल्यावरच पूर्ण नंबर वापरला जाईल)
             document.getElementById('callBtn').classList.add('unlocked');
             document.getElementById('whatsappBtn').classList.add('unlocked');
         }
 
-        // ६. कॉल आणि WhatsApp अक्शन्स
+        // ६. कॉल आणि WhatsApp अक्शन्स (This is where the real number is used)
         function makeCall() {
             if(isUnlocked && propertyData && propertyData.ownerMobile) {
+                // 🆕 Count Lead before making call
+                if(typeof db !== 'undefined' && propertyData.ownerId !== currentUserId) {
+                    db.collection("properties").doc(propertyData.id).update({
+                        leads: firebase.firestore.FieldValue.increment(1)
+                    }).catch(e => console.log("Lead not updated", e));
+                }
+                
                 window.location.href = `tel:+91${propertyData.ownerMobile}`;
             }
         }
 
         function sendWhatsApp() {
             if(isUnlocked && propertyData && propertyData.ownerMobile) {
-                let msg = encodeURIComponent(`नमस्कार, मी तुमची '${propertyData.title}' ही प्रॉपर्टी 'सातारा रेंटल हब' ॲपवर पाहिली. मला याबद्दल अधिक माहिती हवी आहे.`);
+                // 🆕 Count Lead before sending WhatsApp
+                if(typeof db !== 'undefined' && propertyData.ownerId !== currentUserId) {
+                    db.collection("properties").doc(propertyData.id).update({
+                        leads: firebase.firestore.FieldValue.increment(1)
+                    }).catch(e => console.log("Lead not updated", e));
+                }
+
+                let msg = encodeURIComponent(`नमस्कार, मी तुमची '${propertyData.title}' ही प्रॉपर्टी 'सातारा रेंटल हब' ॲपवर पाहिली. मला ती भाड्याने घ्यायची आहे. आपण याबद्दल अधिक बोलू शकतो का?`);
                 window.open(`https://wa.me/91${propertyData.ownerMobile}?text=${msg}`, '_blank');
             }
         }
