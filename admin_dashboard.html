@@ -698,7 +698,7 @@
         let supportTeamMembers = [];
         let heroSliderImagesArr = []; 
         let currentLoadedLeads = [];
-        let adminSelectedFiles = []; // For multiple admin photos
+        let adminSelectedFiles = []; 
         let currentAdminCategory = 'residential';
         
         let globalPlan1Days = 15;
@@ -715,7 +715,7 @@
             document.getElementById('report-end-date').value = now.toISOString().split('T')[0];
             document.getElementById('lead-filter-date').value = now.toISOString().split('T')[0];
 
-            setAdminCategory('residential'); // Initialize Admin Property Form
+            setAdminCategory('residential'); 
 
             loadAdminDashboardStats();
             loadSettingsFromFirebase();
@@ -727,9 +727,6 @@
             loadUserLeads();
         };
 
-        // ----------------------------------------------------------------------------------
-        // 🆕 ॲडमिन कडून प्रॉपर्टी ॲड करण्याचे संपूर्ण लॉजिक (Full Form Logic)
-        // ----------------------------------------------------------------------------------
         const adminAreasData = {
             "satara": ["शाहूपुरी", "सदरबझार", "गोडोली", "करंजे", "शनिवार पेठ", "विसावा पार्क", "संगम नगर", "मोळाचा ओढा", "अजिंक्य कॉलनी", "इतर"],
             "karad": ["विद्यानगर", "मलकापूर", "मंगळवार पेठ", "आगाशिवनगर", "वनवासमाची", "कोयना वसाहत", "ओगलेवाडी", "इतर"],
@@ -842,7 +839,7 @@
                 document.getElementById('admin-prop-img-status').innerText = `${files.length} फोटो निवडले`;
                 document.getElementById('admin-prop-img-status').style.color = "#166534";
                 for(let i = 0; i < files.length; i++) {
-                    if(i >= 5) break; // Max 5 photos
+                    if(i >= 5) break; 
                     adminSelectedFiles.push(files[i]); 
                     let reader = new FileReader();
                     reader.onload = function(e) {
@@ -948,7 +945,6 @@
 
                 let docRef = await db.collection("properties").add(propData);
                 
-                // Add to premium banners directly if it's a premium plan
                 if(selectedPlan === 'premium1' || selectedPlan === 'premium2') {
                     db.collection("payments").add({
                         paymentId: "admin_bypass_" + Date.now(),
@@ -966,7 +962,7 @@
                 }
 
                 alert("✅ प्रॉपर्टी यशस्वीरित्या ॲड आणि युझरच्या ॲपवर लाईव्ह झाली!");
-                window.location.reload(); // Reload to refresh everything smoothly
+                window.location.reload(); 
 
             } catch (error) {
                 console.error("Admin add property error:", error);
@@ -975,7 +971,6 @@
                 btn.disabled = false; btn.innerHTML = "<i class='fa-solid fa-cloud-arrow-up'></i> <span>ही प्रॉपर्टी सेव्ह आणि लाईव्ह करा</span>";
             }
         }
-        // ----------------------------------------------------------------------------------
 
         async function loadUserLeads() {
             let selectedDateStr = document.getElementById('lead-filter-date').value;
@@ -990,12 +985,7 @@
             endDate.setHours(23, 59, 59, 999);
             
             try {
-                let snap = await db.collection("payments")
-                    .where("planType", "==", "Contact Unlock")
-                    .where("status", "==", "Success")
-                    .where("createdAt", ">=", startDate.toISOString())
-                    .where("createdAt", "<=", endDate.toISOString())
-                    .get();
+                let snap = await db.collection("payments").get(); // Fetch ALL to avoid Indexing error
                     
                 if(snap.empty) {
                     container.innerHTML = `<div style="text-align: center; color: #94A3B8; padding: 10px;">या तारखेला कोणतीही इन्क्वायरी नाही.</div>`;
@@ -1010,6 +1000,11 @@
                 for(let doc of snap.docs) {
                     let d = doc.data();
                     
+                    if(d.planType !== "Contact Unlock" || d.status !== "Success" || !d.createdAt) continue;
+                    
+                    let createdTime = new Date(d.createdAt).getTime();
+                    if(createdTime < startDate.getTime() || createdTime > endDate.getTime()) continue;
+
                     let userName = "अज्ञात (Unknown)";
                     let userMobile = d.userId.replace("user_", "");
                     try {
@@ -1052,7 +1047,11 @@
                     index++;
                 }
                 
-                container.innerHTML = html;
+                if (currentLoadedLeads.length === 0) {
+                    container.innerHTML = `<div style="text-align: center; color: #94A3B8; padding: 10px;">या तारखेला कोणतीही इन्क्वायरी नाही.</div>`;
+                } else {
+                    container.innerHTML = html;
+                }
                 
             } catch(e) {
                 console.log("Error loading leads:", e);
@@ -1262,27 +1261,33 @@
             let endDate = new Date(endVal);
             endDate.setHours(23, 59, 59, 999);
 
-            return { start: startDate.toISOString(), end: endDate.toISOString(), titleStr: `${startVal}_to_${endVal}` };
+            return { start: startDate.getTime(), end: endDate.getTime(), titleStr: `${startVal}_to_${endVal}` };
         }
 
+        // ----------------------------------------------------------------------------------
+        // 🆕 NEW LOGIC: Client-Side filtering for ALL Reports to bypass Indexing Error
+        // ----------------------------------------------------------------------------------
         async function downloadReport(reportType) {
             if(typeof db === 'undefined') { alert("Firebase Connected नाही!"); return; }
             
             let dateRange = getSelectedDateRange();
             let dateTitle = dateRange ? dateRange.titleStr : "All_Time";
-            let csvContent = "\uFEFF"; 
+            let csvContent = "\uFEFF"; // This adds BOM for UTF-8 Excel support
             
             try {
                 if(reportType === 'all_payments') {
                     csvContent += "Payment ID,User ID,User Mobile,Amount (Rs),Plan Type,Property ID,Status,Payment Date\r\n";
-                    let query = db.collection("payments");
-                    if(dateRange) { query = query.where("createdAt", ">=", dateRange.start).where("createdAt", "<=", dateRange.end); }
-                    
-                    let snap = await query.get();
+                    let snap = await db.collection("payments").get(); // Fetch ALL
                     
                     for (let doc of snap.docs) {
                         let d = doc.data();
-                        let date = d.createdAt ? new Date(d.createdAt).toLocaleDateString() : 'N/A';
+                        if(!d.createdAt) continue;
+                        let createdTime = new Date(d.createdAt).getTime();
+                        
+                        // Client-Side Date Filter
+                        if(dateRange && (createdTime < dateRange.start || createdTime > dateRange.end)) continue;
+
+                        let date = new Date(d.createdAt).toLocaleDateString();
                         let userMobile = "Not Found";
                         
                         if(d.userId && d.userId.includes("user_")) {
@@ -1299,13 +1304,16 @@
                 } 
                 else if(reportType === 'tenant_subscriptions') {
                     csvContent += "Payment ID,User ID,User Mobile,Amount (Rs),Expiry Date,Status,Payment Date\r\n";
-                    let query = db.collection("payments").where("planType", "==", "Tenant Pass");
-                    if(dateRange) { query = query.where("createdAt", ">=", dateRange.start).where("createdAt", "<=", dateRange.end); }
+                    let snap = await db.collection("payments").get(); // Fetch ALL
                     
-                    let snap = await query.get();
                     for (let doc of snap.docs) {
                         let d = doc.data();
-                        let date = d.createdAt ? new Date(d.createdAt).toLocaleDateString() : 'N/A';
+                        if(d.planType !== "Tenant Pass" || !d.createdAt) continue;
+                        
+                        let createdTime = new Date(d.createdAt).getTime();
+                        if(dateRange && (createdTime < dateRange.start || createdTime > dateRange.end)) continue;
+
+                        let date = new Date(d.createdAt).toLocaleDateString();
                         let expiryDate = d.expiryDate ? new Date(d.expiryDate).toLocaleDateString() : 'N/A';
                         let userMobile = "Not Found";
                         if(d.userId && d.userId.includes("user_")) {
@@ -1316,44 +1324,52 @@
                 }
                 else if(reportType === 'users') {
                     csvContent += "User ID,Name,Mobile,Role,Registered On\r\n";
-                    let query = db.collection("users");
-                    if(dateRange) { query = query.where("createdAt", ">=", dateRange.start).where("createdAt", "<=", dateRange.end); }
+                    let snap = await db.collection("users").get(); // Fetch ALL
 
-                    let snap = await query.get();
                     snap.forEach(doc => {
                         let d = doc.data();
-                        let date = d.createdAt ? new Date(d.createdAt).toLocaleDateString() : 'N/A';
+                        if(!d.createdAt) return;
+                        
+                        let createdTime = d.createdAt.toDate ? d.createdAt.toDate().getTime() : new Date(d.createdAt).getTime();
+                        if(dateRange && (createdTime < dateRange.start || createdTime > dateRange.end)) return;
+
+                        let date = new Date(createdTime).toLocaleDateString();
                         csvContent += `"${doc.id}","${d.name || ''}","${d.mobile || ''}","${d.role || ''}","${date}"\r\n`;
                     });
                 }
                 else if(reportType === 'properties') {
                     csvContent += "Property ID,Title,Owner,Owner Mobile,Type,Taluka,Area,Rent,Status,Plan,Created Date\r\n";
-                    let query = db.collection("properties");
-                    if(dateRange) { query = query.where("createdAt", ">=", dateRange.start).where("createdAt", "<=", dateRange.end); }
+                    let snap = await db.collection("properties").get(); // Fetch ALL
 
-                    let snap = await query.get();
                     snap.forEach(doc => {
                         let d = doc.data();
-                        let date = d.createdAt ? new Date(d.createdAt).toLocaleDateString() : 'N/A';
+                        if(!d.createdAt) return;
+                        
+                        let createdTime = d.createdAt.toDate ? d.createdAt.toDate().getTime() : new Date(d.createdAt).getTime();
+                        if(dateRange && (createdTime < dateRange.start || createdTime > dateRange.end)) return;
+
+                        let date = new Date(createdTime).toLocaleDateString();
                         csvContent += `"${doc.id}","${d.title || ''}","${d.ownerName || ''}","${d.ownerMobile || ''}","${d.type || ''}","${d.taluka || ''}","${d.area || ''}","${d.rent || 0}","${d.status || ''}","${d.planType || 'basic'}","${date}"\r\n`;
                     });
                 }
                 else if(reportType === 'leads') {
                     csvContent += "Property ID,Title,Owner Mobile,Total Views,Total Leads Generated,Created Date\r\n";
-                    let query = db.collection("properties");
-                    if(dateRange) { query = query.where("createdAt", ">=", dateRange.start).where("createdAt", "<=", dateRange.end); }
+                    let snap = await db.collection("properties").get(); // Fetch ALL
 
-                    let snap = await query.get();
                     snap.forEach(doc => {
                         let d = doc.data();
-                        let date = d.createdAt ? new Date(d.createdAt).toLocaleDateString() : 'N/A';
+                        if(!d.createdAt) return;
+                        
+                        let createdTime = d.createdAt.toDate ? d.createdAt.toDate().getTime() : new Date(d.createdAt).getTime();
+                        if(dateRange && (createdTime < dateRange.start || createdTime > dateRange.end)) return;
+
+                        let date = new Date(createdTime).toLocaleDateString();
                         csvContent += `"${doc.id}","${d.title || ''}","${d.ownerMobile || ''}","${d.views || 0}","${d.leads || 0}","${date}"\r\n`;
                     });
                 }
                 else if(reportType === 'expired_plans') {
                     csvContent += "Property ID,Title,Owner Name,Owner Mobile,Plan Type,Expired On Date\r\n";
-                    let query = db.collection("properties");
-                    let snap = await query.get();
+                    let snap = await db.collection("properties").get(); // Fetch ALL
                     let now = new Date();
                     
                     snap.forEach(doc => {
@@ -1366,9 +1382,8 @@
                                 if (!dateRange) {
                                     isExpired = true; 
                                 } else {
-                                    let startRange = new Date(dateRange.start);
-                                    let endRange = new Date(dateRange.end);
-                                    if (expiryTime >= startRange && expiryTime <= endRange) {
+                                    let expMs = expiryTime.getTime();
+                                    if (expMs >= dateRange.start && expMs <= dateRange.end) {
                                         isExpired = true;
                                     }
                                 }
@@ -1382,19 +1397,28 @@
                     });
                 }
 
-                let encodedUri = encodeURI(csvContent);
+                // ----------------------------------------------------------------------------------
+                // 🆕 NEW LOGIC: Blob URL instead of Data URI to prevent downloading errors on Android
+                // ----------------------------------------------------------------------------------
+                let blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                let blobUrl = URL.createObjectURL(blob);
+                
                 let link = document.createElement("a");
-                link.setAttribute("href", encodedUri);
-                link.setAttribute("download", `${reportType}_report_${dateTitle}.csv`);
+                link.href = blobUrl;
+                link.download = `${reportType}_report_${dateTitle}.csv`;
+                
                 document.body.appendChild(link);
                 link.click();
+                
                 document.body.removeChild(link);
+                URL.revokeObjectURL(blobUrl); 
 
             } catch (error) {
                 console.error("Error generating report: ", error);
-                alert("रिपोर्ट बनवताना एरर आला. Firebase Indexing आवश्यक असू शकते.");
+                alert("रिपोर्ट बनवताना तांत्रिक अडचण आली:\n" + error.message);
             }
         }
+        // ----------------------------------------------------------------------------------
 
         function loadSettingsFromFirebase() {
             if(typeof db !== 'undefined') {
