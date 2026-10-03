@@ -165,6 +165,64 @@
             text-decoration: none;
             display: inline-block;
         }
+
+        /* -------------------------------------------------------------------------
+           🆕 मीडिया क्वेरीज (Responsive Design for PC/Laptop) - GRIDS FIXED
+        ------------------------------------------------------------------------- */
+        @media (min-width: 768px) {
+            body { background-color: #E2E8F0; padding-bottom: 30px; }
+            
+            /* Center the main containers on PC */
+            .top-bar, .filters-section, .chips-wrapper, .list-container {
+                max-width: 1200px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .bottom-nav { display: none; }
+            
+            /* सक्तीने ग्रिड डिझाईन (Force Grid Mode on Desktop) */
+            #properties-container { 
+                display: grid !important; 
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important; 
+                gap: 20px !important; 
+            }
+            
+            .property-card { 
+                margin-bottom: 0 !important; 
+                height: 100% !important; 
+                display: flex !important; 
+                flex-direction: column !important; 
+                justify-content: space-between !important; 
+            }
+            
+            /* फोटो फिक्सिंग (Prevent Stretching) */
+            .property-img {
+                height: 220px !important; 
+                width: 100% !important;
+                overflow: hidden !important;
+                display: block !important;
+            }
+
+            .property-img img {
+                width: 100% !important;
+                height: 100% !important;
+                object-fit: cover !important; 
+                object-position: center !important; 
+            }
+
+            .property-info {
+                padding: 15px !important;
+                flex-grow: 1 !important; 
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: space-between !important;
+            }
+
+            .footer-actions {
+                margin-top: auto !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -317,7 +375,7 @@
             fetchPropertiesFromFirebase();
         };
 
-        // 🆕 डायनॅमिक सुविधा (Amenities) जनरेट करण्याचे फंक्शन
+        // डायनॅमिक सुविधा (Amenities) जनरेट करण्याचे फंक्शन
         function getAmenitiesHtml(amenitiesLabels) {
             let html = '';
             
@@ -326,7 +384,7 @@
                 
                 for(let i=0; i<displayCount; i++) {
                     let lbl = amenitiesLabels[i];
-                    let icon = 'fa-check'; // Default icon
+                    let icon = 'fa-check'; 
                     
                     if(lbl.includes('पाणी') || lbl.toLowerCase().includes('water')) icon = 'fa-faucet-drip';
                     else if(lbl.includes('पार्किंग') || lbl.toLowerCase().includes('parking')) icon = 'fa-square-parking';
@@ -349,9 +407,9 @@
             return html;
         }
 
-        // 🆕 थेट WhatsApp शेअर (Fixed Clickable Link Logic)
+        // थेट WhatsApp शेअर (Fixed Clickable Link Logic)
         function sharePropertyCard(propId, propTitle, propRent, propTaluka) {
-            event.preventDefault(); // कार्डवर क्लिक होऊ नये म्हणून
+            event.preventDefault(); 
             
             let origin = window.location.origin;
             let pathname = window.location.pathname;
@@ -369,7 +427,7 @@
             window.open(`https://wa.me/?text=${encodedMsg}`, '_blank');
         }
 
-        // १. Firebase मधून सर्व "Live" प्रॉपर्टीज फेच करणे (आणि प्रीमियम एक्सपायरी तपासणे)
+        // १. Firebase मधून सर्व "Live" प्रॉपर्टीज फेच करणे
         function fetchPropertiesFromFirebase() {
             if(typeof db !== 'undefined') {
                 db.collection("properties").where("status", "==", "live").get().then((querySnapshot) => {
@@ -521,7 +579,7 @@
                     talukaText = translations[currentLang][`taluka_${prop.taluka}`];
                 }
 
-                // 🆕 Dynamic Amenities Injection
+                // Dynamic Amenities Injection
                 let amenitiesHtml = getAmenitiesHtml(prop.amenitiesLabels);
 
                 let propHtml = `

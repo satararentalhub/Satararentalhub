@@ -19,13 +19,12 @@
     <!-- Firebase Configuration File -->
     <script src="firebase-config.js"></script>
 
-    <!-- 🆕 Role Based Auto-Redirect Logic (UPDATED WITH SESSION STORAGE) -->
+    <!-- Role Based Auto-Redirect Logic -->
     <script>
         (function checkUserRoleAndRedirect() {
             let savedId = localStorage.getItem("currentUserId");
             let hasRedirected = sessionStorage.getItem("hasRedirectedToDashboard");
 
-            // जर युझरचा ID असेल आणि या सेशनमध्ये त्याला आधी डॅशबोर्डवर पाठवले नसेल तरच चेक करा
             if(savedId && !hasRedirected && typeof firebase !== 'undefined') {
                 if (!firebase.apps.length) {
                     firebase.initializeApp(firebaseConfig);
@@ -34,8 +33,6 @@
                 db.collection("users").doc(savedId).get().then((doc) => {
                     if(doc.exists) {
                         let role = doc.data().role;
-                        
-                        // जर मालक (owner) असेल, तर डॅशबोर्डवर पाठवा आणि Session मध्ये नोंद करा
                         if(role === "owner") {
                             sessionStorage.setItem("hasRedirectedToDashboard", "true");
                             window.location.replace("owner_dashboard.html");
@@ -73,9 +70,7 @@
             padding-bottom: 80px;
         }
 
-        /* -------------------------------------------------------------------------
-           🆕 PWA App Install Banner (Smart Popup)
-        ------------------------------------------------------------------------- */
+        /* PWA App Install Banner (Smart Popup) */
         .app-install-banner {
             position: fixed; bottom: -120px; left: 50%; transform: translateX(-50%);
             width: 90%; max-width: 400px; background: var(--white); border-radius: 16px;
@@ -83,7 +78,7 @@
             display: flex; align-items: center; justify-content: space-between; gap: 15px;
             transition: bottom 0.5s ease-in-out; border: 2px solid var(--primary);
         }
-        .app-install-banner.show { bottom: 85px; } /* Bottom Nav च्या थोडं वर */
+        .app-install-banner.show { bottom: 85px; } 
         
         .install-info { display: flex; align-items: center; gap: 12px; flex: 1; }
         .install-info img { width: 45px; height: 45px; border-radius: 10px; }
@@ -94,14 +89,12 @@
         .btn-install-app { background: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 10px rgba(244, 90, 10, 0.3); }
         .btn-skip-app { background: transparent; color: #94A3B8; border: none; font-size: 11px; font-weight: 600; cursor: pointer; text-decoration: underline; }
 
-        /* -------------------------------------------------------------------------
-           Full Screen Welcome Flash Ad (Pop-up)
-        ------------------------------------------------------------------------- */
+        /* Full Screen Welcome Flash Ad (Pop-up) */
         .welcome-flash-ad-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
             background-color: rgba(0, 0, 0, 0.95);
-            z-index: 9999; /* Highest Z-index to cover everything */
+            z-index: 9999; 
             display: flex;
             align-items: center;
             justify-content: center;
@@ -165,9 +158,7 @@
             to { width: 0%; }
         }
 
-        /* -------------------------------------------------------------------------
-           डेस्कटॉप नेव्हिगेशन (Desktop Navbar)
-        ------------------------------------------------------------------------- */
+        /* डेस्कटॉप नेव्हिगेशन (Desktop Navbar) */
         .desktop-nav {
             display: none;
             background-color: var(--white);
@@ -231,9 +222,7 @@
             color: var(--white);
         }
 
-        /* -------------------------------------------------------------------------
-           टॉप बार (Hero Section with Slide Slider)
-        ------------------------------------------------------------------------- */
+        /* टॉप बार (Hero Section with Slide Slider) */
         .top-hero {
             position: relative; 
             background-color: var(--top-bg); 
@@ -310,11 +299,11 @@
             transition: opacity 0.5s ease;
         }
 
-        /* 🆕 Share App Button */
+        /* Share App Button */
         .share-app-btn {
             position: absolute;
             top: 20px;
-            right: 65px; /* next to about btn */
+            right: 65px; 
             color: var(--white);
             font-size: 16px;
             text-decoration: none;
@@ -413,9 +402,7 @@
             font-size: 16px;
         }
 
-        /* -------------------------------------------------------------------------
-           🆕 Owner Registration Form (Popup Modal)
-        ------------------------------------------------------------------------- */
+        /* Owner Registration Form (Popup Modal) */
         .owner-reg-modal {
             display: none; 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -819,9 +806,7 @@
             font-size: 20px;
         }
 
-        /* -------------------------------------------------------------------------
-           WhatsApp Floating Button
-        ------------------------------------------------------------------------- */
+        /* WhatsApp Floating Button */
         .whatsapp-floating-btn {
             position: fixed;
             bottom: 90px;
@@ -844,98 +829,82 @@
         }
 
         /* -------------------------------------------------------------------------
-           मीडिया क्वेरीज (Responsive Design for Laptops/Tablets)
+           🆕 पीसी व्ह्यू (PC View) - सक्तीने 'ग्रिड' (Grid) डिझाईन आणि फोटो फिक्सिंग
         ------------------------------------------------------------------------- */
         @media (min-width: 768px) {
             
-            .desktop-nav {
-                display: flex;
-            }
-
-            .bottom-nav {
-                display: none;
-            }
-
-            body {
-                padding-bottom: 30px;
-            }
-
-            .whatsapp-floating-btn {
-                bottom: 30px;
-                right: 30px;
-            }
+            .desktop-nav { display: flex; }
+            .bottom-nav { display: none; }
+            body { padding-bottom: 30px; }
+            .whatsapp-floating-btn { bottom: 30px; right: 30px; }
+            .top-hero .share-app-btn { display: none; }
+            .top-hero { min-height: 350px; padding-top: 60px; border-radius: 0; }
+            .top-hero .about-btn, .top-hero .lang-toggle-btn { display: none; }
+            .search-container { margin: -30px auto 30px auto; }
+            .search-container input { padding: 20px 20px 20px 50px; font-size: 16px; }
+            .search-container i { font-size: 20px; left: 20px; }
+            .section-title, .categories-wrapper, .ads-slider-container { max-width: 1200px; margin-left: auto; margin-right: auto; }
+            .categories { display: flex; justify-content: center; gap: 25px; }
+            .see-all-toggle { display: none !important; }
+            .extra-cats-wrapper { max-height: none !important; }
+            .extra-cats-wrapper .categories { margin-top: 0 !important; }
             
-            .top-hero .share-app-btn {
-                display: none; /* Hide mobile share button on desktop */
-            }
+            /* टॉगल बटण पीसीवर कायमचे लपवा */
+            .view-toggle-btns { display: none !important; } 
 
-            .top-hero {
-                min-height: 350px;
-                padding-top: 60px;
-                border-radius: 0; 
-            }
-
-            .top-hero .about-btn, 
-            .top-hero .lang-toggle-btn {
-                display: none; 
-            }
-
-            .search-container {
-                margin: -30px auto 30px auto;
-            }
-            .search-container input {
-                padding: 20px 20px 20px 50px;
-                font-size: 16px;
-            }
-            .search-container i {
-                font-size: 20px;
-                left: 20px;
-            }
-
-            .section-title, .categories-wrapper, .ads-slider-container, .property-list {
-                max-width: 1200px;
-                margin-left: auto;
-                margin-right: auto;
-            }
-
-            .categories {
-                display: flex;
-                justify-content: center;
-                gap: 25px;
-            }
-
-            .see-all-toggle {
-                display: none !important;
-            }
-            .extra-cats-wrapper {
-                max-height: none !important;
-            }
-            .extra-cats-wrapper .categories {
-                margin-top: 0 !important;
-            }
-
+            /* सक्तीने ग्रिड डिझाईन (Force Grid Mode on Desktop) */
             .property-list {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-                gap: 25px;
-                padding: 20px;
-            }
-            
-            .view-toggle-btns button {
-                display: none;
+                display: grid !important;
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+                gap: 25px !important;
+                padding: 20px !important;
+                max-width: 1200px !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
             }
 
             .property-card {
-                margin-bottom: 0; 
-            }
-            .property-img {
-                height: 200px; 
+                margin-bottom: 0 !important; 
+                display: flex !important;
+                flex-direction: column !important;
+                height: 100% !important; 
             }
             
+            .property-img {
+                height: 220px !important; 
+                width: 100% !important;
+                overflow: hidden !important;
+                display: block !important;
+            }
+
+            .property-img img {
+                width: 100% !important;
+                height: 100% !important;
+                object-fit: cover !important; 
+                object-position: center !important; 
+            }
+
+            .property-info {
+                padding: 15px !important;
+                flex-grow: 1 !important; 
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: space-between !important;
+            }
+
+            .property-footer {
+                flex-direction: row !important;
+                align-items: center !important;
+                padding-top: 12px !important;
+            }
+
             .footer-actions {
                 flex-direction: row !important;
                 align-items: center !important;
+                width: auto !important;
+                justify-content: flex-end !important;
             }
+
             .view-details-btn {
                 flex: none !important;
                 padding: 6px 15px !important;
@@ -945,7 +914,7 @@
 </head>
 <body>
 
-    <!-- 🆕 PWA App Install Banner -->
+    <!-- PWA App Install Banner -->
     <div id="installAppBanner" class="app-install-banner">
         <div class="install-info">
             <img src="Logo.png" alt="App Logo" onerror="this.src='https://via.placeholder.com/45?text=App'">
@@ -1002,7 +971,6 @@
             <a href="index.html" style="color: var(--primary);"><i class="fa-solid fa-house"></i> Home</a>
             <a href="saved.html"><i class="fa-solid fa-heart"></i> Saved</a>
             <a href="about_us.html"><i class="fa-solid fa-circle-info"></i> About Us</a>
-            <!-- 🆕 Desktop Share App Button -->
             <a href="#" onclick="shareApp()"><i class="fa-solid fa-share-nodes"></i> Share App</a>
             <button class="lang-toggle-btn" style="position:static; background:var(--bg-light); color:var(--text-dark); border:1px solid var(--border);" onclick="toggleLanguage()">ENG/मराठी</button>
             <button onclick="openOwnerModal()" class="add-btn-desktop" style="border:none;"><i class="fa-solid fa-plus"></i> Post Ad Free</button>
@@ -1021,7 +989,7 @@
         <div class="hero-overlay" id="hero-overlay"></div>
 
         <button class="lang-toggle-btn" id="lang-btn" onclick="toggleLanguage()">ENG / मराठी</button>
-        <!-- 🆕 Share App Button (Mobile) -->
+        <!-- Share App Button (Mobile) -->
         <button onclick="shareApp()" class="share-app-btn" id="share-app-btn" title="Share App"><i class="fa-solid fa-share-nodes"></i></button>
         <a href="about_us.html" class="about-btn" id="about-btn"><i class="fa-solid fa-info"></i></a>
         
@@ -1153,7 +1121,6 @@
             <i class="fa-regular fa-heart"></i>
             <span data-lang="nav_saved">Saved</span>
         </a>
-        <!-- Changed href to onclick for Owner Modal and Added text "प्रॉपर्टी ॲड करा" -->
         <button onclick="openOwnerModal()" class="nav-item add-btn" style="border:none; background:none; cursor:pointer;">
             <i class="fa-solid fa-plus"></i>
             <span data-lang="nav_add" style="display:block; margin-top:5px; font-weight:700;">प्रॉपर्टी ॲड करा</span>
@@ -1167,25 +1134,18 @@
 
     <!-- JavaScript For Firebase Fetching, Form Logic & View Toggle -->
     <script>
-        // -------------------------------------------------------------------------
-        // 🆕 PWA Smart Install Prompt Logic (FIXED FOR GUARANTEED DISPLAY)
-        // -------------------------------------------------------------------------
+        // PWA Smart Install Prompt Logic 
         let deferredPrompt;
         
-        // 1. Capture the event when browser is ready
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
         });
 
-        // 2. Forcefully show our popup after 5 seconds, ignoring browser's strict rules
         window.addEventListener('load', () => {
             let hasSkipped = localStorage.getItem("appInstallSkipped");
-            
-            // Check if app is already running as an installed app
             let isInstalled = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
-            // Show popup ONLY if not skipped AND not already installed
             if (!hasSkipped && !isInstalled) {
                 setTimeout(() => {
                     let banner = document.getElementById('installAppBanner');
@@ -1194,29 +1154,25 @@
             }
         });
 
-        // 3. Handle Install Click
         document.getElementById('btnInstallConfirm').addEventListener('click', async () => {
             document.getElementById('installAppBanner').classList.remove('show');
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
                 if (outcome === 'accepted') {
-                    localStorage.setItem("appInstallSkipped", "true"); // Stop showing if installed
+                    localStorage.setItem("appInstallSkipped", "true"); 
                 }
                 deferredPrompt = null;
             } else {
-                // Fallback for iOS or if browser blocks prompt
                 alert("तुमच्या ब्राउझरमध्ये ऑटो-इन्स्टॉल सपोर्ट करत नाही. कृपया वरील मेन्यूमधून (3 Dots) 'Add to Home Screen' किंवा 'Install App' निवडा.");
             }
         });
 
-        // 4. Handle Skip Click
         function skipAppInstall() {
             document.getElementById('installAppBanner').classList.remove('show');
             localStorage.setItem("appInstallSkipped", "true");
         }
 
-        // PWA Service Worker Registration
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('service-worker.js')
@@ -1227,11 +1183,8 @@
                     });
             });
         }
-        // -------------------------------------------------------------------------
         
-        // -------------------------------------------------------------------------
-        // 🆕 App Share Logic
-        // -------------------------------------------------------------------------
+        // App Share Logic
         function shareApp() {
             const shareData = {
                 title: 'सातारा रेंटल हब',
@@ -1263,19 +1216,8 @@
             
             checkUserSubscriptionPass();
             loadSupportNumber();
-
-            if (window.innerWidth >= 768) {
-                document.getElementById('properties-container').classList.add('grid-view');
-            }
         };
 
-        window.addEventListener('resize', function() {
-            if (window.innerWidth >= 768) {
-                document.getElementById('properties-container').classList.add('grid-view');
-            }
-        });
-
-        // Load Support Number from Firebase
         function loadSupportNumber() {
             if(typeof db !== 'undefined') {
                 db.collection("admin_settings").doc("master_config").get().then((doc) => {
@@ -1295,7 +1237,6 @@
             }
         }
 
-        // Check Tenant Subscription Pass (Display Badge)
         function checkUserSubscriptionPass() {
             let savedId = localStorage.getItem("currentUserId");
             if(savedId && typeof db !== 'undefined') {
@@ -1311,7 +1252,6 @@
             }
         }
 
-        // Owner Registration Logic
         function openOwnerModal() {
             let savedId = localStorage.getItem("currentUserId");
             if(savedId) {
@@ -1374,7 +1314,6 @@
             }
         }
 
-        // Welcome Flash Ad Logic
         let flashAdTimerId;
 
         function loadWelcomeFlashAd() {
@@ -1422,7 +1361,6 @@
             setTimeout(() => { adOverlay.style.display = 'none'; }, 400); 
         }
 
-        // Hero Background Slider Logic (WITH RANDOM SHUFFLE)
         let slideIndex = 0;
         let slideIntervalTimer;
 
@@ -1461,7 +1399,7 @@
             const mainContent = document.getElementById("main-hero-content");
             const langBtn = document.getElementById("lang-btn");
             const aboutBtn = document.getElementById("about-btn");
-            const shareAppBtn = document.getElementById("share-app-btn"); // 🆕
+            const shareAppBtn = document.getElementById("share-app-btn"); 
             
             sliderBg.innerHTML = ""; 
             sliderBg.style.transform = `translateX(0%)`;
@@ -1489,13 +1427,13 @@
                     mainContent.classList.remove("hide-all"); 
                     langBtn.classList.remove("hide-top-btns");
                     aboutBtn.classList.remove("hide-top-btns");
-                    if(shareAppBtn) shareAppBtn.classList.remove("hide-top-btns"); // 🆕
+                    if(shareAppBtn) shareAppBtn.classList.remove("hide-top-btns"); 
                 } else {
                     overlay.style.opacity = "0"; 
                     mainContent.classList.add("hide-all"); 
                     langBtn.classList.add("hide-top-btns");
                     aboutBtn.classList.add("hide-top-btns");
-                    if(shareAppBtn) shareAppBtn.classList.add("hide-top-btns"); // 🆕
+                    if(shareAppBtn) shareAppBtn.classList.add("hide-top-btns"); 
                 }
             }
 
@@ -1513,7 +1451,6 @@
             }
         }
 
-        // Categories & View Logic
         function toggleCategories() {
             var extraCats = document.getElementById("extra-cats");
             var icon = document.getElementById("cat-toggle-icon");
@@ -1546,9 +1483,6 @@
             }
         }
 
-        // -------------------------------------------------------------------------
-        // 🆕 Property Share Logic (UPDATED WITH APP LINK)
-        // -------------------------------------------------------------------------
         function sharePropertyCard(propId, propTitle, propRent, propTaluka) {
             event.preventDefault(); 
             let origin = window.location.origin;
@@ -1568,7 +1502,6 @@
             window.open(`https://wa.me/?text=${encodedMsg}`, '_blank');
         }
 
-        // Properties & Banner Logic
         function loadPremiumBanners() {
             if(typeof db !== 'undefined') {
                 const adsWrapper = document.getElementById('ads-wrapper');

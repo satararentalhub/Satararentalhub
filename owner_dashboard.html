@@ -33,7 +33,7 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
         
-        /* 🆕 Body changes for PC Centering */
+        /* Body changes for PC Centering */
         body { 
             background-color: var(--bg-light); 
             color: var(--text-dark); 
@@ -43,7 +43,7 @@
             align-items: center;
         }
 
-        /* 🆕 App Wrapper for Desktop View */
+        /* App Wrapper for Desktop View */
         .app-wrapper {
             width: 100%;
             max-width: 800px;
@@ -52,7 +52,7 @@
             position: relative;
         }
 
-        /* 🆕 Desktop Navbar (Hidden on mobile) */
+        /* Desktop Navbar (Hidden on mobile) */
         .desktop-nav {
             display: none;
             background-color: var(--white);
@@ -149,9 +149,7 @@
         .btn-action:active { transform: scale(0.97); }
         .btn-edit { background: var(--bg-light); color: var(--text-dark); border-color: var(--border); }
 
-        /* ----------------------------------------------------
-           नवीन सबस्क्रिप्शन प्लॅन्स स्टाईल (Dynamic Area)
-           ---------------------------------------------------- */
+        /* नवीन सबस्क्रिप्शन प्लॅन्स स्टाईल (Dynamic Area) */
         .plans-section-header { padding: 25px 20px 15px 20px; font-size: 16px; font-weight: 800; color: var(--text-dark); display: flex; align-items: center; gap: 8px; }
         .plans-container { padding: 0 20px 25px 20px; display: flex; flex-direction: column; gap: 15px; }
         
@@ -197,7 +195,7 @@
         }
 
         /* -------------------------------------------------------------------------
-           🆕 मीडिया क्वेरीज (Responsive Design for PC/Laptop)
+           🆕 मीडिया क्वेरीज (Responsive Design for PC/Laptop) - GRIDS FIXED
         ------------------------------------------------------------------------- */
         @media (min-width: 768px) {
             body { background-color: #E2E8F0; padding-bottom: 30px; }
@@ -210,8 +208,37 @@
             .dashboard-header { border-radius: 0; padding-top: 30px; }
             .bottom-nav { display: none; }
             .stats-container { gap: 20px; }
-            .property-list { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 0 20px; }
-            .my-property-card { margin-bottom: 0; height: 100%; display: flex; flex-direction: column; justify-content: space-between; }
+            
+            /* 🆕 सक्तीने ग्रिड डिझाईन (Force Grid Mode on Desktop) */
+            .property-list { 
+                display: grid !important; 
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important; 
+                gap: 20px !important; 
+                padding: 20px !important; 
+            }
+            
+            .my-property-card { 
+                margin-bottom: 0 !important; 
+                height: 100% !important; 
+                display: flex !important; 
+                flex-direction: column !important; 
+                justify-content: space-between !important; 
+            }
+            
+            /* 🆕 फोटो फिक्सिंग (Prevent Stretching) */
+            .prop-img {
+                width: 90px !important; 
+                height: 90px !important; 
+                overflow: hidden !important;
+            }
+
+            .prop-img img {
+                width: 100% !important;
+                height: 100% !important;
+                object-fit: cover !important; 
+                object-position: center !important; 
+            }
+
             .plans-container { flex-direction: row; }
             .plan-card { flex: 1; }
         }
@@ -219,9 +246,9 @@
 </head>
 <body>
 
-<div class="app-wrapper"> <!-- 🆕 App Wrapper Started -->
+<div class="app-wrapper"> 
 
-    <!-- 🆕 डेस्कटॉप नेव्हिगेशन (PC View) -->
+    <!-- डेस्कटॉप नेव्हिगेशन (PC View) -->
     <div class="desktop-nav">
         <a href="index.html" class="desktop-nav-brand">
             <img src="Logo.png" alt="Logo" onerror="this.style.display='none'">
@@ -293,7 +320,7 @@
         </a>
     </div>
 
-</div> <!-- 🆕 App Wrapper Ended -->
+</div> 
 
     <!-- JavaScript (Firebase Reading) -->
     <script>
@@ -302,7 +329,7 @@
         window.onload = function() {
             if(typeof applySavedLanguage === 'function') { applySavedLanguage(); }
             
-            // 🆕 Security Redirect: If Not Logged In, Kick back to Index!
+            // Security Redirect: If Not Logged In, Kick back to Index!
             if(!localStorage.getItem("currentUserId")) {
                 window.location.replace("index.html");
                 return;

@@ -31,6 +31,7 @@
             --success: #10B981;
             --premium: #8B5CF6;
             --pending: #F59E0B;
+            --google-blue: #4285F4;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -154,7 +155,7 @@
         
         /* Unlocked State Classes */
         .btn-action.unlocked { opacity: 1; pointer-events: auto; }
-        /* 🆕 Removed number-revealed color change as number stays partially hidden */
+        .number-revealed { color: #10B981 !important; text-shadow: none !important; }
 
         .loading-fullscreen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-light);
@@ -162,7 +163,9 @@
             font-size: 18px; font-weight: 800; color: var(--primary);
         }
 
-        /* User Details Modal (Popup for Tenants before Payment) */
+        /* -------------------------------------------------------------------------
+           User Details Modal (Popup for Tenants before Payment)
+        ------------------------------------------------------------------------- */
         .user-reg-modal {
             display: none; 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -206,7 +209,9 @@
             font-size: 15px; font-weight: 800; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 15px rgba(244, 90, 10, 0.3);
         }
 
-        /* Subscription Payment Options Modal (Plan Selection) */
+        /* -------------------------------------------------------------------------
+           Subscription Payment Options Modal (Plan Selection)
+        ------------------------------------------------------------------------- */
         .plan-selection-modal {
             display: none; 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -231,6 +236,67 @@
         .plan-price-tag { font-size: 20px; font-weight: 800; color: var(--primary); }
         .plan-card.premium-pass .plan-price-tag { color: var(--premium); }
 
+        /* -------------------------------------------------------------------------
+           🆕 Custom Call Alert Popup Modal (Premium Style)
+        ------------------------------------------------------------------------- */
+        .custom-alert-modal {
+            display: none; 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); z-index: 100000;
+            align-items: center; justify-content: center; backdrop-filter: blur(5px);
+            animation: fadeIn 0.3s ease-out;
+        }
+        .custom-alert-content {
+            background: var(--white); width: 90%; max-width: 380px;
+            border-radius: 24px; overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            text-align: center; position: relative;
+            transform: scale(0.9); animation: popIn 0.3s ease-out forwards;
+        }
+        .alert-header {
+            background: linear-gradient(135deg, var(--text-dark), #0B3B82);
+            padding: 30px 20px 20px 20px; color: var(--white);
+            border-bottom-left-radius: 30px; border-bottom-right-radius: 30px;
+            box-shadow: 0 4px 15px rgba(11, 59, 130, 0.3);
+        }
+        .alert-icon-wrapper {
+            width: 70px; height: 70px; background: var(--white); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 10px auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            overflow: hidden; padding: 5px;
+        }
+        .alert-icon-wrapper img {
+            width: 100%; height: 100%; object-fit: contain;
+        }
+        .alert-title { font-size: 20px; font-weight: 800; letter-spacing: 0.5px; }
+        .alert-body { padding: 25px 20px 15px 20px; }
+        .alert-msg-box {
+            background: #F8FAFC; border: 1.5px dashed var(--primary); border-radius: 12px;
+            padding: 15px; margin-bottom: 20px;
+        }
+        .alert-msg-box p {
+            font-size: 15px; font-weight: 700; color: var(--text-dark); line-height: 1.5; margin: 0;
+        }
+        .alert-msg-box span { color: var(--primary); font-weight: 800; }
+        .alert-footer {
+            padding: 0 20px 25px 20px;
+        }
+        .btn-call-now {
+            background: linear-gradient(135deg, var(--primary), #E65C00); color: var(--white);
+            border: none; width: 100%; padding: 16px; border-radius: 14px;
+            font-size: 16px; font-weight: 800; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            box-shadow: 0 8px 20px rgba(255, 103, 31, 0.3); transition: 0.2s;
+        }
+        .btn-call-now:active { transform: scale(0.97); }
+        .btn-close-alert {
+            position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.2);
+            border: none; width: 30px; height: 30px; border-radius: 50%; color: var(--white);
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
         /* मीडिया क्वेरीज (Responsive Design for Laptops/Tablets) */
         @media (min-width: 768px) {
             body { background-color: #E2E8F0; }
@@ -243,13 +309,40 @@
 
 <div class="app-wrapper"> 
 
+    <!-- 🆕 Custom Call Alert Popup Modal -->
+    <div id="custom-call-alert" class="custom-alert-modal">
+        <div class="custom-alert-content">
+            <button class="btn-close-alert" onclick="closeCustomAlert()"><i class="fa-solid fa-xmark"></i></button>
+            <div class="alert-header">
+                <div class="alert-icon-wrapper">
+                    <img src="Logo.png" alt="Satara Rental Hub" onerror="this.src='https://via.placeholder.com/60?text=Logo'">
+                </div>
+                <div class="alert-title">महत्त्वाची सूचना!</div>
+            </div>
+            <div class="alert-body">
+                <div class="alert-msg-box">
+                    <p>मालकाशी बोलताना नक्की सांगा की हा नंबर तुम्हाला <span>Satara Rental Hub</span> ॲपवर मिळाला आहे.</p>
+                </div>
+                <div style="font-size: 12px; color: var(--text-muted); display: flex; justify-content: space-between; margin-bottom: 5px;">
+                    <span><i class="fa-solid fa-shield-check" style="color:var(--success);"></i> विश्वसनीय माहिती</span>
+                    <span><i class="fa-solid fa-award" style="color:var(--google-blue);"></i> प्रमाणित मालक</span>
+                </div>
+            </div>
+            <div class="alert-footer">
+                <button class="btn-call-now" onclick="executeCall()">
+                    <i class="fa-solid fa-phone-volume" style="font-size: 20px;"></i> कॉल करा / Call Now
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- User Registration Modal (Form before Payment) -->
     <div id="user-registration-modal" class="user-reg-modal">
         <div class="user-reg-content">
             <button class="close-modal-btn" onclick="closeUserModal()"><i class="fa-solid fa-xmark"></i></button>
             <div class="user-reg-icon"><i class="fa-solid fa-user-shield"></i></div>
             <div class="user-reg-title">युझर माहिती</div>
-            <div class="user-reg-desc">मालकाशी संपर्क साधण्यासाठी कृपया तुमचे नाव आणि मोबाईल नंबर टाका. (ही माहिती फक्त एकदाच विचारली जाईल)</div>
+            <div class="user-reg-desc">मालकाचा नंबर पाहण्यासाठी कृपया तुमचे नाव आणि मोबाईल नंबर टाका. (ही माहिती फक्त एकदाच विचारली जाईल)</div>
             
             <div class="input-group">
                 <label>पूर्ण नाव (Full Name)</label>
@@ -269,12 +362,12 @@
         <div class="plan-selection-content">
             <button class="close-modal-btn" onclick="closePlanModal()"><i class="fa-solid fa-xmark"></i></button>
             <h3 style="font-size: 18px; font-weight: 800; color: var(--text-dark); margin-bottom: 5px; text-align: center;">प्लॅन निवडा</h3>
-            <p style="font-size: 12px; color: var(--text-muted); text-align: center; margin-bottom: 20px;">मालकाशी संपर्क साधण्यासाठी खालीलपैकी एक पर्याय निवडा.</p>
+            <p style="font-size: 12px; color: var(--text-muted); text-align: center; margin-bottom: 20px;">मालकाचा नंबर पाहण्यासाठी खालीलपैकी एक पर्याय निवडा.</p>
 
             <div class="plan-card" onclick="initiatePayment('single')">
                 <div class="plan-details">
                     <h4><i class="fa-solid fa-unlock"></i> सिंगल अनलॉक</h4>
-                    <p>फक्त या एका प्रॉपर्टीसाठी मालकाशी कायमस्वरूपी संपर्क करा.</p>
+                    <p>फक्त या एका प्रॉपर्टीचा नंबर कायमस्वरूपी अनलॉक करा.</p>
                 </div>
                 <div class="plan-price-tag">₹<span id="modal-single-fee">20</span></div>
             </div>
@@ -282,7 +375,7 @@
             <div class="plan-card premium-pass" onclick="initiatePayment('pass')">
                 <div class="plan-details">
                     <h4 style="color: var(--premium);"><i class="fa-solid fa-crown"></i> अनलिमिटेड पास</h4>
-                    <p><span id="modal-sub-days">15</span> दिवसांसाठी कोणत्याही प्रॉपर्टीच्या मालकाशी <b>मोफत</b> संपर्क साधा!</p>
+                    <p><span id="modal-sub-days">15</span> दिवसांसाठी कोणत्याही प्रॉपर्टीचा मालकाचा नंबर <b>मोफत</b> पहा!</p>
                 </div>
                 <div class="plan-price-tag">₹<span id="modal-sub-fee">500</span></div>
             </div>
@@ -384,16 +477,16 @@
             
             <!-- डायनॅमिक बटन -->
             <button class="btn-unlock" id="unlockBtn" onclick="checkUserAndPay()">
-                <i class="fa-solid fa-lock-open"></i> <span data-lang="unlock_number_btn">मालकाशी संपर्क साधा</span>
+                <i class="fa-solid fa-lock-open"></i> <span data-lang="unlock_number_btn">मालकाचा नंबर पहा</span>
             </button>
-            <div class="unlock-note" id="unlockNote" data-lang="unlock_note_desc">सुरक्षित पेमेंट करा आणि मालकाशी ॲपद्वारे संपर्क साधा.</div>
+            <div class="unlock-note" id="unlockNote" data-lang="unlock_note_desc">सुरक्षित पेमेंट करा. नंबर कायमस्वरूपी अनलॉक होईल.</div>
         </div>
 
     </div>
 
-    <!-- Bottom Sticky Action Bar -->
+    <!-- Bottom Sticky Action Bar (Call & WhatsApp) -->
     <div class="bottom-action-bar">
-        <button class="btn-action btn-call" id="callBtn" onclick="makeCall()">
+        <button class="btn-action btn-call" id="callBtn" onclick="openCustomCallAlert()">
             <i class="fa-solid fa-phone"></i> <span data-lang="call_btn">कॉल करा</span>
         </button>
         <button class="btn-action btn-whatsapp" id="whatsappBtn" onclick="sendWhatsApp()">
@@ -416,9 +509,7 @@
         window.onload = function() {
             if(typeof applySavedLanguage === 'function') { applySavedLanguage(); }
 
-            // Sync Local Storage to Firebase Cloud
             verifyAndSyncUserToCloud();
-
             fetchUnlockFeeFromFirebase();
             loadPropertyDetails();
         };
@@ -597,18 +688,11 @@
                 amenitiesContainer.innerHTML = `<div style="font-size:13px; color:#94A3B8;">विशेष सुविधा नोंदवलेल्या नाहीत.</div>`;
             }
 
-            // 🆕 Set Partially Hidden Number BEFORE unlock
-            if(data.ownerMobile) {
-                let m = data.ownerMobile;
-                document.getElementById('phoneNumber').innerText = `+91 ${m.substring(0,4)} XXXX ${m.substring(8)}`;
-            }
-
             if(data.ownerId === currentUserId) {
                 unlockNumberUI();
                 return;
             }
 
-            // Check if User has ACTIVE Subscription Pass
             if(typeof db !== 'undefined' && currentUserId !== "unknown") {
                 db.collection("users").doc(currentUserId).get().then((doc) => {
                     if (doc.exists && doc.data().subscriptionExpiry) {
@@ -700,6 +784,7 @@
                     document.getElementById('plan-selection-modal').style.display = "flex";
 
                 }).catch((error) => {
+                    console.log("Error saving to Firebase:", error);
                     alert("नोंदणी करताना एरर आला. कृपया पुन्हा प्रयत्न करा.");
                     submitBtn.innerHTML = "पुढे जा <i class='fa-solid fa-arrow-right'></i>";
                     submitBtn.disabled = false;
@@ -712,7 +797,7 @@
         }
 
         // -------------------------------------------------------------------------
-        // Razorpay Payment Logic 
+        // Razorpay Payment Logic
         // -------------------------------------------------------------------------
         function initiatePayment(type) {
             closePlanModal();
@@ -765,6 +850,10 @@
 
         function handleSuccessfulPayment(paymentId, paymentType) {
             if(typeof db !== 'undefined') {
+                db.collection("properties").doc(propertyData.id).update({
+                    leads: firebase.firestore.FieldValue.increment(1)
+                }).catch(e => console.log(e));
+
                 if(paymentType === 'pass') {
                     let expiryDate = new Date();
                     expiryDate.setDate(expiryDate.getDate() + parseInt(subPassValidityDays));
@@ -806,66 +895,72 @@
                         createdAt: new Date().toISOString()
                     }).catch(e => console.log("Payment record save error", e));
 
-                    alert("पेमेंट यशस्वी! आता तुम्ही मालकाशी थेट संपर्क करू शकता.");
+                    alert("पेमेंट यशस्वी!");
                 }
             }
             unlockNumberUI();
         }
 
-        // -------------------------------------------------------------------------
-        // 🆕 THE ULTIMATE UNLOCK LOGIC (PARTIAL NUMBER + FORCED BUTTONS)
-        // -------------------------------------------------------------------------
         function unlockNumberUI() {
             isUnlocked = true;
             
-            // १. नंबर अंशतः लपवून ठेवा जेणेकरून युझरला बटण दाबावेच लागेल.
             if(propertyData && propertyData.ownerMobile) {
                 let m = propertyData.ownerMobile;
-                // उदा: +91 9876 XXXX 10 (मधले ४ आकडे लपवले)
                 document.getElementById('phoneNumber').innerText = `+91 ${m.substring(0,4)} XXXX ${m.substring(8)}`;
+            } else {
+                document.getElementById('phoneNumber').innerText = "नंबर उपलब्ध नाही";
             }
-
-            // २. अनलॉक बटण लपवा
+            
+            document.getElementById('phoneNumber').classList.add('number-revealed');
             document.getElementById('unlockBtn').style.display = "none";
             
-            // ३. नोट अपडेट करा
             let unlockNote = document.getElementById('unlockNote');
             if(propertyData.ownerId === currentUserId) {
                 unlockNote.innerText = "ही तुमची स्वतःची प्रॉपर्टी आहे.";
             } else {
-                unlockNote.innerText = "संपर्क करण्यासाठी खाली दिलेल्या 'कॉल' किंवा 'WhatsApp' बटणावर क्लिक करा.";
+                unlockNote.innerText = "पेमेंट यशस्वी! संपर्क करण्यासाठी खालील 'कॉल' किंवा 'WhatsApp' बटणाचा वापर करा.";
             }
             unlockNote.style.color = "#10B981";
 
-            // ४. खालील बटणे (Call/WhatsApp) ऍक्टिव्हेट करा (यावर क्लिक केल्यावरच पूर्ण नंबर वापरला जाईल)
             document.getElementById('callBtn').classList.add('unlocked');
             document.getElementById('whatsappBtn').classList.add('unlocked');
         }
 
-        // ६. कॉल आणि WhatsApp अक्शन्स (This is where the real number is used)
-        function makeCall() {
+        // -------------------------------------------------------------------------
+        // 🆕 NEW LOGIC: Open Custom Alert Modal before making a Call
+        // -------------------------------------------------------------------------
+        function openCustomCallAlert() {
             if(isUnlocked && propertyData && propertyData.ownerMobile) {
-                // 🆕 Count Lead before making call
+                document.getElementById('custom-call-alert').style.display = "flex";
+            }
+        }
+
+        function closeCustomAlert() {
+            document.getElementById('custom-call-alert').style.display = "none";
+        }
+
+        // The actual function that fires when "Call Now" is clicked inside the Popup
+        function executeCall() {
+            closeCustomAlert(); 
+            
+            if(typeof db !== 'undefined' && propertyData.ownerId !== currentUserId) {
+                db.collection("properties").doc(propertyData.id).update({
+                    leads: firebase.firestore.FieldValue.increment(1)
+                }).catch(e => console.log("Lead not updated", e));
+            }
+            
+            window.location.href = `tel:+91${propertyData.ownerMobile}`; 
+        }
+
+        function sendWhatsApp() {
+            if(isUnlocked && propertyData && propertyData.ownerMobile) {
                 if(typeof db !== 'undefined' && propertyData.ownerId !== currentUserId) {
                     db.collection("properties").doc(propertyData.id).update({
                         leads: firebase.firestore.FieldValue.increment(1)
                     }).catch(e => console.log("Lead not updated", e));
                 }
                 
-                window.location.href = `tel:+91${propertyData.ownerMobile}`;
-            }
-        }
-
-        function sendWhatsApp() {
-            if(isUnlocked && propertyData && propertyData.ownerMobile) {
-                // 🆕 Count Lead before sending WhatsApp
-                if(typeof db !== 'undefined' && propertyData.ownerId !== currentUserId) {
-                    db.collection("properties").doc(propertyData.id).update({
-                        leads: firebase.firestore.FieldValue.increment(1)
-                    }).catch(e => console.log("Lead not updated", e));
-                }
-
-                let msg = encodeURIComponent(`नमस्कार, मी तुमची '${propertyData.title}' ही प्रॉपर्टी 'सातारा रेंटल हब' ॲपवर पाहिली. मला ती भाड्याने घ्यायची आहे. आपण याबद्दल अधिक बोलू शकतो का?`);
+                let msg = encodeURIComponent(`नमस्कार, मी तुमची '${propertyData.title}' ही प्रॉपर्टी 'सातारा रेंटल हब' ॲपवर पाहिली. मला याबद्दल अधिक माहिती हवी आहे.`);
                 window.open(`https://wa.me/91${propertyData.ownerMobile}?text=${msg}`, '_blank');
             }
         }
