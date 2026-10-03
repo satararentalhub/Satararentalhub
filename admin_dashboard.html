@@ -35,7 +35,6 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg-light); color: var(--text-dark); padding-bottom: 80px; }
 
-        /* १. ॲडमिन हेडर */
         .admin-header {
             background: var(--admin-dark); color: var(--white); padding: 25px 20px 40px 20px;
             border-bottom-left-radius: 25px; border-bottom-right-radius: 25px; display: flex;
@@ -49,13 +48,11 @@
             font-size: 20px; font-weight: bold; border: 2px solid var(--white);
         }
 
-        /* भाषा बदलणारे बटण */
         .lang-toggle-btn {
             background: rgba(255,255,255,0.2); color: var(--white); border: 1px solid var(--white);
             padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; margin-left: 10px;
         }
 
-        /* २. बिझनेस स्टॅट्स */
         .stats-grid {
             display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;
             padding: 0 20px; margin-top: -25px;
@@ -76,7 +73,6 @@
         .stat-val { font-size: 22px; font-weight: 800; color: var(--text-dark); margin-bottom: 2px; }
         .stat-title { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
 
-        /* ३. सेक्शन्स कॉमन स्टाईल */
         .section-header { padding: 25px 20px 15px 20px; font-size: 16px; font-weight: 800; color: var(--admin-dark); display: flex; justify-content: space-between; align-items: center; }
         .badge { background: var(--danger); color: var(--white); padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; }
         .list-container { padding: 0 20px; }
@@ -100,7 +96,6 @@
         .btn-reject { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
         .btn-edit { background: var(--bg-light); color: var(--text-dark); border: 1px solid #CBD5E1; }
         
-        /* Report Download Styles & Date Picker */
         .report-filter { margin-bottom: 15px; display: flex; flex-direction: column; gap: 8px; background: #E0F2FE; padding: 15px; border-radius: 12px; border: 1px dashed #0284C7; }
         .report-filter label { font-size: 12px; font-weight: 700; color: #0284C7; }
         .date-inputs { display: flex; gap: 10px; align-items: center; }
@@ -117,7 +112,6 @@
         .btn-download-payment { background: #ECFDF5; border-color: #A7F3D0; color: #065F46; }
         .btn-download-payment i { color: #10B981; }
 
-        /* Toggle Switch */
         .toggle-switch { position: relative; width: 42px; height: 22px; }
         .toggle-switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #CBD5E1; transition: .4s; border-radius: 22px; }
@@ -125,14 +119,12 @@
         input:checked + .slider { background-color: var(--success); }
         input:checked + .slider:before { transform: translateX(20px); }
 
-        /* CMS Editor Styles */
         .cms-card { background: var(--white); border-radius: 16px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid var(--border-color); margin-bottom: 20px; }
         .cms-header-title { font-size: 15px; font-weight: 800; color: #E65C00; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
         .cms-header-title.blue { color: #2563EB; border-top: 1px dashed var(--border-color); padding-top: 20px; margin-top: 10px; }
         .cms-header-title.green { color: #059669; }
         .cms-header-title.purple { color: #8B5CF6; }
         
-        /* Form & Grid Styles */
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .form-label { font-size: 12px; font-weight: 700; color: var(--text-dark); margin-bottom: 5px; margin-top: 10px; display: block; }
         .form-control { width: 100%; padding: 12px 15px; background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 10px; font-size: 14px; font-weight: 500; color: var(--text-dark); outline: none; transition: 0.3s; }
@@ -148,7 +140,6 @@
         .checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--text-dark); background: #F8FAFC; padding: 10px; border-radius: 10px; border: 1px solid var(--border-color); }
         .checkbox-label input { width: 16px; height: 16px; accent-color: var(--primary); }
 
-        /* File Upload Styles */
         .file-upload-wrapper { position: relative; width: 100%; height: 120px; border: 2px dashed #CBD5E1; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #F8FAFC; cursor: pointer; overflow: hidden; transition: 0.3s; margin-top:5px;}
         .file-upload-wrapper:hover { border-color: var(--primary); background: #FFFBEB; }
         .file-upload-wrapper input[type="file"] { position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
@@ -162,30 +153,25 @@
         .btn-publish { background: #166534; color: var(--white); border: none; width: 100%; padding: 16px; border-radius: 12px; font-size: 15px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 20px; box-shadow: 0 4px 15px rgba(22, 101, 52, 0.2); transition: 0.2s; }
         .btn-publish:active { transform: scale(0.97); }
 
-        /* Team Member Added List Item */
         .team-member-item { display: flex; justify-content: space-between; align-items: center; background: var(--bg-light); padding: 10px 15px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 10px; }
         .team-member-info h4 { font-size: 13px; font-weight: 700; color: var(--text-dark); margin-bottom: 2px; }
         .team-member-info p { font-size: 11px; color: var(--text-muted); }
         .btn-delete-member { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 16px; }
 
-        /* Hero Slider Images Grid styling */
         .slider-images-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
         .slider-img-box { position: relative; width: 100%; padding-top: 100%; border-radius: 8px; overflow: hidden; border: 1px solid #CBD5E1; }
         .slider-img-box img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
         .delete-slide-btn { position: absolute; top: 5px; right: 5px; background: rgba(239, 68, 68, 0.9); color: white; border: none; width: 25px; height: 25px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 12px; z-index: 10; }
         
-        /* Lead/Enquiry Checkbox Styles */
         .lead-checkbox { width: 20px; height: 20px; accent-color: #25D366; cursor: pointer; }
         .whatsapp-share-btn { background: #25D366; color: white; border: none; padding: 12px 15px; border-radius: 10px; font-weight: 800; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; cursor: pointer; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3); transition: 0.2s; margin-top: 10px; }
         .whatsapp-share-btn:active { transform: scale(0.97); }
 
-        /* Bottom Navigation */
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--white); display: flex; justify-content: space-around; padding: 12px 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); border-top-left-radius: 20px; border-top-right-radius: 20px; z-index: 100; }
         .nav-item { text-align: center; color: var(--text-muted); font-size: 11px; text-decoration: none; flex: 1; }
         .nav-item i { font-size: 20px; margin-bottom: 4px; display: block; }
         .nav-item.active { color: var(--admin-dark); font-weight: bold; }
 
-        /* Download Toast Notification */
         #download-toast {
             visibility: hidden;
             min-width: 250px;
@@ -231,7 +217,6 @@
 </head>
 <body>
 
-    <!-- १. ॲडमिन हेडर -->
     <div class="admin-header">
         <div class="header-title">
             <h1 data-lang="admin_panel_title"><i class="fa-solid fa-shield-halved" style="color: #FFD700;"></i> ॲडमिन पॅनेल</h1>
@@ -243,7 +228,6 @@
         </div>
     </div>
 
-    <!-- २. बिझनेस स्टॅट्स -->
     <div class="stats-grid">
         <div class="stat-card users">
             <i class="fa-solid fa-users stat-icon" style="color: #3B82F6;"></i>
@@ -267,7 +251,6 @@
         </div>
     </div>
 
-    <!-- 🆕 २.१ ॲडमिन कडून प्रॉपर्टी ॲड करा (Full Detailed Form) -->
     <div class="section-header">
         <span style="color: #2563EB;"><i class="fa-solid fa-building-user"></i> नवीन प्रॉपर्टी ॲड करा (Admin Form)</span>
     </div>
@@ -356,7 +339,6 @@
 
             <label class="form-label">सुविधा (Amenities)</label>
             <div class="amenities-grid" id="admin-amenities-container">
-                <!-- Javascript will load checkboxes here -->
             </div>
 
             <label class="form-label">नियम आणि अधिक माहिती</label>
@@ -385,7 +367,6 @@
         </div>
     </div>
 
-    <!-- २.० युझर इन्क्वायरीज (Leads with Multi-Select WhatsApp Share) -->
     <div class="section-header">
         <span style="color: #25D366;"><i class="fa-solid fa-clipboard-user"></i> नवीन संपर्कांची यादी (Leads)</span>
     </div>
@@ -407,7 +388,6 @@
         </div>
     </div>
 
-    <!-- २.१ होम पेज स्लायडर सेटिंग्ज -->
     <div class="section-header">
         <span style="color: #2563EB;"><i class="fa-solid fa-images"></i> होमपेज स्लायडर सेटिंग्ज</span>
     </div>
@@ -442,7 +422,6 @@
         </div>
     </div>
 
-    <!-- ३. डेटा आणि रिपोर्ट्स -->
     <div class="section-header">
         <span style="color: #0284C7;"><i class="fa-solid fa-file-excel"></i> डेटा रिपोर्ट्स (Downloads)</span>
     </div>
@@ -489,7 +468,6 @@
         </div>
     </div>
 
-    <!-- ४. प्रॉपर्टी ॲप्रूव्हल सेटिंग्ज -->
     <div class="section-header">
         <span style="color: #E65C00;"><i class="fa-solid fa-house-circle-check"></i> प्रॉपर्टी ॲप्रूव्हल सिस्टीम</span>
     </div>
@@ -508,7 +486,6 @@
         </div>
     </div>
 
-    <!-- ४.१. लाईव्ह प्रॉपर्टीज व्यवस्थापन -->
     <div class="section-header">
         <span style="color: #10B981;"><i class="fa-solid fa-list-check"></i> लाईव्ह प्रॉपर्टीज व्यवस्थापन</span>
         <span class="badge" style="background:#10B981;" id="live_count_badge">0 लाईव्ह</span>
@@ -519,7 +496,6 @@
         </div>
     </div>
 
-    <!-- ५. मालकांसाठी सबस्क्रिप्शन पॅकेजेस -->
     <div class="section-header">
         <span style="color: #8B5CF6;"><i class="fa-solid fa-gem"></i> मालकांसाठी प्रीमियम प्लॅन्स</span>
     </div>
@@ -567,7 +543,6 @@
         </div>
     </div>
 
-    <!-- ६. भाडेकरूंसाठी कॉन्टॅक्ट फी सेटिंग -->
     <div class="section-header">
         <span style="color: #10B981;"><i class="fa-solid fa-address-book"></i> भाडेकरूंसाठी संपर्क फी व पास</span>
     </div>
@@ -596,7 +571,6 @@
         </div>
     </div>
 
-    <!-- ७. प्रलंबित मंजुरी (Approvals) -->
     <div class="section-header">
         <span data-lang="pending_approvals">नवीन प्रॉपर्टीज (मंजुरीसाठी)</span> <span class="badge" id="pending_count_badge">0 नवीन</span>
     </div>
@@ -604,7 +578,6 @@
         <div style="text-align: center; color: #94A3B8; padding: 20px;">कोणत्याही नवीन प्रॉपर्टीज पेंडिंग नाहीत.</div>
     </div>
 
-    <!-- ८. जाहिरात व्यवस्थापन -->
     <div class="section-header">
         <span style="color: #D97706;"><i class="fa-solid fa-rectangle-ad"></i> जाहिरात व्यवस्थापन</span>
     </div>
@@ -653,7 +626,6 @@
         </div>
     </div>
 
-    <!-- ९. सपोर्ट आणि कस्टमर केअर -->
     <div class="section-header">
         <i class="fa-solid fa-headset" style="color: #475569;"></i> <span style="color: #475569;">सपोर्ट आणि संपर्क</span>
     </div>
@@ -677,7 +649,6 @@
         </div>
     </div>
 
-    <!-- १०. आमची टीम (About Us - Multiple Members CMS) -->
     <div class="section-header">
         <i class="fa-solid fa-users" style="color: #2563EB;"></i> <span style="color: #2563EB;">आमची टीम (Team CMS)</span>
     </div>
@@ -716,7 +687,6 @@
         </div>
     </div>
 
-    <!-- Bottom Navigation -->
     <div class="bottom-nav">
         <a href="admin_dashboard.html" class="nav-item active">
             <i class="fa-solid fa-chart-line"></i>
@@ -736,10 +706,8 @@
         </a>
     </div>
 
-    <!-- Toast Notification for Download Status -->
     <div id="download-toast">डाऊनलोड सुरु होत आहे...</div>
 
-    <!-- JavaScript For Admin Logic -->
     <script>
         let supportTeamMembers = [];
         let heroSliderImagesArr = []; 
@@ -1310,10 +1278,6 @@
             return { start: startDate.getTime(), end: endDate.getTime(), titleStr: `${startVal}_to_${endVal}` };
         }
 
-        // ----------------------------------------------------------------------------------
-        // 🆕 NEW LOGIC: Chunked Processing with Direct Blob URL Generation (Android Safe)
-        // ----------------------------------------------------------------------------------
-        
         function showToast(message) {
             var x = document.getElementById("download-toast");
             x.innerHTML = message;
@@ -1321,22 +1285,78 @@
             setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
         }
 
+        // ✅ नवीन: Firestore साठी timeout
+        function withTimeout(promise, ms, errorMsg) {
+            return Promise.race([
+                promise,
+                new Promise((resolve, reject) => setTimeout(() => reject(new Error(errorMsg)), ms))
+            ]);
+        }
+
+        // ✅ नवीन: ३ प्रकारे डाऊनलोड ट्राय करणारे फंक्शन — iframe पद्धत वापरते
+        function triggerDownload(blob, filename) {
+            try {
+                // पद्धत १: iframe (मोबाईलवर सर्वात reliable)
+                const url = URL.createObjectURL(blob);
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.style.position = 'absolute';
+                iframe.style.left = '-9999px';
+                iframe.src = url;
+                document.body.appendChild(iframe);
+                
+                setTimeout(() => {
+                    if(iframe.parentNode) document.body.removeChild(iframe);
+                    URL.revokeObjectURL(url);
+                }, 60000);
+                
+                return true;
+            } catch(e) {
+                console.log("Iframe method failed:", e);
+            }
+            
+            // पद्धत २: Anchor click
+            try {
+                const url2 = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.position = 'absolute';
+                a.style.left = '-9999px';
+                a.href = url2;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                
+                setTimeout(() => {
+                    if(a.parentNode) document.body.removeChild(a);
+                    URL.revokeObjectURL(url2);
+                }, 60000);
+                
+                return true;
+            } catch(e) {
+                console.log("Anchor method failed:", e);
+            }
+            
+            return false;
+        }
+
         async function downloadReport(reportType) {
-            if(typeof db === 'undefined') { alert("Firebase Connected नाही!"); return; }
+            if(typeof db === 'undefined') { 
+                alert("❌ Firebase कनेक्टेड नाही. firebase-config.js फाइल तपासा."); 
+                return; 
+            }
             
             let dateRange = getSelectedDateRange();
             let dateTitle = dateRange ? dateRange.titleStr : "All_Time";
             
-            // Start with BOM for UTF-8 Excel support
-            let csvDataArray = ["\uFEFF"]; 
             showToast("डेटा तयार होत आहे... कृपया थांबा.");
             
             try {
+                let csvContent = "\uFEFF";
+                
                 if(reportType === 'all_payments') {
-                    csvDataArray.push("Payment ID,User ID,User Mobile,Amount (Rs),Plan Type,Property ID,Status,Payment Date\r\n");
-                    let snap = await db.collection("payments").get();
+                    csvContent += "Payment ID,User ID,User Mobile,Amount (Rs),Plan Type,Property ID,Status,Payment Date\r\n";
+                    let snap = await withTimeout(db.collection("payments").get(), 30000, "Payments डेटा येत नाही - 30 सेकंद timeout");
                     
-                    let rows = [];
                     for (let doc of snap.docs) {
                         let d = doc.data();
                         if(!d.createdAt) continue;
@@ -1356,15 +1376,13 @@
                             } catch(e) {}
                         }
 
-                        rows.push(`"${d.paymentId || 'N/A'}","${d.userId || ''}","${userMobile}","${d.amount || 0}","${d.planType || 'Unknown'}","${d.propertyId || 'N/A'}","${d.status || ''}","${date}"\r\n`);
+                        csvContent += `"${d.paymentId || 'N/A'}","${d.userId || ''}","${userMobile}","${d.amount || 0}","${d.planType || 'Unknown'}","${d.propertyId || 'N/A'}","${d.status || ''}","${date}"\r\n`;
                     }
-                    csvDataArray = csvDataArray.concat(rows);
                 } 
                 else if(reportType === 'tenant_subscriptions') {
-                    csvDataArray.push("Payment ID,User ID,User Mobile,Amount (Rs),Expiry Date,Status,Payment Date\r\n");
-                    let snap = await db.collection("payments").get();
+                    csvContent += "Payment ID,User ID,User Mobile,Amount (Rs),Expiry Date,Status,Payment Date\r\n";
+                    let snap = await withTimeout(db.collection("payments").get(), 30000, "Payments डेटा येत नाही - 30 सेकंद timeout");
                     
-                    let rows = [];
                     for (let doc of snap.docs) {
                         let d = doc.data();
                         if(d.planType !== "Tenant Pass" || !d.createdAt) continue;
@@ -1378,67 +1396,80 @@
                         if(d.userId && d.userId.includes("user_")) {
                             userMobile = d.userId.replace("user_", "");
                         }
-                        rows.push(`"${d.paymentId || 'N/A'}","${d.userId || ''}","${userMobile}","${d.amount || 0}","${expiryDate}","${d.status || ''}","${date}"\r\n`);
+                        csvContent += `"${d.paymentId || 'N/A'}","${d.userId || ''}","${userMobile}","${d.amount || 0}","${expiryDate}","${d.status || ''}","${date}"\r\n`;
                     }
-                    csvDataArray = csvDataArray.concat(rows);
                 }
                 else if(reportType === 'users') {
-                    csvDataArray.push("User ID,Name,Mobile,Role,Registered On\r\n");
-                    let snap = await db.collection("users").get(); 
+                    csvContent += "User ID,Name,Mobile,Role,Registered On\r\n";
+                    let snap = await withTimeout(db.collection("users").get(), 30000, "Users डेटा येत नाही - 30 सेकंद timeout");
                     
-                    let rows = [];
                     snap.forEach(doc => {
                         let d = doc.data();
                         if(!d.createdAt) return;
                         
-                        let createdTime = d.createdAt.toDate ? d.createdAt.toDate().getTime() : new Date(d.createdAt).getTime();
+                        let createdTime = 0;
+                        if (typeof d.createdAt.toDate === 'function') {
+                            createdTime = d.createdAt.toDate().getTime();
+                        } else {
+                            createdTime = new Date(d.createdAt).getTime();
+                        }
+                        if (!createdTime || isNaN(createdTime)) return;
+                        
                         if(dateRange && (createdTime < dateRange.start || createdTime > dateRange.end)) return;
 
                         let date = new Date(createdTime).toLocaleDateString();
-                        rows.push(`"${doc.id}","${d.name || ''}","${d.mobile || ''}","${d.role || ''}","${date}"\r\n`);
+                        csvContent += `"${doc.id}","${d.name || ''}","${d.mobile || ''}","${d.role || ''}","${date}"\r\n`;
                     });
-                    csvDataArray = csvDataArray.concat(rows);
                 }
                 else if(reportType === 'properties') {
-                    csvDataArray.push("Property ID,Title,Owner,Owner Mobile,Type,Taluka,Area,Rent,Status,Plan,Created Date\r\n");
-                    let snap = await db.collection("properties").get(); 
+                    csvContent += "Property ID,Title,Owner,Owner Mobile,Type,Taluka,Area,Rent,Status,Plan,Created Date\r\n";
+                    let snap = await withTimeout(db.collection("properties").get(), 30000, "Properties डेटा येत नाही - 30 सेकंद timeout");
                     
-                    let rows = [];
                     snap.forEach(doc => {
                         let d = doc.data();
                         if(!d.createdAt) return;
                         
-                        let createdTime = d.createdAt.toDate ? d.createdAt.toDate().getTime() : new Date(d.createdAt).getTime();
+                        let createdTime = 0;
+                        if (typeof d.createdAt.toDate === 'function') {
+                            createdTime = d.createdAt.toDate().getTime();
+                        } else {
+                            createdTime = new Date(d.createdAt).getTime();
+                        }
+                        if (!createdTime || isNaN(createdTime)) return;
+                        
                         if(dateRange && (createdTime < dateRange.start || createdTime > dateRange.end)) return;
 
                         let date = new Date(createdTime).toLocaleDateString();
-                        rows.push(`"${doc.id}","${d.title || ''}","${d.ownerName || ''}","${d.ownerMobile || ''}","${d.type || ''}","${d.taluka || ''}","${d.area || ''}","${d.rent || 0}","${d.status || ''}","${d.planType || 'basic'}","${date}"\r\n`);
+                        csvContent += `"${doc.id}","${d.title || ''}","${d.ownerName || ''}","${d.ownerMobile || ''}","${d.type || ''}","${d.taluka || ''}","${d.area || ''}","${d.rent || 0}","${d.status || ''}","${d.planType || 'basic'}","${date}"\r\n`;
                     });
-                    csvDataArray = csvDataArray.concat(rows);
                 }
                 else if(reportType === 'leads') {
-                    csvDataArray.push("Property ID,Title,Owner Mobile,Total Views,Total Leads Generated,Created Date\r\n");
-                    let snap = await db.collection("properties").get(); 
+                    csvContent += "Property ID,Title,Owner Mobile,Total Views,Total Leads Generated,Created Date\r\n";
+                    let snap = await withTimeout(db.collection("properties").get(), 30000, "Properties डेटा येत नाही - 30 सेकंद timeout");
                     
-                    let rows = [];
                     snap.forEach(doc => {
                         let d = doc.data();
                         if(!d.createdAt) return;
                         
-                        let createdTime = d.createdAt.toDate ? d.createdAt.toDate().getTime() : new Date(d.createdAt).getTime();
+                        let createdTime = 0;
+                        if (typeof d.createdAt.toDate === 'function') {
+                            createdTime = d.createdAt.toDate().getTime();
+                        } else {
+                            createdTime = new Date(d.createdAt).getTime();
+                        }
+                        if (!createdTime || isNaN(createdTime)) return;
+                        
                         if(dateRange && (createdTime < dateRange.start || createdTime > dateRange.end)) return;
 
                         let date = new Date(createdTime).toLocaleDateString();
-                        rows.push(`"${doc.id}","${d.title || ''}","${d.ownerMobile || ''}","${d.views || 0}","${d.leads || 0}","${date}"\r\n`);
+                        csvContent += `"${doc.id}","${d.title || ''}","${d.ownerMobile || ''}","${d.views || 0}","${d.leads || 0}","${date}"\r\n`;
                     });
-                    csvDataArray = csvDataArray.concat(rows);
                 }
                 else if(reportType === 'expired_plans') {
-                    csvDataArray.push("Property ID,Title,Owner Name,Owner Mobile,Plan Type,Expired On Date\r\n");
-                    let snap = await db.collection("properties").get(); 
+                    csvContent += "Property ID,Title,Owner Name,Owner Mobile,Plan Type,Expired On Date\r\n";
+                    let snap = await withTimeout(db.collection("properties").get(), 30000, "Properties डेटा येत नाही - 30 सेकंद timeout");
                     let now = new Date();
                     
-                    let rows = [];
                     snap.forEach(doc => {
                         let d = doc.data();
                         if (d.planType && d.planType !== 'basic' && d.expiryDate && d.expiryDate !== 'Lifetime') {
@@ -1458,44 +1489,31 @@
 
                             if (isExpired) {
                                 let formattedExpiryDate = expiryTime.toLocaleDateString();
-                                rows.push(`"${doc.id}","${d.title || ''}","${d.ownerName || ''}","${d.ownerMobile || ''}","${d.planType}","${formattedExpiryDate}"\r\n`);
+                                csvContent += `"${doc.id}","${d.title || ''}","${d.ownerName || ''}","${d.ownerMobile || ''}","${d.planType}","${formattedExpiryDate}"\r\n`;
                             }
                         }
                     });
-                    csvDataArray = csvDataArray.concat(rows);
                 }
 
-                // ----------------------------------------------------------------------------------
-                // Safe Blob URL Download for Android Chrome
-                // ----------------------------------------------------------------------------------
-                const blob = new Blob(csvDataArray, { type: 'text/csv;charset=utf-8;' });
+                // Blob तयार करा
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const filename = `${reportType}_report_${dateTitle}.csv`;
                 
-                // Create object URL
-                const url = URL.createObjectURL(blob);
+                // ✅ iframe द्वारे डाऊनलोड (mobile वर जास्त reliable)
+                const success = triggerDownload(blob, filename);
                 
-                // Create hidden link and click it
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
-                a.download = `${reportType}_report_${dateTitle}.csv`;
-                
-                document.body.appendChild(a);
-                a.click();
-                
-                showToast("डाऊनलोड पूर्ण झाले!");
-                
-                // Clean up
-                setTimeout(() => {
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                }, 1000);
+                if(success) {
+                    showToast("✅ डाऊनलोड पूर्ण झाले! Downloads folder मध्ये तपासा.");
+                } else {
+                    alert("❌ डाऊनलोड करता आले नाही. कृपया Chrome किंवा Firefox ब्राउझरमध्ये उघडून पुन्हा प्रयत्न करा.");
+                }
 
             } catch (error) {
                 console.error("Error generating report: ", error);
-                alert("रिपोर्ट बनवताना तांत्रिक अडचण आली:\n" + error.message);
+                let errMsg = error.message || error.toString() || "अज्ञात त्रुटी";
+                alert("❌ रिपोर्ट बनवताना त्रुटी आली:\n\n" + errMsg);
             }
         }
-        // ----------------------------------------------------------------------------------
 
         function loadSettingsFromFirebase() {
             if(typeof db !== 'undefined') {
