@@ -4,18 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ॲडमिन डॅशबोर्ड | Satara Rental Hub</title>
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
-    
-    <!-- Firebase Configuration File -->
     <script src="firebase-config.js"></script>
-    
-    <!-- Multi-Language Support File -->
     <script src="lang.js"></script>
     
     <style>
@@ -31,188 +24,104 @@
             --border-color: #E2E8F0;
             --primary: #FF671F;
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg-light); color: var(--text-dark); padding-bottom: 80px; }
-
-        .admin-header {
-            background: var(--admin-dark); color: var(--white); padding: 25px 20px 40px 20px;
-            border-bottom-left-radius: 25px; border-bottom-right-radius: 25px; display: flex;
-            justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
+        .admin-header { background: var(--admin-dark); color: var(--white); padding: 25px 20px 40px 20px; border-bottom-left-radius: 25px; border-bottom-right-radius: 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .header-title h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
         .header-title p { font-size: 12px; color: #94A3B8; }
-        .admin-profile {
-            width: 45px; height: 45px; background: var(--primary-gradient);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 20px; font-weight: bold; border: 2px solid var(--white);
-        }
-
-        .lang-toggle-btn {
-            background: rgba(255,255,255,0.2); color: var(--white); border: 1px solid var(--white);
-            padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; margin-left: 10px;
-        }
-
-        .stats-grid {
-            display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;
-            padding: 0 20px; margin-top: -25px;
-        }
-        .stat-card {
-            background: var(--white); padding: 15px; border-radius: 16px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: left; position: relative; overflow: hidden;
-        }
-        .stat-card::after {
-            content: ''; position: absolute; right: -15px; bottom: -15px; width: 60px; height: 60px; border-radius: 50%; opacity: 0.1;
-        }
+        .admin-profile { width: 45px; height: 45px; background: var(--primary-gradient); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; border: 2px solid var(--white); }
+        .lang-toggle-btn { background: rgba(255,255,255,0.2); color: var(--white); border: 1px solid var(--white); padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; margin-left: 10px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 0 20px; margin-top: -25px; }
+        .stat-card { background: var(--white); padding: 15px; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: left; position: relative; overflow: hidden; }
+        .stat-card::after { content: ''; position: absolute; right: -15px; bottom: -15px; width: 60px; height: 60px; border-radius: 50%; opacity: 0.1; }
         .stat-card.users::after { background: #3B82F6; }
         .stat-card.props::after { background: #F59E0B; }
         .stat-card.ads::after { background: #8B5CF6; }
         .stat-card.revenue::after { background: #10B981; }
-
         .stat-icon { font-size: 20px; margin-bottom: 10px; }
         .stat-val { font-size: 22px; font-weight: 800; color: var(--text-dark); margin-bottom: 2px; }
         .stat-title { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-
         .section-header { padding: 25px 20px 15px 20px; font-size: 16px; font-weight: 800; color: var(--admin-dark); display: flex; justify-content: space-between; align-items: center; }
         .badge { background: var(--danger); color: var(--white); padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; }
         .list-container { padding: 0 20px; }
-        
-        .action-card {
-            background: var(--white); border-radius: 16px; padding: 15px; margin-bottom: 15px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.04); border-left: 4px solid #F59E0B; border-top: 1px solid var(--border-color); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);
-        }
-        
+        .action-card { background: var(--white); border-radius: 16px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.04); border-left: 4px solid #F59E0B; border-top: 1px solid var(--border-color); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); }
         .live-card { border-left-color: #10B981; }
-        
         .action-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
         .action-title { font-size: 15px; font-weight: 700; color: var(--text-dark); }
         .action-subtitle { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 5px; margin-top: 4px;}
         .action-price { font-size: 16px; font-weight: 800; color: #FF671F; }
-        
         .btn-group { display: flex; gap: 10px; margin-top: 15px; }
         .btn { flex: 1; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 700; border: none; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 6px; transition: 0.2s; }
         .btn:active { transform: scale(0.97); }
         .btn-approve { background: rgba(16, 185, 129, 0.1); color: var(--success); }
         .btn-reject { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
         .btn-edit { background: var(--bg-light); color: var(--text-dark); border: 1px solid #CBD5E1; }
-        
         .report-filter { margin-bottom: 15px; display: flex; flex-direction: column; gap: 8px; background: #E0F2FE; padding: 15px; border-radius: 12px; border: 1px dashed #0284C7; }
         .report-filter label { font-size: 12px; font-weight: 700; color: #0284C7; }
         .date-inputs { display: flex; gap: 10px; align-items: center; }
         .date-inputs input[type="date"] { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #0284C7; background: var(--white); color: #0284C7; font-weight: 700; outline: none; }
         .date-inputs span { color: #0284C7; font-weight: 700; font-size: 12px; }
-
         .btn-download { background: #E2E8F0; color: #334155; font-size: 13px; font-weight: 700; padding: 12px 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border: 1px solid #CBD5E1; transition: 0.2s; margin-bottom: 10px; text-decoration: none; width: 100%; }
         .btn-download:active { transform: scale(0.98); background: #CBD5E1; }
         .btn-download i { color: #0284C7; font-size: 16px; }
-        
         .btn-download-alert { background: #FEF2F2; border-color: #FECACA; color: #991B1B; }
         .btn-download-alert i { color: #DC2626; }
-        
         .btn-download-payment { background: #ECFDF5; border-color: #A7F3D0; color: #065F46; }
         .btn-download-payment i { color: #10B981; }
-
         .toggle-switch { position: relative; width: 42px; height: 22px; }
         .toggle-switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #CBD5E1; transition: .4s; border-radius: 22px; }
         .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
         input:checked + .slider { background-color: var(--success); }
         input:checked + .slider:before { transform: translateX(20px); }
-
         .cms-card { background: var(--white); border-radius: 16px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid var(--border-color); margin-bottom: 20px; }
         .cms-header-title { font-size: 15px; font-weight: 800; color: #E65C00; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
         .cms-header-title.blue { color: #2563EB; border-top: 1px dashed var(--border-color); padding-top: 20px; margin-top: 10px; }
         .cms-header-title.green { color: #059669; }
         .cms-header-title.purple { color: #8B5CF6; }
-        
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .form-label { font-size: 12px; font-weight: 700; color: var(--text-dark); margin-bottom: 5px; margin-top: 10px; display: block; }
         .form-control { width: 100%; padding: 12px 15px; background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 10px; font-size: 14px; font-weight: 500; color: var(--text-dark); outline: none; transition: 0.3s; }
         .form-control:focus { border-color: var(--primary); background: var(--white); }
         textarea.form-control { resize: vertical; min-height: 80px; }
         select.form-control { appearance: none; background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23131313%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right 15px center; background-size: 12px auto; padding-right: 40px; }
-        
         .category-toggle { display: flex; background: #E2E8F0; border-radius: 12px; padding: 5px; margin-bottom: 10px; margin-top:5px; }
         .category-btn { flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 800; border-radius: 8px; cursor: pointer; color: var(--text-muted); transition: 0.3s; }
         .category-btn.active { background: var(--white); color: var(--primary); box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        
         .amenities-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 5px; }
         .checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--text-dark); background: #F8FAFC; padding: 10px; border-radius: 10px; border: 1px solid var(--border-color); }
         .checkbox-label input { width: 16px; height: 16px; accent-color: var(--primary); }
-
         .file-upload-wrapper { position: relative; width: 100%; height: 120px; border: 2px dashed #CBD5E1; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #F8FAFC; cursor: pointer; overflow: hidden; transition: 0.3s; margin-top:5px;}
         .file-upload-wrapper:hover { border-color: var(--primary); background: #FFFBEB; }
         .file-upload-wrapper input[type="file"] { position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
         .file-upload-content { text-align: center; pointer-events: none; }
         .file-upload-content i { font-size: 30px; color: #94A3B8; margin-bottom: 5px; display: block; }
         .file-upload-content span { font-size: 12px; color: #64748B; font-weight: 600; }
-        
         .preview-img-wrapper { position: relative; width: 70px; height: 70px; }
         .preview-img-wrapper img { width: 100%; height: 100%; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-color); }
-
         .btn-publish { background: #166534; color: var(--white); border: none; width: 100%; padding: 16px; border-radius: 12px; font-size: 15px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 20px; box-shadow: 0 4px 15px rgba(22, 101, 52, 0.2); transition: 0.2s; }
         .btn-publish:active { transform: scale(0.97); }
-
         .team-member-item { display: flex; justify-content: space-between; align-items: center; background: var(--bg-light); padding: 10px 15px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 10px; }
         .team-member-info h4 { font-size: 13px; font-weight: 700; color: var(--text-dark); margin-bottom: 2px; }
         .team-member-info p { font-size: 11px; color: var(--text-muted); }
         .btn-delete-member { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 16px; }
-
         .slider-images-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
         .slider-img-box { position: relative; width: 100%; padding-top: 100%; border-radius: 8px; overflow: hidden; border: 1px solid #CBD5E1; }
         .slider-img-box img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
         .delete-slide-btn { position: absolute; top: 5px; right: 5px; background: rgba(239, 68, 68, 0.9); color: white; border: none; width: 25px; height: 25px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 12px; z-index: 10; }
-        
         .lead-checkbox { width: 20px; height: 20px; accent-color: #25D366; cursor: pointer; }
         .whatsapp-share-btn { background: #25D366; color: white; border: none; padding: 12px 15px; border-radius: 10px; font-weight: 800; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; cursor: pointer; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3); transition: 0.2s; margin-top: 10px; }
         .whatsapp-share-btn:active { transform: scale(0.97); }
-
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--white); display: flex; justify-content: space-around; padding: 12px 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); border-top-left-radius: 20px; border-top-right-radius: 20px; z-index: 100; }
         .nav-item { text-align: center; color: var(--text-muted); font-size: 11px; text-decoration: none; flex: 1; }
         .nav-item i { font-size: 20px; margin-bottom: 4px; display: block; }
         .nav-item.active { color: var(--admin-dark); font-weight: bold; }
-
-        #download-toast {
-            visibility: hidden;
-            min-width: 250px;
-            margin-left: -125px;
-            background-color: #333;
-            color: #fff;
-            text-align: center;
-            border-radius: 8px;
-            padding: 16px;
-            position: fixed;
-            z-index: 1000;
-            left: 50%;
-            bottom: 30px;
-            font-size: 14px;
-        }
-
-        #download-toast.show {
-            visibility: visible;
-            -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
-            animation: fadein 0.5s, fadeout 0.5s 2.5s;
-        }
-
-        @-webkit-keyframes fadein {
-            from {bottom: 0; opacity: 0;} 
-            to {bottom: 30px; opacity: 1;}
-        }
-
-        @keyframes fadein {
-            from {bottom: 0; opacity: 0;}
-            to {bottom: 30px; opacity: 1;}
-        }
-
-        @-webkit-keyframes fadeout {
-            from {bottom: 30px; opacity: 1;} 
-            to {bottom: 0; opacity: 0;}
-        }
-
-        @keyframes fadeout {
-            from {bottom: 30px; opacity: 1;}
-            to {bottom: 0; opacity: 0;}
-        }
+        #download-toast { visibility: hidden; min-width: 250px; margin-left: -125px; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 1000; left: 50%; bottom: 30px; font-size: 14px; }
+        #download-toast.show { visibility: visible; -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+        @-webkit-keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @-webkit-keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
     </style>
 </head>
 <body>
@@ -257,7 +166,6 @@
     <div class="list-container">
         <div class="cms-card" style="background: #EFF6FF; border-color: #BFDBFE;">
             <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 10px;">येथे भरलेली माहिती थेट ॲपवर 'लाईव्ह' होईल. मालकाला पेमेंट करण्याची गरज लागणार नाही.</p>
-            
             <div class="grid-2">
                 <div>
                     <label class="form-label">मालकाचे नाव</label>
@@ -268,13 +176,11 @@
                     <input type="tel" class="form-control" id="admin-owner-mobile" placeholder="उदा. 9876543210" maxlength="10" style="border-color: #22C55E;">
                 </div>
             </div>
-
             <label class="form-label">प्रॉपर्टीची श्रेणी (Category)</label>
             <div class="category-toggle">
                 <div class="category-btn active" id="admin-cat-residential" onclick="setAdminCategory('residential')">रहिवासी (Residential)</div>
                 <div class="category-btn" id="admin-cat-commercial" onclick="setAdminCategory('commercial')">व्यावसायिक (Commercial)</div>
             </div>
-
             <div class="grid-2">
                 <div>
                     <label class="form-label">प्रॉपर्टीचा प्रकार</label>
@@ -287,7 +193,6 @@
                     <input type="text" class="form-control" id="admin-other-target-input" placeholder="उदा. बँक कर्मचारी..." style="display:none; margin-top:10px;">
                 </div>
             </div>
-
             <label class="form-label">फर्निचरची स्थिती</label>
             <select class="form-control" id="admin-prop-furnish">
                 <option value="" disabled selected>स्थिती निवडा...</option>
@@ -295,10 +200,8 @@
                 <option value="Semi-Furnished">अंशतः फर्निचर (Semi-Furnished)</option>
                 <option value="Fully-Furnished">पूर्ण फर्निचर (Fully-Furnished)</option>
             </select>
-
             <label class="form-label">जाहिरातीचे शीर्षक</label>
             <input type="text" class="form-control" id="admin-prop-title" placeholder="उदा. 2 BHK फ्लॅट भाड्याने देणे आहे">
-
             <div class="grid-2">
                 <div>
                     <label class="form-label">महिन्याचे भाडे (₹)</label>
@@ -309,7 +212,6 @@
                     <input type="number" class="form-control" id="admin-prop-deposit" placeholder="उदा. 20000">
                 </div>
             </div>
-
             <div class="grid-2">
                 <div>
                     <label class="form-label">तालुका</label>
@@ -336,14 +238,10 @@
                 </div>
             </div>
             <input type="text" class="form-control" id="admin-other-area-input" placeholder="तुमच्या गावाचे नाव टाईप करा..." style="display:none; margin-top:10px;">
-
             <label class="form-label">सुविधा (Amenities)</label>
-            <div class="amenities-grid" id="admin-amenities-container">
-            </div>
-
+            <div class="amenities-grid" id="admin-amenities-container"></div>
             <label class="form-label">नियम आणि अधिक माहिती</label>
             <textarea class="form-control" id="admin-prop-desc" placeholder="उदा. ११ महिन्यांचा करार अनिवार्य. लाईट बिल वेगळे."></textarea>
-
             <label class="form-label">फोटो अपलोड करा (कमाल 5 फोटो)</label>
             <div class="file-upload-wrapper">
                 <input type="file" id="admin-prop-images" accept="image/*" multiple onchange="adminPreviewMultipleImages(event)">
@@ -353,14 +251,12 @@
                 </div>
             </div>
             <div id="admin-preview-container" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px;"></div>
-
             <label class="form-label">लिस्टिंग प्लॅन (ॲडमिन बायपास)</label>
             <select class="form-control" id="admin-prop-plan">
                 <option value="basic">बेसिक लिस्टिंग (मोफत)</option>
                 <option value="premium1">प्रीमियम ॲड (लहान मुदत - Top Banner)</option>
                 <option value="premium2">प्रीमियम ॲड (मोठी मुदत - Top Banner)</option>
             </select>
-
             <button class="btn-publish" style="background: #2563EB;" onclick="adminSubmitFullProperty()" id="admin-prop-submit-btn">
                 <i class="fa-solid fa-cloud-arrow-up"></i> <span>ही प्रॉपर्टी सेव्ह आणि लाईव्ह करा</span>
             </button>
@@ -373,15 +269,12 @@
     <div class="list-container">
         <div class="cms-card" style="background: #F0FDF4; border-color: #BBF7D0;">
             <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px;">ज्या भाडेकरूंनी पैसे भरून मालकाचा नंबर अनलॉक केला आहे, त्यांची रोजची यादी येथे दिसेल. त्यांना सिलेक्ट करून तुम्ही मालकाला WhatsApp वर पाठवू शकता.</p>
-            
             <div class="date-inputs" style="margin-bottom: 15px;">
                 <input type="date" id="lead-filter-date" style="border-color: #25D366; color: #166534;" onchange="loadUserLeads()">
             </div>
-
             <div id="leads-list-container" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;">
                 <div style="text-align: center; color: #94A3B8; padding: 10px;">लोड होत आहे...</div>
             </div>
-
             <button class="whatsapp-share-btn" onclick="shareSelectedLeadsOnWhatsApp()">
                 <i class="fa-brands fa-whatsapp"></i> निवडलेले संपर्क्स WhatsApp वर शेअर करा
             </button>
@@ -395,13 +288,11 @@
         <div class="cms-card">
             <h3 class="cms-header-title" style="color: #2563EB; border-bottom: 1px dashed var(--border-color); padding-bottom: 10px;">हिरो बॅकग्राऊंड इमेजेस (Hero Slider)</h3>
             <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px;">इथे टाकलेल्या इमेजेस होमपेजवर बॅकग्राऊंडला आपोआप बदलत राहतील.</p>
-            
             <label class="form-label">फोटो स्लाईड होण्याची वेळ (Timer)</label>
             <div style="position: relative; margin-bottom: 15px;">
                 <input type="number" class="form-control" id="slider-timer" value="3000" placeholder="उदा. 3000">
                 <span style="position: absolute; right: 15px; top: 12px; font-size: 12px; color: #94A3B8; font-weight:bold;">मिलीसेकंद (1000 = 1 sec)</span>
             </div>
-
             <label class="form-label">नवीन फोटो अपलोड करा (Multiple Select)</label>
             <div class="file-upload-wrapper">
                 <input type="file" id="hero-slider-files" accept="image/png, image/jpeg, image/jpg" multiple onchange="uploadHeroSliderImages(event)">
@@ -410,12 +301,10 @@
                     <span id="slider-upload-status">इथे क्लिक करून फोटो निवडा</span>
                 </div>
             </div>
-
             <label class="form-label">सध्याच्या स्लायडर इमेजेस (Current Images)</label>
             <div class="slider-images-grid" id="current-slider-images">
                 <div style="grid-column: span 3; text-align: center; color: #94A3B8; font-size: 12px; padding: 10px;">लोड होत आहे...</div>
             </div>
-
             <button class="btn-publish" style="background: #2563EB; margin-top: 15px;" onclick="saveSliderTimer()">
                 <i class="fa-solid fa-floppy-disk"></i> <span>वेळ सेव्ह करा</span>
             </button>
@@ -427,7 +316,6 @@
     </div>
     <div class="list-container">
         <div class="cms-card" style="background: #F0F9FF; border-color: #BAE6FD;">
-            
             <div class="report-filter">
                 <label><i class="fa-solid fa-calendar-days"></i> कालावधी निवडा (Select Date Range)</label>
                 <div class="date-inputs">
@@ -436,19 +324,15 @@
                     <input type="date" id="report-end-date" title="End Date">
                 </div>
             </div>
-            
             <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px;">वरील तारखांमधील संपूर्ण डेटा CSV (Excel) फॉरमॅटमध्ये डाऊनलोड करा. (तारखा न निवडल्यास सर्व डेटा येईल)</p>
-            
             <button class="btn-download btn-download-payment" onclick="downloadReport('all_payments')">
                 <span><i class="fa-solid fa-credit-card" style="margin-right:8px;"></i> सर्व पेमेंट्स (Razorpay) रिपोर्ट</span>
                 <i class="fa-solid fa-download"></i>
             </button>
-
             <button class="btn-download btn-download-payment" style="background: #F3E8FF; border-color: #D8B4FE; color: #6B21A8;" onclick="downloadReport('tenant_subscriptions')">
                 <span><i class="fa-solid fa-crown" style="margin-right:8px; color: #8B5CF6;"></i> युझर सबस्क्रिप्शन (Pass) रिपोर्ट</span>
                 <i class="fa-solid fa-download" style="color: #8B5CF6;"></i>
             </button>
-
             <button class="btn-download" onclick="downloadReport('users')">
                 <span><i class="fa-solid fa-users" style="color:#3B82F6; margin-right:8px;"></i> युझर्स लिस्ट रिपोर्ट</span>
                 <i class="fa-solid fa-download"></i>
@@ -503,7 +387,6 @@
         <div class="cms-card">
             <h3 class="cms-header-title purple" style="border-bottom: 1px dashed var(--border-color); padding-bottom: 10px;">प्रीमियम टॉप बॅनर प्लॅन्स</h3>
             <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px;"><b>बेसिक लिस्टिंग सर्वांसाठी फ्री राहील.</b> परंतु जर मालकाला आपली प्रॉपर्टी होमपेजवर सर्वात वर (टॉप बॅनर) दाखवायची असेल, तर तो खालीलपैकी एक प्रीमियम प्लॅन घेऊ शकतो.</p>
-            
             <div style="background: #F8FAFC; padding: 15px; border-radius: 12px; border: 1px solid #CBD5E1; margin-bottom: 15px;">
                 <div class="form-label" style="color: #8B5CF6; font-size: 14px;"><i class="fa-solid fa-star"></i> प्रीमियम प्लॅन १ (लहान मुदत)</div>
                 <div class="grid-2" style="margin-top: 10px;">
@@ -517,7 +400,6 @@
                     </div>
                 </div>
             </div>
-
             <div style="background: #FFFBEB; padding: 15px; border-radius: 12px; border: 1px solid #FCD34D; margin-bottom: 15px;">
                 <div class="form-label" style="color: #D97706; font-size: 14px;"><i class="fa-solid fa-crown"></i> प्रीमियम प्लॅन २ (मोठी मुदत)</div>
                 <div class="grid-2" style="margin-top: 10px;">
@@ -531,14 +413,12 @@
                     </div>
                 </div>
             </div>
-            
             <h3 class="cms-header-title purple" style="border-top: 1px dashed var(--border-color); padding-top: 15px; margin-top: 10px;"><i class="fa-solid fa-stopwatch"></i> प्रीमियम ॲड्स स्लायडर टाइमिंग</h3>
             <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px;">होमपेजवर प्रीमियम प्रॉपर्टीज (Top Priority Listing) किती सेकंदांनी आपोआप स्लाईड झाल्या पाहिजेत याची वेळ सेट करा.</p>
             <div style="position: relative; margin-bottom: 15px;">
                 <input type="number" class="form-control" id="premium-slider-timer" value="3000" placeholder="उदा. 3000">
                 <span style="position: absolute; right: 15px; top: 12px; font-size: 12px; color: #94A3B8; font-weight:bold;">मिलीसेकंद (1000 = 1 sec)</span>
             </div>
-
             <button class="btn-edit" style="width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; background: #8B5CF6; color: white; border: none; cursor: pointer;" onclick="savePlanSettings()"><i class="fa-solid fa-floppy-disk"></i> प्रीमियम प्लॅन्स आणि टाइमिंग सेव्ह करा</button>
         </div>
     </div>
@@ -553,7 +433,6 @@
                 <i class="fa-solid fa-indian-rupee-sign" style="position: absolute; left: 15px; top: 15px; color: #10B981;"></i>
                 <input type="number" class="form-control" value="20" id="tenant-unlock-fee" style="padding-left: 45px; border-color: #10B981;" placeholder="उदा. 20">
             </div>
-            
             <h3 class="cms-header-title purple" style="border-top: 1px dashed var(--border-color); padding-top: 15px; margin-top: 10px;"><i class="fa-solid fa-crown"></i> भाडेकरू अनलिमिटेड पास (Subscription Pass)</h3>
             <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px;">हा पास घेतल्यावर भाडेकरू कितीही नंबर फ्री मध्ये पाहू शकेल.</p>
             <div class="grid-2">
@@ -566,7 +445,6 @@
                     <input type="number" class="form-control" id="tenant-sub-validity" value="15">
                 </div>
             </div>
-
             <button class="btn-edit" style="width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; background: #10B981; color: white; border: none; cursor: pointer;" onclick="saveTenantFee()"><i class="fa-solid fa-floppy-disk"></i> संपर्काचे सर्व नियम व फी सेव्ह करा</button>
         </div>
     </div>
@@ -585,13 +463,10 @@
         <div class="cms-card">
             <h3 class="cms-header-title" style="color: #D97706; border-bottom: 1px dashed var(--border-color); padding-bottom: 10px;"><i class="fa-solid fa-bolt"></i> वेलकम फ्लॅश ॲड (Welcome Flash Ad)</h3>
             <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px;">ही जाहिरात युझरने ॲप/वेबसाईट उघडल्यावर लगेच फुल स्क्रीनवर दिसेल. (Skip बटण युझर ॲपमध्ये आपोआप दिसेल)</p>
-            
             <label class="form-label">जाहिरातीचा मजकूर (Ad Text)</label>
             <input type="text" class="form-control" id="flash-ad-text" placeholder="उदा. नवीन 2BHK फ्लॅट्स उपलब्ध! २०% सूट">
-            
             <label class="form-label">लिंक (URL) - युझरने क्लिक केल्यावर कुठे जावे?</label>
             <input type="text" class="form-control" id="flash-ad-link" placeholder="उदा. https://yourlink.com">
-
             <div class="grid-2">
                 <div>
                     <label class="form-label">मोबाईलसाठी फोटो (उभी स्क्रीन)</label>
@@ -618,7 +493,6 @@
                     <input type="hidden" id="flash-ad-image-url-desktop">
                 </div>
             </div>
-            
             <div class="grid-2">
                 <button class="btn-publish" id="publish-ad-btn" style="background: #D97706; margin-top: 5px; padding: 12px;" onclick="publishFlashAd()">सेव्ह करा</button>
                 <button class="btn-reject" style="width: 100%; border-radius: 12px; margin-top: 5px; font-weight: bold; border: none; cursor: pointer;" onclick="removeFlashAd()"><i class="fa-solid fa-trash"></i> काढून टाका</button>
@@ -636,13 +510,11 @@
                 <i class="fa-brands fa-whatsapp" style="position: absolute; left: 15px; top: 15px; color: #25D366;"></i>
                 <input type="tel" class="form-control" value="9579535290" id="support-number" style="padding-left: 45px;">
             </div>
-            
             <label class="form-label">सपोर्ट ईमेल आयडी</label>
             <div style="position: relative;">
                 <i class="fa-solid fa-envelope" style="position: absolute; left: 15px; top: 15px; color: #94A3B8;"></i>
                 <input type="email" class="form-control" value="support@satararentalhub.com" id="support-email" style="padding-left: 45px;">
             </div>
-
             <button class="btn-publish" id="publish-btn" style="background: #475569;" onclick="publishSupportContent()">
                 <i class="fa-solid fa-floppy-disk"></i> <span>सपोर्ट डिटेल्स सेव्ह करा</span>
             </button>
@@ -655,7 +527,6 @@
     <div class="list-container">
         <div class="cms-card">
             <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 15px;">इथे भरलेली माहिती 'About Us' पेजवर टीम सेक्शनमध्ये दिसेल. तुम्ही एकापेक्षा जास्त सपोर्ट मेंबर्स ॲड करू शकता.</p>
-            
             <h3 style="font-size: 14px; margin-bottom: 10px; color: var(--primary);"><i class="fa-solid fa-user-tie"></i> संस्थापकाची माहिती (Founder)</h3>
             <label class="form-label">नाव</label>
             <input type="text" class="form-control" id="founder-name" placeholder="उदा. प्रज्योत साळुंखे">
@@ -663,11 +534,8 @@
             <input type="text" class="form-control" id="founder-role" placeholder="उदा. संस्थापक (Founder)">
             <label class="form-label">थोडक्यात माहिती (Bio)</label>
             <textarea class="form-control" id="founder-bio" placeholder="माहिती..." style="min-height: 60px;"></textarea>
-            
             <hr style="border: 0; border-top: 1px dashed var(--border-color); margin: 20px 0;">
-
             <h3 style="font-size: 14px; margin-bottom: 10px; color: #10B981;"><i class="fa-solid fa-users"></i> सपोर्ट टीमची माहिती (Multiple)</h3>
-            
             <div style="background: #ECFDF5; padding: 15px; border-radius: 12px; border: 1px solid #A7F3D0; margin-bottom: 15px;">
                 <label class="form-label">नाव</label>
                 <input type="text" class="form-control" id="new-team-name" placeholder="उदा. कस्टमर सपोर्ट">
@@ -675,12 +543,9 @@
                 <input type="text" class="form-control" id="new-team-role" placeholder="उदा. मदत आणि सहाय्य">
                 <label class="form-label">थोडक्यात माहिती (Bio)</label>
                 <textarea class="form-control" id="new-team-bio" placeholder="माहिती..." style="min-height: 40px; margin-bottom: 10px;"></textarea>
-                
                 <button class="btn-edit" style="width: 100%; background: #10B981; color: white; border: none; font-weight: bold;" onclick="addTeamMember()"><i class="fa-solid fa-user-plus"></i> मेंबर ॲड करा</button>
             </div>
-
             <div id="added-team-members-list"></div>
-
             <button class="btn-publish" id="publish-team-btn" style="background: #2563EB;" onclick="publishTeamContent()">
                 <i class="fa-solid fa-floppy-disk"></i> <span>संपूर्ण टीम माहिती सेव्ह करा</span>
             </button>
@@ -1285,7 +1150,6 @@
             setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
         }
 
-        // ✅ नवीन: Firestore साठी timeout
         function withTimeout(promise, ms, errorMsg) {
             return Promise.race([
                 promise,
@@ -1293,10 +1157,8 @@
             ]);
         }
 
-        // ✅ नवीन: ३ प्रकारे डाऊनलोड ट्राय करणारे फंक्शन — iframe पद्धत वापरते
         function triggerDownload(blob, filename) {
             try {
-                // पद्धत १: iframe (मोबाईलवर सर्वात reliable)
                 const url = URL.createObjectURL(blob);
                 const iframe = document.createElement('iframe');
                 iframe.style.display = 'none';
@@ -1304,18 +1166,14 @@
                 iframe.style.left = '-9999px';
                 iframe.src = url;
                 document.body.appendChild(iframe);
-                
                 setTimeout(() => {
                     if(iframe.parentNode) document.body.removeChild(iframe);
                     URL.revokeObjectURL(url);
                 }, 60000);
-                
                 return true;
             } catch(e) {
                 console.log("Iframe method failed:", e);
             }
-            
-            // पद्धत २: Anchor click
             try {
                 const url2 = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -1325,17 +1183,14 @@
                 a.download = filename;
                 document.body.appendChild(a);
                 a.click();
-                
                 setTimeout(() => {
                     if(a.parentNode) document.body.removeChild(a);
                     URL.revokeObjectURL(url2);
                 }, 60000);
-                
                 return true;
             } catch(e) {
                 console.log("Anchor method failed:", e);
             }
-            
             return false;
         }
 
@@ -1352,6 +1207,7 @@
             
             try {
                 let csvContent = "\uFEFF";
+                let totalRows = 0;
                 
                 if(reportType === 'all_payments') {
                     csvContent += "Payment ID,User ID,User Mobile,Amount (Rs),Plan Type,Property ID,Status,Payment Date\r\n";
@@ -1361,12 +1217,10 @@
                         let d = doc.data();
                         if(!d.createdAt) continue;
                         let createdTime = new Date(d.createdAt).getTime();
-                        
                         if(dateRange && (createdTime < dateRange.start || createdTime > dateRange.end)) continue;
 
                         let date = new Date(d.createdAt).toLocaleDateString();
                         let userMobile = "Not Found";
-                        
                         if(d.userId && d.userId.includes("user_")) {
                             userMobile = d.userId.replace("user_", "");
                         } else if(d.userId) {
@@ -1375,18 +1229,17 @@
                                 if(userDoc.exists) userMobile = userDoc.data().mobile || "N/A";
                             } catch(e) {}
                         }
-
                         csvContent += `"${d.paymentId || 'N/A'}","${d.userId || ''}","${userMobile}","${d.amount || 0}","${d.planType || 'Unknown'}","${d.propertyId || 'N/A'}","${d.status || ''}","${date}"\r\n`;
+                        totalRows++;
                     }
                 } 
                 else if(reportType === 'tenant_subscriptions') {
                     csvContent += "Payment ID,User ID,User Mobile,Amount (Rs),Expiry Date,Status,Payment Date\r\n";
-                    let snap = await withTimeout(db.collection("payments").get(), 30000, "Payments डेटा येत नाही - 30 सेकंद timeout");
+                    let snap = await withTimeout(db.collection("payments").get(), 30000, "Payments डेटा येत नाही");
                     
                     for (let doc of snap.docs) {
                         let d = doc.data();
                         if(d.planType !== "Tenant Pass" || !d.createdAt) continue;
-                        
                         let createdTime = new Date(d.createdAt).getTime();
                         if(dateRange && (createdTime < dateRange.start || createdTime > dateRange.end)) continue;
 
@@ -1397,77 +1250,100 @@
                             userMobile = d.userId.replace("user_", "");
                         }
                         csvContent += `"${d.paymentId || 'N/A'}","${d.userId || ''}","${userMobile}","${d.amount || 0}","${expiryDate}","${d.status || ''}","${date}"\r\n`;
+                        totalRows++;
                     }
                 }
                 else if(reportType === 'users') {
+                    // ✅ FIXED: Users without createdAt will NOT be skipped
                     csvContent += "User ID,Name,Mobile,Role,Registered On\r\n";
                     let snap = await withTimeout(db.collection("users").get(), 30000, "Users डेटा येत नाही - 30 सेकंद timeout");
                     
                     snap.forEach(doc => {
                         let d = doc.data();
-                        if(!d.createdAt) return;
-                        
+                        let date = "N/A";
                         let createdTime = 0;
-                        if (typeof d.createdAt.toDate === 'function') {
-                            createdTime = d.createdAt.toDate().getTime();
-                        } else {
-                            createdTime = new Date(d.createdAt).getTime();
-                        }
-                        if (!createdTime || isNaN(createdTime)) return;
+                        let hasValidDate = false;
                         
-                        if(dateRange && (createdTime < dateRange.start || createdTime > dateRange.end)) return;
-
-                        let date = new Date(createdTime).toLocaleDateString();
+                        // वेगवेगळे date field names try करा
+                        let dateField = d.createdAt || d.registeredAt || d.created_at || d.timestamp || d.registrationDate || d.date;
+                        
+                        if (dateField) {
+                            try {
+                                if (typeof dateField.toDate === 'function') {
+                                    createdTime = dateField.toDate().getTime();
+                                    hasValidDate = true;
+                                } else if (typeof dateField === 'string') {
+                                    createdTime = new Date(dateField).getTime();
+                                    if (!isNaN(createdTime)) hasValidDate = true;
+                                } else if (typeof dateField === 'number') {
+                                    createdTime = dateField;
+                                    hasValidDate = true;
+                                }
+                            } catch(e) { hasValidDate = false; }
+                        }
+                        
+                        // ✅ जर valid date असेल तरच date range filter apply करा
+                        if (hasValidDate && createdTime > 0) {
+                            if (dateRange && (createdTime < dateRange.start || createdTime > dateRange.end)) {
+                                return; // Date range बाहेर - skip
+                            }
+                            date = new Date(createdTime).toLocaleDateString();
+                        }
+                        // ✅ Date नसेल तर पण user include करा ("N/A" date सह)
+                        
                         csvContent += `"${doc.id}","${d.name || ''}","${d.mobile || ''}","${d.role || ''}","${date}"\r\n`;
+                        totalRows++;
                     });
                 }
                 else if(reportType === 'properties') {
                     csvContent += "Property ID,Title,Owner,Owner Mobile,Type,Taluka,Area,Rent,Status,Plan,Created Date\r\n";
-                    let snap = await withTimeout(db.collection("properties").get(), 30000, "Properties डेटा येत नाही - 30 सेकंद timeout");
+                    let snap = await withTimeout(db.collection("properties").get(), 30000, "Properties डेटा येत नाही");
                     
                     snap.forEach(doc => {
                         let d = doc.data();
-                        if(!d.createdAt) return;
-                        
                         let createdTime = 0;
-                        if (typeof d.createdAt.toDate === 'function') {
-                            createdTime = d.createdAt.toDate().getTime();
-                        } else {
-                            createdTime = new Date(d.createdAt).getTime();
+                        if (d.createdAt) {
+                            if (typeof d.createdAt.toDate === 'function') {
+                                createdTime = d.createdAt.toDate().getTime();
+                            } else if (typeof d.createdAt === 'string') {
+                                createdTime = new Date(d.createdAt).getTime();
+                            } else if (typeof d.createdAt === 'number') {
+                                createdTime = d.createdAt;
+                            }
                         }
-                        if (!createdTime || isNaN(createdTime)) return;
-                        
-                        if(dateRange && (createdTime < dateRange.start || createdTime > dateRange.end)) return;
+                        if (createdTime && dateRange && (createdTime < dateRange.start || createdTime > dateRange.end)) return;
 
-                        let date = new Date(createdTime).toLocaleDateString();
+                        let date = createdTime ? new Date(createdTime).toLocaleDateString() : 'N/A';
                         csvContent += `"${doc.id}","${d.title || ''}","${d.ownerName || ''}","${d.ownerMobile || ''}","${d.type || ''}","${d.taluka || ''}","${d.area || ''}","${d.rent || 0}","${d.status || ''}","${d.planType || 'basic'}","${date}"\r\n`;
+                        totalRows++;
                     });
                 }
                 else if(reportType === 'leads') {
                     csvContent += "Property ID,Title,Owner Mobile,Total Views,Total Leads Generated,Created Date\r\n";
-                    let snap = await withTimeout(db.collection("properties").get(), 30000, "Properties डेटा येत नाही - 30 सेकंद timeout");
+                    let snap = await withTimeout(db.collection("properties").get(), 30000, "Properties डेटा येत नाही");
                     
                     snap.forEach(doc => {
                         let d = doc.data();
-                        if(!d.createdAt) return;
-                        
                         let createdTime = 0;
-                        if (typeof d.createdAt.toDate === 'function') {
-                            createdTime = d.createdAt.toDate().getTime();
-                        } else {
-                            createdTime = new Date(d.createdAt).getTime();
+                        if (d.createdAt) {
+                            if (typeof d.createdAt.toDate === 'function') {
+                                createdTime = d.createdAt.toDate().getTime();
+                            } else if (typeof d.createdAt === 'string') {
+                                createdTime = new Date(d.createdAt).getTime();
+                            } else if (typeof d.createdAt === 'number') {
+                                createdTime = d.createdAt;
+                            }
                         }
-                        if (!createdTime || isNaN(createdTime)) return;
-                        
-                        if(dateRange && (createdTime < dateRange.start || createdTime > dateRange.end)) return;
+                        if (createdTime && dateRange && (createdTime < dateRange.start || createdTime > dateRange.end)) return;
 
-                        let date = new Date(createdTime).toLocaleDateString();
+                        let date = createdTime ? new Date(createdTime).toLocaleDateString() : 'N/A';
                         csvContent += `"${doc.id}","${d.title || ''}","${d.ownerMobile || ''}","${d.views || 0}","${d.leads || 0}","${date}"\r\n`;
+                        totalRows++;
                     });
                 }
                 else if(reportType === 'expired_plans') {
                     csvContent += "Property ID,Title,Owner Name,Owner Mobile,Plan Type,Expired On Date\r\n";
-                    let snap = await withTimeout(db.collection("properties").get(), 30000, "Properties डेटा येत नाही - 30 सेकंद timeout");
+                    let snap = await withTimeout(db.collection("properties").get(), 30000, "Properties डेटा येत नाही");
                     let now = new Date();
                     
                     snap.forEach(doc => {
@@ -1486,24 +1362,22 @@
                                     }
                                 }
                             }
-
                             if (isExpired) {
                                 let formattedExpiryDate = expiryTime.toLocaleDateString();
                                 csvContent += `"${doc.id}","${d.title || ''}","${d.ownerName || ''}","${d.ownerMobile || ''}","${d.planType}","${formattedExpiryDate}"\r\n`;
+                                totalRows++;
                             }
                         }
                     });
                 }
 
-                // Blob तयार करा
                 const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                 const filename = `${reportType}_report_${dateTitle}.csv`;
                 
-                // ✅ iframe द्वारे डाऊनलोड (mobile वर जास्त reliable)
                 const success = triggerDownload(blob, filename);
                 
                 if(success) {
-                    showToast("✅ डाऊनलोड पूर्ण झाले! Downloads folder मध्ये तपासा.");
+                    showToast(`✅ डाऊनलोड पूर्ण! (${totalRows} rows)`);
                 } else {
                     alert("❌ डाऊनलोड करता आले नाही. कृपया Chrome किंवा Firefox ब्राउझरमध्ये उघडून पुन्हा प्रयत्न करा.");
                 }
@@ -1526,24 +1400,19 @@
                             document.getElementById('plan1-validity').value = data.plans.plan1_validity || 15;
                             document.getElementById('plan2-fee').value = data.plans.plan2_fee || 399;
                             document.getElementById('plan2-validity').value = data.plans.plan2_validity || 30;
-                            
                             globalPlan1Days = data.plans.plan1_validity || 15;
                             globalPlan2Days = data.plans.plan2_validity || 30;
                             globalPlan1Price = data.plans.plan1_fee || 299;
                             globalPlan2Price = data.plans.plan2_fee || 399;
                         }
-                        
                         if(data.premiumSliderTimer) {
                             document.getElementById('premium-slider-timer').value = data.premiumSliderTimer;
                         }
-
                         document.getElementById('tenant-unlock-fee').value = data.tenantUnlockFee || 20;
-                        
                         if(data.tenantPass) {
                             document.getElementById('tenant-sub-fee').value = data.tenantPass.fee || 500;
                             document.getElementById('tenant-sub-validity').value = data.tenantPass.validity || 15;
                         }
-
                         if(data.support) {
                             document.getElementById('support-number').value = data.support.phone || "9579535290";
                             document.getElementById('support-email').value = data.support.email || "support@satararentalhub.com";
