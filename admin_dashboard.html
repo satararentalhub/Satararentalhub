@@ -1265,7 +1265,7 @@
         }
 
         // ----------------------------------------------------------------------------------
-        // 🆕 NEW LOGIC: Client-Side filtering for ALL Reports to bypass Indexing Error
+        // 🆕 FIX FOR ANDROID MOBILE DOWNLOADING ERROR: Use Base64 Data URI via FileReader
         // ----------------------------------------------------------------------------------
         async function downloadReport(reportType) {
             if(typeof db === 'undefined') { alert("Firebase Connected नाही!"); return; }
@@ -1284,7 +1284,6 @@
                         if(!d.createdAt) continue;
                         let createdTime = new Date(d.createdAt).getTime();
                         
-                        // Client-Side Date Filter
                         if(dateRange && (createdTime < dateRange.start || createdTime > dateRange.end)) continue;
 
                         let date = new Date(d.createdAt).toLocaleDateString();
@@ -1304,7 +1303,7 @@
                 } 
                 else if(reportType === 'tenant_subscriptions') {
                     csvContent += "Payment ID,User ID,User Mobile,Amount (Rs),Expiry Date,Status,Payment Date\r\n";
-                    let snap = await db.collection("payments").get(); // Fetch ALL
+                    let snap = await db.collection("payments").get(); 
                     
                     for (let doc of snap.docs) {
                         let d = doc.data();
@@ -1324,7 +1323,7 @@
                 }
                 else if(reportType === 'users') {
                     csvContent += "User ID,Name,Mobile,Role,Registered On\r\n";
-                    let snap = await db.collection("users").get(); // Fetch ALL
+                    let snap = await db.collection("users").get(); 
 
                     snap.forEach(doc => {
                         let d = doc.data();
@@ -1339,7 +1338,7 @@
                 }
                 else if(reportType === 'properties') {
                     csvContent += "Property ID,Title,Owner,Owner Mobile,Type,Taluka,Area,Rent,Status,Plan,Created Date\r\n";
-                    let snap = await db.collection("properties").get(); // Fetch ALL
+                    let snap = await db.collection("properties").get(); 
 
                     snap.forEach(doc => {
                         let d = doc.data();
@@ -1354,7 +1353,7 @@
                 }
                 else if(reportType === 'leads') {
                     csvContent += "Property ID,Title,Owner Mobile,Total Views,Total Leads Generated,Created Date\r\n";
-                    let snap = await db.collection("properties").get(); // Fetch ALL
+                    let snap = await db.collection("properties").get(); 
 
                     snap.forEach(doc => {
                         let d = doc.data();
@@ -1369,7 +1368,7 @@
                 }
                 else if(reportType === 'expired_plans') {
                     csvContent += "Property ID,Title,Owner Name,Owner Mobile,Plan Type,Expired On Date\r\n";
-                    let snap = await db.collection("properties").get(); // Fetch ALL
+                    let snap = await db.collection("properties").get(); 
                     let now = new Date();
                     
                     snap.forEach(doc => {
@@ -1398,20 +1397,19 @@
                 }
 
                 // ----------------------------------------------------------------------------------
-                // 🆕 NEW LOGIC: Blob URL instead of Data URI to prevent downloading errors on Android
+                // 🆕 ANDROID MOBILE BASE64 FIX: Convert CSV to Base64 using FileReader
                 // ----------------------------------------------------------------------------------
                 let blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                let blobUrl = URL.createObjectURL(blob);
-                
-                let link = document.createElement("a");
-                link.href = blobUrl;
-                link.download = `${reportType}_report_${dateTitle}.csv`;
-                
-                document.body.appendChild(link);
-                link.click();
-                
-                document.body.removeChild(link);
-                URL.revokeObjectURL(blobUrl); 
+                let reader = new FileReader();
+                reader.onload = function(event) {
+                    let link = document.createElement("a");
+                    link.setAttribute("href", event.target.result); // Base64 Data URL
+                    link.setAttribute("download", `${reportType}_report_${dateTitle}.csv`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                };
+                reader.readAsDataURL(blob);
 
             } catch (error) {
                 console.error("Error generating report: ", error);
