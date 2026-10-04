@@ -4,11 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ॲडमिन डॅशबोर्ड | Satara Rental Hub</title>
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    
+    <!-- Firebase Configuration File -->
     <script src="firebase-config.js"></script>
+    
+    <!-- Multi-Language Support File -->
     <script src="lang.js"></script>
     
     <style>
@@ -1157,41 +1164,27 @@
             ]);
         }
 
+        // ----------------------------------------------------------------------------------
+        // 🆕 NEW LOGIC: Advanced Trigger Download Function for Mobile & PC
+        // ----------------------------------------------------------------------------------
         function triggerDownload(blob, filename) {
             try {
-                const url = URL.createObjectURL(blob);
-                const iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
-                iframe.style.position = 'absolute';
-                iframe.style.left = '-9999px';
-                iframe.src = url;
-                document.body.appendChild(iframe);
-                setTimeout(() => {
-                    if(iframe.parentNode) document.body.removeChild(iframe);
-                    URL.revokeObjectURL(url);
-                }, 60000);
-                return true;
-            } catch(e) {
-                console.log("Iframe method failed:", e);
-            }
-            try {
-                const url2 = URL.createObjectURL(blob);
+                const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
-                a.style.position = 'absolute';
-                a.style.left = '-9999px';
-                a.href = url2;
+                a.style.display = 'none';
+                a.href = url;
                 a.download = filename;
                 document.body.appendChild(a);
                 a.click();
                 setTimeout(() => {
-                    if(a.parentNode) document.body.removeChild(a);
-                    URL.revokeObjectURL(url2);
-                }, 60000);
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                }, 100);
                 return true;
             } catch(e) {
-                console.log("Anchor method failed:", e);
+                console.log("Download method failed:", e);
+                return false;
             }
-            return false;
         }
 
         async function downloadReport(reportType) {
@@ -1215,12 +1208,18 @@
                     
                     for (let doc of snap.docs) {
                         let d = doc.data();
-                        if(!d.createdAt) continue;
-                        let createdTime = new Date(d.createdAt).getTime();
-                        if(dateRange && (createdTime < dateRange.start || createdTime > dateRange.end)) continue;
+                        
+                        let createdTime = 0;
+                        if(d.createdAt) {
+                             if(typeof d.createdAt.toDate === 'function') createdTime = d.createdAt.toDate().getTime();
+                             else createdTime = new Date(d.createdAt).getTime();
+                        }
 
-                        let date = new Date(d.createdAt).toLocaleDateString();
+                        if(dateRange && createdTime > 0 && (createdTime < dateRange.start || createdTime > dateRange.end)) continue;
+
+                        let date = createdTime ? new Date(createdTime).toLocaleDateString() : 'N/A';
                         let userMobile = "Not Found";
+                        
                         if(d.userId && d.userId.includes("user_")) {
                             userMobile = d.userId.replace("user_", "");
                         } else if(d.userId) {
@@ -1229,7 +1228,16 @@
                                 if(userDoc.exists) userMobile = userDoc.data().mobile || "N/A";
                             } catch(e) {}
                         }
-                        csvContent += `"${d.paymentId || 'N/A'}","${d.userId || ''}","${userMobile}","${d.amount || 0}","${d.planType || 'Unknown'}","${d.propertyId || 'N/A'}","${d.status || ''}","${date}"\r\n`;
+                        
+                        // Handle missing or undefined fields carefully
+                        let payId = d.paymentId || "N/A";
+                        let uId = d.userId || "N/A";
+                        let amt = d.amount !== undefined ? d.amount : 0;
+                        let pType = d.planType || "Unknown";
+                        let propId = d.propertyId || "N/A";
+                        let stat = d.status || "Unknown";
+
+                        csvContent += `"${payId}","${uId}","${userMobile}","${amt}","${pType}","${propId}","${stat}","${date}"\r\n`;
                         totalRows++;
                     }
                 } 
@@ -1239,11 +1247,17 @@
                     
                     for (let doc of snap.docs) {
                         let d = doc.data();
-                        if(d.planType !== "Tenant Pass" || !d.createdAt) continue;
-                        let createdTime = new Date(d.createdAt).getTime();
-                        if(dateRange && (createdTime < dateRange.start || createdTime > dateRange.end)) continue;
+                        if(d.planType !== "Tenant Pass") continue;
 
-                        let date = new Date(d.createdAt).toLocaleDateString();
+                        let createdTime = 0;
+                        if(d.createdAt) {
+                             if(typeof d.createdAt.toDate === 'function') createdTime = d.createdAt.toDate().getTime();
+                             else createdTime = new Date(d.createdAt).getTime();
+                        }
+
+                        if(dateRange && createdTime > 0 && (createdTime < dateRange.start || createdTime > dateRange.end)) continue;
+
+                        let date = createdTime ? new Date(createdTime).toLocaleDateString() : 'N/A';
                         let expiryDate = d.expiryDate ? new Date(d.expiryDate).toLocaleDateString() : 'N/A';
                         let userMobile = "Not Found";
                         if(d.userId && d.userId.includes("user_")) {
@@ -1254,7 +1268,6 @@
                     }
                 }
                 else if(reportType === 'users') {
-                    // ✅ FIXED: Users without createdAt will NOT be skipped
                     csvContent += "User ID,Name,Mobile,Role,Registered On\r\n";
                     let snap = await withTimeout(db.collection("users").get(), 30000, "Users डेटा येत नाही - 30 सेकंद timeout");
                     
@@ -1264,7 +1277,6 @@
                         let createdTime = 0;
                         let hasValidDate = false;
                         
-                        // वेगवेगळे date field names try करा
                         let dateField = d.createdAt || d.registeredAt || d.created_at || d.timestamp || d.registrationDate || d.date;
                         
                         if (dateField) {
@@ -1282,16 +1294,14 @@
                             } catch(e) { hasValidDate = false; }
                         }
                         
-                        // ✅ जर valid date असेल तरच date range filter apply करा
                         if (hasValidDate && createdTime > 0) {
                             if (dateRange && (createdTime < dateRange.start || createdTime > dateRange.end)) {
                                 return; // Date range बाहेर - skip
                             }
                             date = new Date(createdTime).toLocaleDateString();
                         }
-                        // ✅ Date नसेल तर पण user include करा ("N/A" date सह)
                         
-                        csvContent += `"${doc.id}","${d.name || ''}","${d.mobile || ''}","${d.role || ''}","${date}"\r\n`;
+                        csvContent += `"${doc.id}","${d.name || 'N/A'}","${d.mobile || 'N/A'}","${d.role || 'N/A'}","${date}"\r\n`;
                         totalRows++;
                     });
                 }
@@ -1311,10 +1321,16 @@
                                 createdTime = d.createdAt;
                             }
                         }
-                        if (createdTime && dateRange && (createdTime < dateRange.start || createdTime > dateRange.end)) return;
+                        
+                        if (createdTime > 0 && dateRange && (createdTime < dateRange.start || createdTime > dateRange.end)) return;
 
                         let date = createdTime ? new Date(createdTime).toLocaleDateString() : 'N/A';
-                        csvContent += `"${doc.id}","${d.title || ''}","${d.ownerName || ''}","${d.ownerMobile || ''}","${d.type || ''}","${d.taluka || ''}","${d.area || ''}","${d.rent || 0}","${d.status || ''}","${d.planType || 'basic'}","${date}"\r\n`;
+                        
+                        // Clean up strings to avoid CSV breaking
+                        let safeTitle = (d.title || '').replace(/"/g, '""');
+                        let safeOwner = (d.ownerName || '').replace(/"/g, '""');
+
+                        csvContent += `"${doc.id}","${safeTitle}","${safeOwner}","${d.ownerMobile || 'N/A'}","${d.type || 'N/A'}","${d.taluka || 'N/A'}","${d.area || 'N/A'}","${d.rent || 0}","${d.status || 'N/A'}","${d.planType || 'basic'}","${date}"\r\n`;
                         totalRows++;
                     });
                 }
@@ -1334,10 +1350,12 @@
                                 createdTime = d.createdAt;
                             }
                         }
-                        if (createdTime && dateRange && (createdTime < dateRange.start || createdTime > dateRange.end)) return;
+                        if (createdTime > 0 && dateRange && (createdTime < dateRange.start || createdTime > dateRange.end)) return;
 
                         let date = createdTime ? new Date(createdTime).toLocaleDateString() : 'N/A';
-                        csvContent += `"${doc.id}","${d.title || ''}","${d.ownerMobile || ''}","${d.views || 0}","${d.leads || 0}","${date}"\r\n`;
+                        let safeTitle = (d.title || '').replace(/"/g, '""');
+                        
+                        csvContent += `"${doc.id}","${safeTitle}","${d.ownerMobile || 'N/A'}","${d.views || 0}","${d.leads || 0}","${date}"\r\n`;
                         totalRows++;
                     });
                 }
@@ -1364,11 +1382,19 @@
                             }
                             if (isExpired) {
                                 let formattedExpiryDate = expiryTime.toLocaleDateString();
-                                csvContent += `"${doc.id}","${d.title || ''}","${d.ownerName || ''}","${d.ownerMobile || ''}","${d.planType}","${formattedExpiryDate}"\r\n`;
+                                let safeTitle = (d.title || '').replace(/"/g, '""');
+                                let safeOwner = (d.ownerName || '').replace(/"/g, '""');
+                                
+                                csvContent += `"${doc.id}","${safeTitle}","${safeOwner}","${d.ownerMobile || 'N/A'}","${d.planType}","${formattedExpiryDate}"\r\n`;
                                 totalRows++;
                             }
                         }
                     });
+                }
+
+                if (totalRows === 0) {
+                    alert("या तारखेमध्ये कोणताही डेटा उपलब्ध नाही.");
+                    return;
                 }
 
                 const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -1377,7 +1403,7 @@
                 const success = triggerDownload(blob, filename);
                 
                 if(success) {
-                    showToast(`✅ डाऊनलोड पूर्ण! (${totalRows} rows)`);
+                    showToast(`✅ डाऊनलोड पूर्ण! (${totalRows} records)`);
                 } else {
                     alert("❌ डाऊनलोड करता आले नाही. कृपया Chrome किंवा Firefox ब्राउझरमध्ये उघडून पुन्हा प्रयत्न करा.");
                 }
